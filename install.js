@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const srcDir = path.join(__dirname, 'commands');
+const srcDir = path.join(__dirname, 'skills');
 const destDir = path.join(os.homedir(), '.claude', 'commands');
 
 function copyRecursive(src, dest) {
@@ -24,7 +24,7 @@ function copyRecursive(src, dest) {
 
 function install() {
   if (!fs.existsSync(srcDir)) {
-    console.error('commands/ directory not found in package. Skipping install.');
+    console.error('skills/ directory not found in package. Skipping install.');
     process.exit(1);
   }
 

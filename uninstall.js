@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const srcDir = path.join(__dirname, 'commands');
+const srcDir = path.join(__dirname, 'skills');
 const destDir = path.join(os.homedir(), '.claude', 'commands');
 
 function removeRecursive(target) {
@@ -23,7 +23,7 @@ function removeRecursive(target) {
 
 function uninstall() {
   if (!fs.existsSync(srcDir)) {
-    console.error('commands/ directory not found in package. Cannot determine what to remove.');
+    console.error('skills/ directory not found in package. Cannot determine what to remove.');
     process.exit(1);
   }
 

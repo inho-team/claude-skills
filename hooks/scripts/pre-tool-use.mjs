@@ -139,6 +139,14 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
       });
     }
 
+    // gh pr create → Qbranch
+    if (/\bgh\s+pr\s+create\b/.test(cmd)) {
+      overrideRules.push({
+        skill: 'Qbranch',
+        msg: 'Raw gh pr create is blocked. Use /Qbranch instead.'
+      });
+    }
+
     // version bump (editing plugin.json version via sed/echo) → Mbump
     if (/plugin\.json/.test(cmd) && /version/.test(cmd) && /sed|echo|printf/.test(cmd)) {
       overrideRules.push({
@@ -162,13 +170,11 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
   }
 
   // Block if any rule matched and not bypassed by the corresponding skill
+  // Uses exit code 2 = hard block. The harness refuses the tool call — no negotiation.
   for (const rule of overrideRules) {
     if (bypassSkill !== rule.skill) {
-      console.log(JSON.stringify({
-        continue: false,
-        reason: `[QE] ${rule.msg} (QE_CONVENTIONS.md § System Default Override Map)`
-      }));
-      process.exit(0);
+      process.stderr.write(`[QE] ${rule.msg}`);
+      process.exit(2);
     }
   }
 

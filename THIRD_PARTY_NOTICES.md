@@ -33,6 +33,12 @@ This project includes or adapts content from the following third-party sources.
 - **License:** MIT
 - **Used in:** coding-experts skills (backend, frontend, data, infra, languages, quality)
 
+### Yeachan-Heo/oh-my-claudecode
+- **Repository:** https://github.com/Yeachan-Heo/oh-my-claudecode
+- **Author:** Yeachan Heo
+- **License:** MIT
+- **Used in:** Project structure and plugin architecture (structural inspiration)
+
 ## Apache License 2.0
 
 ### vercel-labs/agent-browser

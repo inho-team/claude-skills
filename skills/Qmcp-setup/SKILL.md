@@ -191,6 +191,33 @@ claude mcp add filesystem -- npx @modelcontextprotocol/server-filesystem /path/t
 
 ---
 
+## QE Framework MCP Catalog
+
+These MCPs have dedicated setup skills in the framework. Use the dedicated skill for detailed guidance, or set up quickly from here.
+
+### Status Dashboard
+
+Run this to check all framework MCP connections at once:
+
+```bash
+echo "=== QE Framework MCP Status ==="
+echo -n "Chrome:      "; claude mcp list 2>/dev/null | grep -qi chrome && echo "CONNECTED" || echo "NOT CONNECTED → /Qchrome"
+echo -n "Stitch:      "; claude mcp list 2>/dev/null | grep -qi stitch && echo "CONNECTED" || echo "NOT CONNECTED → /Qstitch-cli"
+echo -n "Agentation:  "; claude mcp list 2>/dev/null | grep -qi agentation && echo "CONNECTED" || echo "NOT CONNECTED → /Qagentation"
+```
+
+### Registered MCPs
+
+| MCP | Purpose | Setup Skill | Quick Add |
+|-----|---------|-------------|-----------|
+| Claude-in-Chrome | Browser automation (navigate, click, read, GIF) | `/Qchrome` | `claude mcp add claude-in-chrome -- npx @anthropic/claude-in-chrome-mcp` |
+| Google Stitch | AI UI design → HTML/CSS | `/Qstitch-cli` | `claude mcp add stitch -- npx @_davideast/stitch-mcp proxy` |
+| Agentation | Visual UI feedback for agents | `/Qagentation` | `claude mcp add agentation -- npx agentation mcp` |
+
+> For services not in this catalog (Google Drive, Slack, GitHub, etc.), see the general setup guide below.
+
+---
+
 ## MCP Management Commands
 
 | Command | Description |

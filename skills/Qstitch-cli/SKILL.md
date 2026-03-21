@@ -166,6 +166,16 @@ Restart Claude Code session to activate MCP tools.
 
 ---
 
+## Integration with Qfrontend-design
+
+Stitch designs can be used as the design foundation for `Qfrontend-design`:
+
+```
+Stitch 디자인 완성 → Qfrontend-design Step 0-S → design-context.md 생성 → Tailwind config에 반영 → 구현 → 수정 시 Agentation
+```
+
+When invoking `Qfrontend-design` with a Stitch project, Step 0-S automatically extracts colors, fonts, spacing, and other design tokens from Stitch screens into `design-context.md`, which becomes the source of truth for implementation.
+
 ## Will
 - Google Stitch MCP server setup guidance
 - Auth method selection (API Key / gcloud ADC)

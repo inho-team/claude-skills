@@ -40,6 +40,24 @@ When you annotate a UI element, Agentation extracts:
 
 ---
 
+## Pre-check: Connection Status
+
+Before guiding setup, check if Agentation is already available:
+
+```bash
+# Check MCP connection
+claude mcp list 2>/dev/null | grep -i agentation
+
+# Check npm package
+npm list agentation 2>/dev/null || npx agentation --version 2>/dev/null
+```
+
+- **MCP connected**: "Agentation MCP가 연결되어 있습니다. 바로 사용 가능합니다." — skip setup.
+- **Package installed, no MCP**: Guide Step 3 (MCP Integration) only.
+- **Nothing installed**: Proceed with full setup from Step 1.
+
+---
+
 ## Setup
 
 ### Step 1: Install in Your Frontend Project

@@ -260,7 +260,7 @@ if (cfg.spec_auto_detect && !isAmbiguous) {
       for (let i = hints.length - 1; i >= 0; i--) {
         if (hints[i].includes('[INTENT]')) hints.splice(i, 1);
       }
-      hints.push('[COMPLEXITY-GATE] Invoke Ecomplexity-gate agent to judge SIMPLE vs COMPLEX. Display the agent\'s VERDICT and REASON to the user before proceeding. If COMPLEX, invoke /Qgenerate-spec BEFORE implementing. If SIMPLE, proceed normally.');
+      hints.push('[BLOCKING REQUIREMENT — COMPLEXITY-GATE] You MUST invoke Ecomplexity-gate agent IMMEDIATELY as your FIRST action before doing ANYTHING else. Do NOT read files, do NOT write code, do NOT plan — call the agent FIRST. Display the VERDICT and REASON to the user. If COMPLEX → invoke /Qgenerate-spec. If SIMPLE → proceed. Skipping this step is a critical violation.');
     }
   }
 }
@@ -314,10 +314,14 @@ async function translateToKeywords(message, routeKeys) {
 }
 
 /**
- * All complexity judgment is delegated to the Ecomplexity-gate agent.
- * No hardcoded filters — the agent decides SIMPLE vs COMPLEX.
+ * Minimal gate before Ecomplexity-gate agent.
+ * Only skips very short confirmations — everything else goes to the agent.
  */
-function classifySpecNeed() {
+function classifySpecNeed(message, words) {
+  // Too short to be a task description (confirmations like "응", "ok", "ㅇㅇ")
+  if (words.length <= 3) return false;
+
+  // All other judgment delegated to Ecomplexity-gate agent
   return true;
 }
 

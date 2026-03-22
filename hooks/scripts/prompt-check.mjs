@@ -260,7 +260,7 @@ if (cfg.spec_auto_detect && !isAmbiguous) {
       for (let i = hints.length - 1; i >= 0; i--) {
         if (hints[i].includes('[INTENT]')) hints.splice(i, 1);
       }
-      hints.push('[COMPLEXITY-GATE] This message passed fast-exit checks and may describe a complex task. Invoke Ecomplexity-gate agent to judge SIMPLE vs COMPLEX. If COMPLEX, invoke /Qgenerate-spec BEFORE implementing.');
+      hints.push('[COMPLEXITY-GATE] Invoke Ecomplexity-gate agent to judge SIMPLE vs COMPLEX. Display the agent\'s VERDICT and REASON to the user before proceeding. If COMPLEX, invoke /Qgenerate-spec BEFORE implementing. If SIMPLE, proceed normally.');
     }
   }
 }

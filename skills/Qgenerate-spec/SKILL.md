@@ -106,7 +106,9 @@ Output status summary after file creation:
 - {expected output files from TASK_REQUEST checklist}
 ```
 
-On "Generate & Execute" → invoke `/Qrun-task {UUID}` immediately.
+On "Generate & Execute":
+- **Single task** → invoke `/Qrun-task {UUID}` immediately.
+- **Multiple tasks** → invoke `/Qrun-task {UUID1} {UUID2} ... {UUIDn}` with all generated UUIDs space-separated in a single call. Qrun-task handles parallel execution.
 
 ## Autonomous Mode Support
 

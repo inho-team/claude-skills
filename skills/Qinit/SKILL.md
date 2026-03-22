@@ -1,6 +1,6 @@
 ---
 name: Qinit
-description: QE framework (Query Executor) initial setup. Creates CLAUDE.md, settings.json, directory structure, and .gitignore in a new project, then auto-analyzes the project. Use when the user wants to initialize a project, set up the framework, or start a new project setup. Korean: '초기화', '프로젝트 설정', '프로젝트 시작'. Chinese: '初始化', '项目设置'. Japanese: '初期化', 'プロジェクト設定'. Arabic: 'تهيئة'. Hindi: 'आरंभ करें'. Spanish: 'inicializar proyecto'. Portuguese: 'inicializar projeto'. French: 'initialiser projet'. German: 'Projekt initialisieren'. Russian: 'инициализация проекта'. Indonesian: 'inisialisasi proyek'.
+description: "QE framework (Query Executor) initial setup. Creates CLAUDE.md, settings.json, directory structure, and .gitignore in a new project, then auto-analyzes the project. Use when the user wants to initialize a project or set up the framework."
 ---
 
 # Qinit — QE Framework Initialization
@@ -96,9 +96,12 @@ Also reference `QE_CONVENTIONS.md` (project root) for QE rules (file naming, tas
 #### .claude/settings.json
 ```json
 {
+  "env": {
+    "SLASH_COMMAND_TOOL_CHAR_BUDGET": "100000"
+  }
 }
 ```
-Empty settings file. Users can add hooks etc. as needed.
+Sets the character budget for slash command tool descriptions so all skills fit within the system prompt.
 
 #### Directory Structure
 ```

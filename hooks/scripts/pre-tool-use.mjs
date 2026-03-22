@@ -225,50 +225,6 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
   }
 }
 
-// --- Spec-First Guard (Write/Edit only) ---
-if (['Write', 'Edit'].includes(toolName)) {
-  const toolInput = data.tool_input || data.toolInput || {};
-  const filePath = toolInput.file_path || toolInput.filePath || '';
-
-  // Skip .qe/ internal files, CLAUDE.md, config files
-  const isExempt = filePath.includes('.qe/') || filePath.includes('.qe\\')
-    || /CLAUDE\.md$/.test(filePath)
-    || /\.gitignore$/.test(filePath)
-    || /settings\.json$/.test(filePath)
-    || /plugin\.json$/.test(filePath)
-    || /package\.json$/.test(filePath);
-
-  if (!isExempt && !stats._spec_guard_hinted) {
-    // Check if any TASK_REQUEST is in-progress
-    const inProgressDir = join(cwd, '.qe', 'tasks', 'in-progress');
-    let hasActiveTask = false;
-    if (existsSync(inProgressDir)) {
-      try {
-        hasActiveTask = readdirSync(inProgressDir).some(f => f.startsWith('TASK_REQUEST_'));
-      } catch {}
-    }
-
-    if (!hasActiveTask) {
-      hints.push('[SPEC-FIRST] No TASK_REQUEST in .qe/tasks/in-progress/. You should run /Qgenerate-spec first to create a spec before implementing. If this is a simple change, proceed — but multi-file or complex changes MUST have a spec.');
-      stats._spec_guard_hinted = true;
-    }
-  }
-}
-
-// --- QE Conventions Memory Check (once per session, Write/Edit) ---
-if (['Write', 'Edit'].includes(toolName) && !stats._qe_conventions_hinted) {
-  try {
-    const home = process.env.HOME || '/root';
-    const encodedCwd = cwd.replace(/\//g, '-');
-    const memoryDir = join(home, '.claude', 'projects', encodedCwd, 'memory');
-    const conventionsMemory = join(memoryDir, 'qe_conventions_routing.md');
-    if (!existsSync(conventionsMemory)) {
-      hints.push('[QE_CONVENTIONS] QE routing rules not in memory. Read QE_CONVENTIONS.md from the project root and save the Override Map + key skill routing table to auto-memory as feedback type.');
-      stats._qe_conventions_hinted = true;
-    }
-  } catch {}
-}
-
 // --- Secret Scanner (Write/Edit only) ---
 if (['Write', 'Edit'].includes(toolName)) {
   const toolInput = data.tool_input || data.toolInput || {};

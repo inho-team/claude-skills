@@ -75,7 +75,7 @@
     "audit/evaluate/inspect/health-check/framework-report": "Mqe-audit"
   },
   "agent_tiers": {
-    "LOW": ["Eprofile-collector", "Earchive-executor", "Ecommit-executor", "Ecomplexity-gate"],
+    "LOW": ["Eprofile-collector", "Earchive-executor", "Ecommit-executor"],
     "MEDIUM": ["Etask-executor", "Ecode-debugger", "Ecode-reviewer", "Ecode-test-engineer", "Ecode-doc-writer", "Ecode-quality-supervisor", "Edocs-supervisor", "Eanalysis-supervisor", "Edoc-generator", "Egrad-writer", "Epm-planner", "Erefresh-executor", "Ecompact-executor", "Ehandoff-executor"],
     "HIGH": ["Edeep-researcher", "Eqa-orchestrator", "Esecurity-officer", "Esupervision-orchestrator"]
   }

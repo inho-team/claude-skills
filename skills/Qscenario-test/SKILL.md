@@ -1,6 +1,6 @@
 ---
 name: Qscenario-test
-description: "Generates scenario specs from existing implementations, executes them (browser/API/CLI), and verifies results with checklist-based tracking. Use for scenario test, E2E scenario, user flow verification, acceptance testing. Distinct from Qqa-test-planner (generates documentation only) and Qcode-run-task (unit test loop) — this skill generates, executes, and verifies end-to-end user scenarios. Korean: '시나리오 테스트', 'E2E 시나리오', '유저 플로우 테스트', '시나리오 검증', '인수 테스트'. Chinese: '场景测试', '端到端测试'. Japanese: 'シナリオテスト', 'E2Eテスト'. Arabic: 'اختبار السيناريو'. Hindi: 'परिदृश्य परीक्षण'. Spanish: 'prueba de escenarios'. Portuguese: 'teste de cenários'. French: 'test de scénarios'. German: 'Szenariotest'. Russian: 'сценарное тестирование'. Indonesian: 'uji skenario'."
+description: "Generates scenario specs from existing implementations, executes them (browser/API/CLI), and verifies results. Use for scenario testing, E2E scenarios, user flow verification, or acceptance testing."
 user_invocable: true
 metadata:
   author: inho

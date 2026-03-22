@@ -248,23 +248,6 @@ if (!isAmbiguous) try {
   // Fault-tolerant: skip classification on error
 }
 
-// --- Auto Spec Detection (after intent classification) ---
-// Messages that pass fast-exit checks → delegate to Ecomplexity-gate agent
-if (cfg.spec_auto_detect && !isAmbiguous) {
-  const isSlashCommand = userMessage.trim().startsWith('/');
-
-  if (!isSlashCommand) {
-    const needsComplexityCheck = classifySpecNeed(userMessage, words);
-    if (needsComplexityCheck) {
-      // Remove any existing [INTENT] hint — complexity gate takes priority
-      for (let i = hints.length - 1; i >= 0; i--) {
-        if (hints[i].includes('[INTENT]')) hints.splice(i, 1);
-      }
-      hints.push('[BLOCKING REQUIREMENT — COMPLEXITY-GATE] You MUST invoke Ecomplexity-gate agent IMMEDIATELY as your FIRST action before doing ANYTHING else. Do NOT read files, do NOT write code, do NOT plan — call the agent FIRST. Display the VERDICT and REASON to the user. If COMPLEX → invoke /Qgenerate-spec. If SIMPLE → proceed. Skipping this step is a critical violation.');
-    }
-  }
-}
-
 if (hints.length > 0) {
   console.log(JSON.stringify({
     continue: true,
@@ -311,18 +294,6 @@ async function translateToKeywords(message, routeKeys) {
   if (!resp.ok) return '';
   const body = await resp.json();
   return (body.content?.[0]?.text || '').trim().toLowerCase();
-}
-
-/**
- * Minimal gate before Ecomplexity-gate agent.
- * Only skips very short confirmations — everything else goes to the agent.
- */
-function classifySpecNeed(message, words) {
-  // Too short to be a task description (confirmations like "응", "ok", "ㅇㅇ")
-  if (words.length <= 3) return false;
-
-  // All other judgment delegated to Ecomplexity-gate agent
-  return true;
 }
 
 /**

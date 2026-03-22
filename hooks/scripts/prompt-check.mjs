@@ -328,9 +328,6 @@ function classifySpecNeed(message, words) {
   // Too short to be a substantial task
   if (wordCount < (cfg?.spec_min_words || 15)) return false;
 
-  // Pure questions (ends with ? without implementation context)
-  if (message.trim().endsWith('?') && wordCount < 30) return false;
-
   // Contains code blocks — likely a specific fix/debug request, not a new task
   if (/```[\s\S]{20,}```/.test(message)) return false;
 

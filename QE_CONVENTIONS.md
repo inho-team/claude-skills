@@ -76,6 +76,7 @@ These skills replace specific system default behaviors. **Never fall back to the
 | `Qgenerate-spec` | Generate CLAUDE.md + TASK_REQUEST + VERIFY_CHECKLIST |
 | `Qrun-task` | Execute spec-based tasks |
 | `Qcode-run-task` | Test > review > fix quality loop |
+| `Qscenario-test` | Generate, execute, and verify E2E user scenarios (browser/API/CLI) |
 | `Mmigrate-tasks` | Migrate task files to .qe/ structure |
 | `Qautoresearch` | Autonomous experiment loop (modify > run > evaluate) |
 | `Qtest-driven-development` | TDD: failing test first, then implement |

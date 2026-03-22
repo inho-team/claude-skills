@@ -154,5 +154,28 @@
 | | | |
 <!-- end: fullstack -->
 
+## QE Framework Rules (MUST READ)
+
+> **이 섹션의 규칙은 반드시 따라야 합니다. 무시하면 안 됩니다.**
+
+### Spec-First Rule
+- **간단하지 않은 작업은 반드시 `/Qgenerate-spec`을 먼저 실행하여 TASK_REQUEST와 VERIFY_CHECKLIST를 생성한 후 구현할 것.**
+- 단순 작업 기준: 단일 파일 수정, 1-2줄 변경, 오타 수정, 질문 응답.
+- 그 외 모든 구현/수정 작업 → `/Qgenerate-spec` 필수.
+- 파일을 읽거나, 코드를 작성하거나, 계획을 세우기 전에 스펙부터 생성할 것.
+
+### QE Conventions
+- 전체 규칙은 `QE_CONVENTIONS.md` (프로젝트 루트) 참조.
+- 등록된 스킬/에이전트는 시스템 기본 동작보다 항상 우선.
+- 파일 명명, 작업 상태, 완료 기준은 QE_CONVENTIONS.md를 따를 것.
+
+### Skill Priority
+| 작업 | 사용할 스킬 |
+|------|------------|
+| 구현/수정 작업 | `/Qgenerate-spec` → `/Qrun-task` |
+| Git 커밋 | `/Qcommit` |
+| 코드 리뷰 | `Ecode-reviewer` |
+| 디버깅 | `Ecode-debugger` 또는 `/Qsystematic-debugging` |
+
 ## Task Log
 - **작업 이력 및 상태**: `.qe/TASK_LOG.md` 참조

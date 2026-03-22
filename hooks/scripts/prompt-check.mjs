@@ -314,24 +314,10 @@ async function translateToKeywords(message, routeKeys) {
 }
 
 /**
- * Classify whether a user request needs complexity analysis.
- * Performs fast-exit checks only — if the message passes all of them,
- * the caller should delegate to the Ecomplexity-gate agent for SIMPLE/COMPLEX judgment.
- *
- * Returns true if the message should be forwarded to the agent.
+ * All complexity judgment is delegated to the Ecomplexity-gate agent.
+ * No hardcoded filters — the agent decides SIMPLE vs COMPLEX.
  */
-function classifySpecNeed(message, words) {
-  const wordCount = words.length;
-
-  // --- Fast-exit conditions (no agent call needed) ---
-
-  // Too short to be a substantial task
-  if (wordCount < (cfg?.spec_min_words || 15)) return false;
-
-  // Contains code blocks — likely a specific fix/debug request, not a new task
-  if (/```[\s\S]{20,}```/.test(message)) return false;
-
-  // Passed all fast-exit checks → delegate to Ecomplexity-gate
+function classifySpecNeed() {
   return true;
 }
 

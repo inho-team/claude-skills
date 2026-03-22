@@ -33,7 +33,7 @@ When checklist has **5+ items**, delegate to `Etask-executor` agent. Main agent 
 2. Glob `.qe/tasks/{pending,in-progress,on-hold}/*.md` for TASK_REQUEST files
 3. Backward compat: check project root if `.qe/tasks/` missing
 4. Multiple tasks → ask which to run. UUID argument → select directly
-5. Multiple UUIDs (space-separated) → sequential execution queue
+5. Multiple UUIDs (space-separated) → parallel execution (see **Multiple UUID Execution** section below)
 
 ## Step 2: Summary and Approval
 
@@ -152,11 +152,38 @@ After completion, check for remaining tasks:
 
 ## Multiple UUID Execution
 
-**Parallel by default.** Spawn separate `Etask-executor` agents concurrently (one per UUID). Each task runs Steps 2-5 independently.
+**Parallel by default.** When multiple UUIDs are passed (space-separated), spawn one `Etask-executor` Agent per UUID concurrently.
 
-Sequential fallback only when tasks have explicit inter-dependencies (e.g., task B's input is task A's output).
+### Execution Flow
+```
+/Qrun-task {UUID1} {UUID2} {UUID3}
+  │
+  ├─ Read all TASK_REQUESTs → check for inter-dependencies
+  │
+  ├─ No dependencies found (default):
+  │    ├─ Agent spawn: Etask-executor(UUID1)  ─┐
+  │    ├─ Agent spawn: Etask-executor(UUID2)  ─┼─ parallel
+  │    └─ Agent spawn: Etask-executor(UUID3)  ─┘
+  │         Each runs Steps 2-5 independently
+  │
+  └─ Dependencies found (fallback):
+       └─ Sequential: UUID1 → UUID2 → UUID3
+          (only when task B's input is task A's output)
+```
 
-On failure: skip failed task, continue others, report all failures at end.
+### Parallel Execution Rules
+1. **Spawn all agents in a single tool-call block** — do not await one before spawning the next
+2. **File ownership**: no two agents may write the same file. If overlap detected, serialize those tasks
+3. **Shared files** (i18n, config, barrel exports, package manifests): Qrun-task edits these after all agents complete, merging their requirements
+4. **Independent state**: each agent moves its own TASK_REQUEST/VERIFY_CHECKLIST through `pending → in-progress → completed`
+5. **On failure**: skip failed task, continue others, report all results at end
+
+### Dependency Detection
+Before spawning, scan each TASK_REQUEST for:
+- Explicit `depends: {UUID}` in notes
+- Output path of task A appearing as input reference in task B's checklist
+
+If dependencies exist, topologically sort and execute in waves (parallel within each wave, sequential across waves).
 
 ## Autonomous Mode (Ultra)
 

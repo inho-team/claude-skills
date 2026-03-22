@@ -83,15 +83,6 @@ const DEFAULTS = {
   // express a clear request. Messages shorter than this are flagged as potentially
   // ambiguous when they also fall under the word count threshold.
   ambiguous_max_chars: 100,            // max chars for ambiguity check
-
-  // [why this value]: 8 words balances Korean (fewer space-separated tokens than
-  // English for equivalent content) and English. Korean 12-word sentences carry
-  // the same information as English 20-word sentences, so 15 was too high for CJK.
-  spec_min_words: 8,                   // min words to trigger spec classification
-
-  // [why this value]: true enables auto-spec detection in prompt-check. Set false to
-  // disable and rely on explicit /Qgenerate-spec invocation only.
-  spec_auto_detect: true,             // enable auto-spec classification
 };
 
 /**

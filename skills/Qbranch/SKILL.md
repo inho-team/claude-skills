@@ -1,6 +1,6 @@
 ---
 name: Qbranch
-description: "Git branch workflow manager — creates branches, commits via Qcommit, and opens PRs. Blocks direct push to main. Use when starting a feature, fix, hotfix, or any branch-based work. Korean: '브랜치', '기능 개발', 'PR 생성', '피처 브랜치'. Chinese: '分支', '功能开发'. Japanese: 'ブランチ', '機能開発'. Arabic: 'فرع'. Hindi: 'ब्रांच'. Spanish: 'rama'. Portuguese: 'branch'. French: 'branche'. German: 'Branch'. Russian: 'ветка'. Indonesian: 'cabang'."
+description: "Git branch workflow manager — creates branches, commits via Qcommit, and opens PRs. Use when starting a feature, fix, hotfix, or any branch-based work."
 user_invocable: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: Qutopia
-description: "Utopia mode — fully autonomous execution. Skips all confirmations and auto-allows tool permissions. Use when the user wants fully autonomous, no-confirmation execution with keywords like 'utopia', 'autonomous', or 'no questions'. Supports --work (spec pipeline) and --qa (spec + quality loop). Korean: '자율 실행', '자동 모드', '확인 없이'. Chinese: '自主执行', '全自动'. Japanese: '自律実行', '自動モード'. Arabic: 'تنفيذ تلقائي'. Hindi: 'स्वायत्त निष्पादन'. Spanish: 'ejecución autónoma'. Portuguese: 'execução autônoma'. French: 'exécution autonome'. German: 'autonome Ausführung'. Russian: 'автономное выполнение'. Indonesian: 'eksekusi otonom'."
+description: "Utopia mode — fully autonomous execution. Skips all confirmations and auto-allows tool permissions. Use when the user wants fully autonomous, no-confirmation execution."
 allowed-tools: Bash(*), Read, Write, Edit, Glob, Grep
 ---
 

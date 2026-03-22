@@ -1,6 +1,6 @@
 ---
 name: Qrun-task
-description: "Executes spec-based tasks from TASK_REQUEST and VERIFY_CHECKLIST documents. Use when running a task, implementing a spec, starting work on a UUID, or executing a checklist. Reads spec, summarizes, implements, and verifies. Korean: '작업 실행', '체크리스트', '태스크 실행'. Chinese: '执行任务', '检查清单'. Japanese: 'タスク実行', 'チェックリスト'. Arabic: 'تنفيذ المهمة'. Hindi: 'कार्य चलाएं'. Spanish: 'ejecutar tarea'. Portuguese: 'executar tarefa'. French: 'exécuter tâche'. German: 'Aufgabe ausführen'. Russian: 'выполнить задачу'. Indonesian: 'jalankan tugas'."
+description: "Executes spec-based tasks from TASK_REQUEST and VERIFY_CHECKLIST documents. Use when running a task, implementing a spec, or executing a checklist."
 ---
 
 # Task Execution Skill

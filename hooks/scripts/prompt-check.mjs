@@ -36,6 +36,20 @@ if (!userMessage) {
 const hints = [];
 const msgLower = userMessage.toLowerCase();
 
+// --- QE Conventions Memory Check ---
+// If the user's auto-memory doesn't have qe_conventions_routing.md, hint Claude to read QE_CONVENTIONS.md
+try {
+  const home = process.env.HOME || '/root';
+  const encodedCwd = cwd.replace(/\//g, '-');
+  const memoryDir = join(home, '.claude', 'projects', encodedCwd, 'memory');
+  const conventionsMemory = join(memoryDir, 'qe_conventions_routing.md');
+  if (!existsSync(conventionsMemory)) {
+    hints.push('[QE_CONVENTIONS] No routing rules in memory. Read QE_CONVENTIONS.md from the QE Framework plugin and save the Override Map + key skill routing table to auto-memory as a feedback type. File: find QE_CONVENTIONS.md in the project or plugin root.');
+  }
+} catch {
+  // Fault-tolerant: skip on error
+}
+
 // --- Ambiguity Detection (BEFORE classification — short messages only) ---
 const words = userMessage.trim().split(/\s+/);
 let isAmbiguous = false;

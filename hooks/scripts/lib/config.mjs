@@ -83,6 +83,15 @@ const DEFAULTS = {
   // express a clear request. Messages shorter than this are flagged as potentially
   // ambiguous when they also fall under the word count threshold.
   ambiguous_max_chars: 100,            // max chars for ambiguity check
+
+  // [why this value]: 15 words is the minimum length for a request to contain enough
+  // context (what to build, where, how) to warrant spec generation. Shorter messages
+  // are either questions or simple commands that don't need formal specs.
+  spec_min_words: 15,                  // min words to trigger spec classification
+
+  // [why this value]: true enables auto-spec detection in prompt-check. Set false to
+  // disable and rely on explicit /Qgenerate-spec invocation only.
+  spec_auto_detect: true,             // enable auto-spec classification
 };
 
 /**

@@ -248,6 +248,23 @@ if (!isAmbiguous) try {
   // Fault-tolerant: skip classification on error
 }
 
+// --- Auto Spec Detection (after intent classification) ---
+// Complex implementation tasks → force /Qgenerate-spec, overriding other intent routes
+if (cfg.spec_auto_detect && !isAmbiguous) {
+  const isSlashCommand = userMessage.trim().startsWith('/');
+
+  if (!isSlashCommand) {
+    const specNeeded = classifySpecNeed(userMessage, words);
+    if (specNeeded) {
+      // Remove any existing [INTENT] hint — spec pipeline takes priority for complex tasks
+      for (let i = hints.length - 1; i >= 0; i--) {
+        if (hints[i].includes('[INTENT]')) hints.splice(i, 1);
+      }
+      hints.push('[SPEC] This request describes a substantial task that requires spec documents. Invoke /Qgenerate-spec BEFORE implementing anything. Do NOT start coding without generating TASK_REQUEST and VERIFY_CHECKLIST first.');
+    }
+  }
+}
+
 if (hints.length > 0) {
   console.log(JSON.stringify({
     continue: true,
@@ -294,6 +311,76 @@ async function translateToKeywords(message, routeKeys) {
   if (!resp.ok) return '';
   const body = await resp.json();
   return (body.content?.[0]?.text || '').trim().toLowerCase();
+}
+
+/**
+ * Classify whether a user request needs spec generation.
+ * Returns true if the request describes a substantial implementation task.
+ *
+ * Positive signals: implementation keywords, multi-step descriptions, feature requests
+ * Negative signals: questions, short messages, simple operations (commit/push/debug)
+ */
+function classifySpecNeed(message, words) {
+  const wordCount = words.length;
+  const lower = message.toLowerCase();
+
+  // --- Skip conditions (fast path) ---
+
+  // Too short to be a substantial task
+  if (wordCount < (cfg?.spec_min_words || 15)) return false;
+
+  // Pure questions (ends with ? without implementation context)
+  if (message.trim().endsWith('?') && wordCount < 30) return false;
+
+  // Contains code blocks — likely a specific fix/debug request, not a new task
+  if (/```[\s\S]{20,}```/.test(message)) return false;
+
+  // --- Negative keywords (simple operations that don't need spec) ---
+  // Use contextual patterns to avoid false positives (e.g., "push notifications" ≠ "git push")
+  const skipPatterns = [
+    /\b(commit|deploy|pull\s+request|merge|rebase|cherry-?pick)\b/i,
+    /\bgit\s+push\b/i,
+    /\bpush\s+(to|code|branch|changes)\b/i,
+    /\b(explain|what is|how does|why does|show me|tell me|describe)\b/i,
+    /\b(fix this|debug|error|bug|crash|not working)\b/i,
+    /\b(review|check|audit|analyze|inspect)\b/i,
+    /\b(help|version|update|upgrade|install)\b/i,
+    /\b(delete|remove|rename|move|copy)\b/i,
+    /(?:찾아|알려|설명|뭐야|왜\s|어떻게\s된|보여|확인해)/,
+    /(?:커밋|푸시|배포|디버그|리뷰|삭제)/,
+  ];
+  if (skipPatterns.some(p => p.test(message))) return false;
+
+  // --- Positive signals (implementation task indicators) ---
+  let score = 0;
+
+  // Korean implementation keywords
+  const koImpl = /(?:만들어|구현해|개발해|추가해|작성해|생성해|설계해|구축해|적용해|연동해|통합해|변환해|리팩토링|마이그레이션|세팅해|셋업해|구성해)/.test(message);
+  if (koImpl) score += 3;
+
+  // English implementation keywords
+  const enImpl = /\b(?:implement|build|create|develop|add\s+(?:a\s+)?(?:new\s+)?(?:feature|page|screen|module|component|service|api|endpoint)|set\s*up|integrate|migrate|refactor|design\s+and|architect|scaffold|bootstrap)\b/i.test(message);
+  if (enImpl) score += 3;
+
+  // Domain object keywords (what is being built)
+  const domainKo = /(?:페이지|화면|기능|시스템|모듈|서비스|컴포넌트|레이아웃|대시보드|테이블|폼|인증|로그인|회원가입|결제|알림|채팅)/.test(message);
+  if (domainKo) score += 2;
+
+  const domainEn = /\b(?:page|screen|feature|system|module|service|component|layout|dashboard|table|form|auth|login|signup|payment|notification|chat|api|endpoint|middleware|pipeline|workflow)\b/i.test(message);
+  if (domainEn) score += 2;
+
+  // Multi-step indicators (numbered lists, bullet points, multiple requirements)
+  const hasSteps = /(?:\d+[\.\)]\s|\n\s*[-*]\s|\n\s*\d+)/m.test(message);
+  if (hasSteps) score += 2;
+
+  // Long detailed description (30+ words)
+  if (wordCount >= 30) score += 1;
+
+  // Very long description (50+ words) — almost certainly needs spec
+  if (wordCount >= 50) score += 2;
+
+  // Threshold: need at least 3 points (implementation keyword alone, or domain + detail)
+  return score >= 3;
 }
 
 /**

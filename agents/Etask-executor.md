@@ -46,7 +46,7 @@ The caller (Qrun-task) selects the execution model based on task complexity:
 |--------|-------|
 | ≤ 3 checklist items, single-file scope | haiku |
 | 4-7 items, standard implementation | sonnet (default) |
-| 8+ items, cross-cutting changes, architecture work | opus |
+| 8+ items, cross-cutting changes, architecture work | sonnet |
 
 Accept the `model` parameter from the caller. Do not override it.
 

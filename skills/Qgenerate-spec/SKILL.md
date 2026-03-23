@@ -135,6 +135,17 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - Checklist items as `- [ ]`, specific and verifiable (no vague expressions)
 - **Output files (optional):** append `→ output: {file-path}` to checklist items
 - **Granularity:** single responsibility, yes/no verifiable, completable within 30 min; split if exceeded
+- **Complexity tag (optional):** append `<!-- complexity: low -->` or `<!-- complexity: high -->` to a checklist item to hint the model router in Qrun-task.
+  - `low` → single file edit, config change, text update, copy/rename, docs-only step → routed to **haiku**
+  - `high` → auth/crypto/architecture decision, cross-module refactor, algorithm design → routed to **sonnet**
+  - Omit the tag for everything in between; Qrun-task uses item count as fallback.
+  - **Auto-classify:** when `type: docs` or `type: analysis`, ALL items default to `low` unless the user explicitly marks one `high`.
+  - Examples:
+    ```
+    - [ ] README 업데이트 → output: README.md <!-- complexity: low -->
+    - [ ] JWT 인증 미들웨어 구현 → output: src/auth/jwt.ts <!-- complexity: high -->
+    - [ ] DB 인덱스 추가 (migration 포함) <!-- complexity: high -->
+    ```
 - **`## How to Run` section required** with `/Qrun-task {UUID}` command
 - **ADR section (optional):** include when 2+ viable design alternatives exist; omit for simple tasks
 

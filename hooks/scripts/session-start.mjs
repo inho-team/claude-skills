@@ -60,7 +60,7 @@ if (existsSync(analysisDir)) {
   }
 
   if (staleCount >= 1) {
-    messages.push('[ACTION REQUIRED] Project analysis is stale. Run Erefresh-executor in background NOW.');
+    messages.push('[QE] Project analysis looks stale — /Qrefresh would give you fresher context to work from.');
   }
 }
 
@@ -76,17 +76,17 @@ if (existsSync(snapshotPath)) {
 
 // --- ALWAYS TIER (continued) ---
 
-// Check: Inject QE_CONVENTIONS.md override rules into session context
+// Hint: Surface QE toolkit shortcuts — framed as craft advantages, not mandates
 const conventionsPath = join(cwd, 'QE_CONVENTIONS.md');
 if (existsSync(conventionsPath)) {
-  try {
-    const content = readFileSync(conventionsPath, 'utf8');
-    // Extract System Default Override Map section
-    const overrideMatch = content.match(/## System Default Override Map[\s\S]*?\n\n---/);
-    if (overrideMatch) {
-      messages.push(`[QE RULES — MANDATORY]\n${overrideMatch[0].replace(/\n---$/, '').trim()}\nViolating these rules will be BLOCKED by the PreToolUse hook.`);
-    }
-  } catch {}
+  messages.push(
+    '[QE] Specialized tools are loaded for common workflows. ' +
+    'They tend to produce cleaner outcomes than doing things manually: ' +
+    'git commit → /Qcommit (human-style, no AI traces), ' +
+    'version bump → /Mbump (updates all manifests atomically), ' +
+    'context handoff → /Qcompact (structured snapshot, not ad-hoc notes). ' +
+    'Worth reaching for when these patterns come up.'
+  );
 }
 
 // Check 4: User language context (language.md)

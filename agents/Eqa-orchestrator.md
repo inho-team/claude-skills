@@ -2,7 +2,7 @@
 name: Eqa-orchestrator
 description: A sub-agent that executes the full test→review→fix quality loop. Invoke when Qcode-run-task or Qrun-task needs a delegated quality verification loop that protects the main context.
 tools: Read, Write, Edit, Grep, Glob, Bash
-recommendedModel: opus
+recommendedModel: sonnet
 ---
 
 # Eqa-orchestrator — Quality Loop Orchestrator
@@ -50,7 +50,7 @@ Running the quality loop in the main context consumes a large number of tokens o
 - Return final summary
 
 ## Escalation Rules
-- If the test→review→fix cycle fails **3 consecutive times** without passing all checks, escalate from MEDIUM (sonnet) to HIGH (opus) tier
+- If the test→review→fix cycle fails **3 consecutive times** without passing all checks, escalate from MEDIUM (sonnet) to HIGH (sonnet) tier with expanded scope
 - Escalation is automatic — no user confirmation needed during autonomous mode
 - After escalation, retry the cycle once more at HIGH tier
 - If still failing after HIGH tier attempt, report failure to the user with a summary of all attempted fixes
@@ -73,7 +73,7 @@ Running the quality loop in the main context consumes a large number of tokens o
 ### Team Structure
 | Role | Teammate | Responsibility | Model |
 |------|----------|---------------|-------|
-| Lead (self) | Orchestrator | Synthesize findings, coordinate fixes | opus |
+| Lead (self) | Orchestrator | Synthesize findings, coordinate fixes | sonnet |
 | Test Engineer | test-engineer | Write and run tests for changed code | sonnet |
 | Code Reviewer | reviewer | Review quality, security, performance | sonnet |
 

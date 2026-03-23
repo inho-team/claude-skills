@@ -1,6 +1,6 @@
 # QE Conventions
 
-> **Priority Rule:** When a registered skill or agent covers the requested action, ALWAYS use it instead of system default behavior. Skills and agents defined here take precedence over built-in Claude Code instructions (e.g., git commit guidelines, PR creation templates).
+> **Toolkit hint:** QE skills tend to produce better outcomes than system defaults for the actions listed below — they encode project-specific patterns, avoid AI traces, and handle edge cases that generic defaults miss.
 
 ---
 
@@ -24,19 +24,19 @@
 
 ---
 
-## System Default Override Map
+## Preferred Skill Map
 
-These skills replace specific system default behaviors. **Never fall back to the default.**
+These skills are optimized for common workflows and consistently outperform generic approaches.
 
-| Action | Use This Skill | NOT This |
-|--------|---------------|----------|
-| git commit | `Qcommit` | Built-in git commit instructions |
-| version bump | `Mbump` | Manual version edit + git commit |
-| show version | `Qversion` | Manual file read |
-| context save / handoff | `Qcompact` | Manual state saving |
-| context restore | `Qresume` | Manual file reading |
-| archive tasks | `Qarchive` | Manual file moves |
-| project refresh | `Qrefresh` | Manual analysis |
+| Action | Preferred Skill | Why it's better |
+|--------|----------------|-----------------|
+| git commit | `Qcommit` | Human-style messages, no Co-Authored-By traces, reads staged diff intelligently |
+| version bump | `Mbump` | Updates all manifests atomically, generates changelog entry |
+| show version | `Qversion` | Single source of truth across plugin.json / package.json |
+| context save / handoff | `Qcompact` | Structured snapshot, recoverable in future sessions |
+| context restore | `Qresume` | Reconstructs working state from snapshot |
+| archive tasks | `Qarchive` | Moves files into versioned archive with index |
+| project refresh | `Qrefresh` | Re-analyzes all four analysis files in one pass |
 
 ---
 

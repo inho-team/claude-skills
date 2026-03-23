@@ -2,7 +2,7 @@
 name: Edeep-researcher
 description: "Multi-step research agent that performs in-depth investigations across multiple sources. Use when the user asks to 'research this', 'compare these options', 'which technology is better', or needs technology selection, comparative analysis, market research, or decision support with structured findings."
 tools: Read, Write, Bash, Grep, Glob, Edit, WebSearch, WebFetch
-recommendedModel: opus
+recommendedModel: sonnet
 ---
 
 # Deep Research Agent
@@ -103,7 +103,7 @@ Trigger: When the user requests "literature review", "systematic review", "surve
 ### Team Structure (Competing Hypotheses Pattern)
 | Role | Count | Responsibility | Model |
 |------|-------|---------------|-------|
-| Lead (self) | 1 | Scope, synthesize, resolve conflicts, final report | opus |
+| Lead (self) | 1 | Scope, synthesize, resolve conflicts, final report | sonnet |
 | Researchers | 2-4 | Each investigates a different angle/source | sonnet |
 | Devil's Advocate | 1 | Challenges all findings, identifies weaknesses | sonnet |
 

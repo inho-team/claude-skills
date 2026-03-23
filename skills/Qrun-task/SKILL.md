@@ -25,6 +25,20 @@ Execute tasks and complete verification based on spec documents from `/Qgenerate
 ## Delegation Rule
 When checklist has **5+ items**, delegate to `Etask-executor` agent. Main agent tracks progress, state transitions, and verification. After delegation, update timestamps: `- [x] item ✅ (HH:MM)`.
 
+**Model selection when spawning Etask-executor:**
+
+Read the TASK_REQUEST checklist for `<!-- complexity: ... -->` tags, then pick the model:
+
+| Condition | Model |
+|-----------|-------|
+| Any item tagged `complexity: high` | `sonnet` |
+| All items tagged `complexity: low` | `haiku` |
+| No tags, ≤ 3 items, single-file scope | `haiku` |
+| No tags, 4–7 items | `sonnet` |
+| No tags, 8+ items OR cross-cutting architecture | `sonnet` |
+
+Pass the selected model as the `model` parameter when spawning `Etask-executor`.
+
 ---
 
 ## Step 1: Document Discovery

@@ -15,16 +15,16 @@ Before running, verify whether `CLAUDE.md` exists in the project root.
 - **If it exists**: Run migration check (Step M) instead of exiting.
 
 ### Step M: CLAUDE.md Migration
-When `CLAUDE.md` already exists, check if it contains the `## QE Framework Rules (MUST READ)` section.
+When `CLAUDE.md` already exists, check if it contains the `## QE 툴킷` section.
 - **If the section exists**: Display "QE framework is already up to date." then exit.
 - **If the section is missing**: Migrate the existing CLAUDE.md.
   1. Read the existing CLAUDE.md content.
-  2. Read the `base.md` template and extract the `## QE Framework Rules (MUST READ)` section (from that heading to `## Task Log`).
-  3. If the existing CLAUDE.md has a `## Task Log` section, insert the QE rules section **before** it.
-  4. If not, append the QE rules section at the end.
+  2. Read the `base.md` template and extract the `## QE 툴킷` section (from that heading to `## Task Log`).
+  3. If the existing CLAUDE.md has a `## Task Log` section, insert the QE 툴킷 section **before** it.
+  4. If not, append the QE 툴킷 section at the end.
   5. Also ensure `## Task Log` with `.qe/TASK_LOG.md` reference exists; add if missing.
   6. Show diff preview to user via `AskUserQuestion` before applying.
-  7. Report: "CLAUDE.md migrated — QE rules section added."
+  7. Report: "CLAUDE.md migrated — QE 툴킷 section added."
 
 ## Step 0: Acquire .qe/ Permissions
 

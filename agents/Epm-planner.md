@@ -5,7 +5,7 @@ tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, WebFetch
 color: purple
 maxTurns: 50
 permissionMode: acceptEdits
-recommendedModel: opus
+recommendedModel: sonnet
 ---
 
 > Base patterns: see core/AGENT_BASE.md

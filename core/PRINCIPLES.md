@@ -71,7 +71,8 @@ Quality loops (Eqa-orchestrator), remediation iterations, and inter-task progres
 
 - **SOLID**: Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
 - **DRY**: No repeated logic — extract common logic into shared components
-- **Minimal I/O Rule**: Never read or write the same file twice in a single execution turn. Use `unified-state.json` for shared state and `ContextMemo` for expensive file contents.
+- **High-Signal Documentation Rule**: Every major decision, research finding, and phase plan MUST be persisted as an individual Markdown file. This ensures a clean git history, enables context isolation, and facilitates human auditability.
+- **Modular Context**: Prefer many small, focused files over one monolithic state file. AI agents should only load the specific "Artifact" relevant to their current task.
 - **KISS**: Prefer simple solutions — eliminate unnecessary complexity
 - **YAGNI**: Implement only what is needed now — no speculative design
 - **Evidence-based decisions**: Do not guess. When uncertain, read the file and verify.

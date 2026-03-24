@@ -21,9 +21,9 @@ All work in the QE framework follows this hierarchy, managed by `/Qplan`:
 ## Workflow
 
 ### Step 1: Deep Discovery & Research
-- **Deep Questioning**: Before planning, ask "Why" and "How" using GSD patterns (OST, constraints, interpretations).
+- **Interactive Discovery**: Use the `ask_user` tool (choice/text) to gather initial requirements and constraints. Do not guess; present options.
+- **Requirement Tiering**: Use `ask_user` to let the user select the priority (P0/P1/P2) for each core feature.
 - **Proactive Research**: If the domain is new, run **Edeep-researcher** first. Store findings in `.qe/planning/research/`.
-- **Requirement Tiering**: Generate `.qe/planning/REQUIREMENTS.md` with P0 (Table Stakes), P1 (Core), and P2 (Differentiators).
 
 ### Step 2: Strategic Roadmap Design (Wave Model)
 Design a phased roadmap in `.qe/planning/ROADMAP.md`:
@@ -33,9 +33,11 @@ Design a phased roadmap in `.qe/planning/ROADMAP.md`:
 
 ### Step 3: Atomic Spec & Execution Handoff
 - **Activate Phase**: Update `.qe/planning/STATE.md` to reflect the active wave.
-- **PSE Spec Trigger**: Internally invoke **Qgs** immediately. 
-  - Instruction: "Generate the Haiku-Ready atomic spec for Phase {X}: {PhaseName} using the requirements defined in REQUIREMENTS.md."
-- **PSE Execution**: Once the spec is approved, internally invoke **Qatomic-run**.
+- **PSE Spec Trigger**: **MANDATORY**: Use `ask_user` (yesno) to ask: "Would you like to generate the Atomic Spec for Phase {X} now?". 
+  - On "Yes": Immediately invoke **`/Qgs`** with the phase details.
+- **PSE Execution Trigger**: After `/Qgs` is complete, **MANDATORY**: Use `ask_user` (choice) to ask: "How would you like to execute this phase?". 
+  - Options: **"Haiku Swarm (Qatomic-run) [Recommended]"**, "Standard Execute (Qrun-task)", "Manual Review".
+  - On selection: Immediately invoke the corresponding skill.
 
 ### Step 4: Verification & Transition
 - **Goal Check**: After execution, use **Qcode-run-task** to verify if the *Phase Goal* is met.

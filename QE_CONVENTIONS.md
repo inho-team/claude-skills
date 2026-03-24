@@ -4,6 +4,17 @@
 
 ---
 
+## Master Workflow: The PSE Loop
+
+All engineering work in this project MUST follow the **Plan-Spec-Execute (PSE) Loop** driven by `/Qplan`:
+
+1.  **PLAN**: Use `/Qplan` to define the high-level Roadmap and Active Phase.
+2.  **SPEC**: `/Qplan` triggers `/Qgs` to generate **Haiku-Ready Atomic Tasks**.
+3.  **EXECUTE**: `/Qplan` triggers `/Qatomic-run` to execute atomic tasks via **Haiku Swarm**.
+4.  **VERIFY**: Final architectural verification and quality loop via Sonnet.
+
+---
+
 ## QE Rules
 
 ### File Naming
@@ -36,6 +47,7 @@ To maintain high reasoning quality and low latency, all agents and skills must a
 ### 2. Token-Aware Context Management
 - **Thresholds**: Monitor context pressure at **140k tokens** (Warning/Snapshot) and **170k tokens** (Critical/Hard Stop).
 - **Semantic Compression**: When context is high, prioritize `SNAPSHOT_SUMMARY.md` over raw history preservation.
+- **Strategic Planning**: Use `.qe/planning/` for project roadmaps and phase-based state management via `/Qplan`.
 - **Token Fallback**: If real-time metrics are missing, use `Characters / 4` for estimation.
 
 ### 3. Optimized Model Tiering
@@ -70,6 +82,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qversion` | Show current plugin version |
 | `Qupdate` | Update QE Framework to latest |
 | `Qinit` | Initial setup and directory structure |
+| `Qplan` | Strategic roadmap and phase management (.qe/planning/) |
 | `Qrefresh` | Refresh project analysis data |
 | `Qproject-sync` | Sync project source files with a reference/standard project |
 | `Qcompact` | Save context / session handoff |

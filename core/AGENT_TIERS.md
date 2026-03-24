@@ -61,6 +61,7 @@ Optimizes cost while maintaining quality.
 | Edocs-supervisor | LOW | — |
 | Esecurity-officer | LOW | HIGH (vulnerability audit) |
 | Esupervision-orchestrator | LOW | HIGH (quality audit) |
+| Qplan | HIGH | — |
 
 ## Escalation Rules
 - 2 failures at MEDIUM → auto-escalate to HIGH

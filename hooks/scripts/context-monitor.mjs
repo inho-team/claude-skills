@@ -155,6 +155,8 @@ export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
   // Update stats with warning metadata
   stats.last_warning_at = stats.usage?.input_tokens || 0;
   stats.warning_severity = severity;
+  // Also track call count for historical reference
+  stats.last_warning_call = stats.tool_calls || 0;
 
   // Only write to disk when stats were loaded from disk (not preloaded).
   // When preloadedStats is provided, the caller owns the write lifecycle.

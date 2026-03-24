@@ -1,9 +1,11 @@
 ---
 name: Qtest-driven-development
 description: "TDD coach: write failing test first, implement minimal code, then refactor. Use when starting a new feature with TDD, test-first development, write tests first. Use BEFORE writing implementation code. Distinct from Qcode-run-task (post-implementation quality loop) — this enforces test-first methodology."
-metadata:
-  source: https://skills.sh/obra/superpowers/test-driven-development
-  author: obra
+metadata: 
+source: "https://skills.sh/obra/superpowers/test-driven-development"
+author: obra
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

@@ -36,5 +36,9 @@
 ### 후속 영향
 {{consequences}}
 
+## How to Run
+- Standard: `/Qrun-task {{UUID}}`
+- **Atomic Swarm (High Speed)**: `/Qatomic-run {{UUID}}` (Best if steps are simple and independent)
+
 ## 참고사항
 {{notes}}

@@ -2,15 +2,17 @@
 name: Qdatabase-optimizer
 description: Optimizes database queries and improves performance across PostgreSQL and MySQL systems. Use when investigating slow queries, analyzing execution plans, or optimizing database performance. Invoke for index design, query rewrites, configuration tuning, partitioning strategies, lock contention resolution.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: infrastructure
-  triggers: database optimization, slow query, query performance, database tuning, index optimization, execution plan, EXPLAIN ANALYZE, database performance, PostgreSQL optimization, MySQL optimization
-  role: specialist
-  scope: optimization
-  output-format: analysis-and-code
-  related-skills: devops-engineer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: infrastructure
+triggers: database optimization, slow query, query performance, database tuning, index optimization, execution plan, EXPLAIN ANALYZE, database performance, PostgreSQL optimization, MySQL optimization
+role: specialist
+scope: optimization
+output-format: analysis-and-code
+related-skills: devops-engineer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Database Optimizer

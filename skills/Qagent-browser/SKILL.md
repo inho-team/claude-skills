@@ -1,11 +1,13 @@
 ---
 name: Qagent-browser
-description: "Browser automation CLI. Use for website navigation, form filling, clicking, screenshots, data extraction, and web app testing."
-metadata:
-  source: https://skills.sh/vercel-labs/agent-browser
-  author: vercel
-allowed-tools: Bash(npx agent-browser:*), Bash(agent-browser:*)
+description: Browser automation CLI. Use for website navigation, form filling, clicking, screenshots, data extraction, and web app testing.
+metadata: 
+source: "https://skills.sh/vercel-labs/agent-browser"
+author: vercel
+allowed-tools: "Bash(npx agent-browser:*), Bash(agent-browser:*)"
 keywords: browser, automation, web test, form fill, screenshot, scrape, navigate
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 ## Pre-check: agent-browser Installation

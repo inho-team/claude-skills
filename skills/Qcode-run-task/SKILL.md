@@ -1,6 +1,8 @@
 ---
 name: Qcode-run-task
 description: "Performs a test → review → fix → retest quality verification loop. Use for code quality checks, test failures, or when Qrun-task finishes a code task. Triggered automatically for type:code tasks."
+invocation_trigger: When code has been modified and needs a quality loop (test-review-fix).
+recommendedModel: haiku
 ---
 
 

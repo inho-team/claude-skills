@@ -55,6 +55,9 @@ Operates using only Claude's built-in tools (Read/Write/Glob/Bash), with no exte
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Generate handoff documents
 - Collect task state
 - Validate document integrity

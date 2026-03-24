@@ -1,3 +1,6 @@
+---
+recommendedModel: sonnet
+---
 # Wave Execution Model — Reference
 
 > Extracted from Etask-executor.md. Dependency-aware parallel execution.
@@ -198,3 +201,7 @@ Same rules as Wave Execution — each teammate owns distinct files. No two teamm
 
 ### Fallback
 If Agent Teams is not enabled, team creation fails, or checklist has <5 items, fall back to Wave Execution (subagent-based) or Sequential Execution.
+
+
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.

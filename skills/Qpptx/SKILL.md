@@ -1,9 +1,11 @@
 ---
 name: Qpptx
 description: "All tasks related to PPTX files: creating slide decks, reading/parsing, editing, and working with templates. Use when deck, slides, presentation, or .pptx is mentioned."
-metadata:
-  source: https://skills.sh/anthropics/skills/pptx
-  author: anthropic
+metadata: 
+source: "https://skills.sh/anthropics/skills/pptx"
+author: anthropic
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

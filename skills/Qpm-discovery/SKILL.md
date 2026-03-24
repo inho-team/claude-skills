@@ -1,6 +1,8 @@
 ---
 name: Qpm-discovery
 description: "Runs product discovery: OST (Opportunity Solution Tree), assumption mapping, experiment design, interview scripts, feature request analysis. Use for 'discovery', 'opportunity tree', 'assumption test', 'experiment design', 'customer interview', '디스커버리', '가설 검증', '실험 설계', '고객 인터뷰'. Distinct from Qpm-strategy (strategic frameworks) — this validates customer problems and solutions."
+invocation_trigger: When product discovery, requirements, or roadmap planning is required.
+recommendedModel: sonnet
 ---
 
 

@@ -2,15 +2,17 @@
 name: Qchaos-engineer
 description: Designs chaos experiments, creates failure injection frameworks, and facilitates game day exercises for distributed systems — producing runbooks, experiment manifests, rollback procedures, and post-mortem templates. Use when designing chaos experiments, implementing failure injection frameworks, or conducting game day exercises. Invoke for chaos experiments, resilience testing, blast radius control, game days, antifragile systems, fault injection, Chaos Monkey, Litmus Chaos.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: devops
-  triggers: chaos engineering, resilience testing, failure injection, game day, blast radius, chaos experiment, fault injection, Chaos Monkey, Litmus Chaos, antifragile
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: sre-engineer, devops-engineer, kubernetes-specialist
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: devops
+triggers: chaos engineering, resilience testing, failure injection, game day, blast radius, chaos experiment, fault injection, Chaos Monkey, Litmus Chaos, antifragile
+role: specialist
+scope: implementation
+output-format: code
+related-skills: sre-engineer, devops-engineer, kubernetes-specialist
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Chaos Engineer

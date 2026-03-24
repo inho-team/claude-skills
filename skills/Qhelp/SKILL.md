@@ -1,6 +1,8 @@
 ---
 name: Qhelp
-description: "Shows QE Framework usage overview in terminal. Use when the user asks for help, how to use the framework, or available commands."
+description: Shows QE Framework usage overview in terminal. Use when the user asks for help, how to use the framework, or available commands.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qhelp — QE Framework Quick Reference

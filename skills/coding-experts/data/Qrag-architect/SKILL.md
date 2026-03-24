@@ -2,15 +2,17 @@
 name: Qrag-architect
 description: Designs and implements production-grade RAG systems by chunking documents, generating embeddings, configuring vector stores, building hybrid search pipelines, applying reranking, and evaluating retrieval quality. Use when building RAG systems, vector databases, or knowledge-grounded AI applications requiring semantic search, document retrieval, context augmentation, similarity search, or embedding-based indexing.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: data-ml
-  triggers: RAG, retrieval-augmented generation, vector search, embeddings, semantic search, vector database, document retrieval, knowledge base, context retrieval, similarity search
-  role: architect
-  scope: system-design
-  output-format: architecture
-  related-skills: python-pro, database-optimizer, monitoring-expert, api-designer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: data-ml
+triggers: RAG, retrieval-augmented generation, vector search, embeddings, semantic search, vector database, document retrieval, knowledge base, context retrieval, similarity search
+role: architect
+scope: system-design
+output-format: architecture
+related-skills: python-pro, database-optimizer, monitoring-expert, api-designer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # RAG Architect

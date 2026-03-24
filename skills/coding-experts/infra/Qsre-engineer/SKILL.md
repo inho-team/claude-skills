@@ -2,15 +2,17 @@
 name: Qsre-engineer
 description: Defines service level objectives, creates error budget policies, designs incident response procedures, develops capacity models, and produces monitoring configurations and automation scripts for production systems. Use when defining SLIs/SLOs, managing error budgets, building reliable systems at scale, incident management, chaos engineering, toil reduction, or capacity planning.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: devops
-  triggers: SRE, site reliability, SLO, SLI, error budget, incident management, chaos engineering, toil reduction, on-call, MTTR
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: devops-engineer, cloud-architect, kubernetes-specialist
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: devops
+triggers: SRE, site reliability, SLO, SLI, error budget, incident management, chaos engineering, toil reduction, on-call, MTTR
+role: specialist
+scope: implementation
+output-format: code
+related-skills: devops-engineer, cloud-architect, kubernetes-specialist
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # SRE Engineer

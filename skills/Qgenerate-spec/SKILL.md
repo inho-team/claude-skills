@@ -1,7 +1,9 @@
 ---
 name: Qgenerate-spec
-description: "Generates 3 project spec documents (CLAUDE.md, TASK_REQUEST, VERIFY_CHECKLIST) from a project description. Use when the user wants to start a new project, define task specifications, or create a task."
+description: Generates 3 project spec documents (CLAUDE.md, TASK_REQUEST, VERIFY_CHECKLIST) from a project description. Use when the user wants to start a new project, define task specifications, or create a task.
+invocation_trigger: When a new project, task, or bug fix spec needs to be defined.
 user_invocable: true
+recommendedModel: haiku
 ---
 
 # Project Spec Document Generation Skill
@@ -43,20 +45,21 @@ Required information:
 
 ### Step 2: Draft Documents
 Write drafts using templates from `templates/` directory (`TASK_REQUEST_TEMPLATE.md`, `VERIFY_CHECKLIST_TEMPLATE.md`). For CLAUDE.md, reference `QE_CONVENTIONS.md` (project root) for QE rules (file naming, task status, completion criteria) and include a reference line pointing to it. Replace `{{placeholder}}` with actual content.
+- **Model Preference**: Use **Haiku** for drafting standardized templates to reduce latency.
 
 ### Step 2.5: Spec Verification (Automatic)
 After drafting, verify spec quality. **Skip conditions (fast path):** checklist ≤ 3 items OR `type: docs`/`analysis` → skip entirely, proceed to Step 3.
 
-When verification runs, perform **both structural and executability checks in a single pass** (no separate agent spawn for simple tasks):
+When verification runs, perform **both structural and executability checks in a single pass**:
 
-**Structural criteria (S1-S5):**
+**Structural criteria (S1-S5) — Use Haiku**:
 1. Single responsibility per item
 2. Specific and verifiable (yes/no)
 3. TASK_REQUEST/VERIFY_CHECKLIST consistency
 4. No constraint conflicts
 5. No missing dependencies
 
-**Executability criteria (E1-E4):**
+**Executability criteria (E1-E4) — Use Sonnet**:
 
 | # | Criterion | Fail Example |
 |---|-----------|--------------|
@@ -65,19 +68,25 @@ When verification runs, perform **both structural and executability checks in a 
 | E3 | Logical ordering | Item 3 references file from Item 5 |
 | E4 | Verifiable completion | `"코드를 적절히 리팩토링"` — subjective |
 
-**For complex tasks (8+ items):** Spawn Plan agent (`subagent_type: "Plan"`) for S1-S5 review while self-checking E1-E4 in parallel. Max 2 iterations.
+**For complex tasks (8+ items):** Spawn Plan agent (`subagent_type: "Plan"`, model: **Haiku**) for S1-S5 review while self-checking E1-E4 in parallel using **Sonnet**. Max 2 iterations.
 
-**For simple tasks (4-7 items):** Self-check all 9 criteria without agent spawn. Max 1 iteration.
+**For simple tasks (4-7 items):** Self-check all 9 criteria without agent spawn. Use **Sonnet** for full-pass or **Haiku** for S1-S5 if splitting. Max 1 iteration.
 
 Any fail → fix automatically. After max iterations, proceed with best version.
 
 ### Step 3: Review, Create, and Execute (Single Confirmation)
-> **MANDATORY:** Use `AskUserQuestion` tool to collect user choice. Do NOT output options as plain text — the user cannot respond to plain text options. Always call the `AskUserQuestion` tool.
+> **MANDATORY:** Use `AskUserQuestion` tool to collect user choice. Do NOT output options as plain text.
 
-Show drafts to user and collect feedback with a **single `AskUserQuestion`** offering 3 options:
-- **"Generate & Execute"** — create files and immediately run `/Qrun-task {UUID}` (sets `<!-- chained-from: Qgenerate-spec -->` flag so Qrun-task skips its own approval step)
-- **"Generate Only"** — create files, do not execute
-- **"Needs Revision"** — revise after feedback
+Show drafts to user and collect feedback with a **single `AskUserQuestion`** offering these options:
+- **"Generate & Execute"** — Standard execution via `/Qrun-task {UUID}`
+- **"Generate & Atomic-Run"** — High-speed parallel execution via `/Qatomic-run {UUID}`. **Suggest this if the checklist contains 5+ independent, simple items.**
+- **"Generate Only"** — Create files only
+- **"Needs Revision"** — Revise after feedback
+
+On "Generate & Atomic-Run":
+- Auto-create directories and files
+- Invoke `/Qatomic-run {UUID}` immediately. (Sets `<!-- chained-from: Qgenerate-spec -->` flag so Qatomic-run skips approval)
+
 
 On "Generate & Execute" or "Generate Only":
 - Auto-create directories (`mkdir -p`)

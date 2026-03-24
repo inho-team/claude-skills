@@ -33,28 +33,28 @@ const SEVERITY = {
 // Severity ordering for escalation comparison
 const SEVERITY_ORDER = { none: 0, warning: 1, critical: 2 };
 
-// --- Default thresholds (tool-call-count-based proxy) ---
-// These map to approximate context remaining percentages:
-//   WARNING  (~35% remaining) => 150 tool calls
-//   CRITICAL (~25% remaining) => 250 tool calls
+// --- Default thresholds (token-based metrics) ---
+// These map to approximate context remaining for a 200k context window:
+//   WARNING  (~30% remaining) => 140,000 input tokens
+//   CRITICAL (~15% remaining) => 170,000 input tokens
 // Values can be overridden via .qe/config.json hooks section.
 const DEFAULT_THRESHOLDS = {
-  context_warning_calls: 150,   // ~35% remaining
-  context_critical_calls: 250,  // ~25% remaining
-  context_debounce_count: 5,    // suppress re-alert for N tool calls
+  context_warning_tokens: 140000,   // ~30% remaining
+  context_critical_tokens: 170000,  // ~15% remaining
+  context_debounce_count: 5,        // suppress re-alert for N tool calls
 };
 
 // --- Messages (non-imperative tone) ---
 const MESSAGES = {
   [SEVERITY.WARNING]: [
-    '[Context Monitor - WARNING] Estimated ~35% context remaining.',
+    '[Context Monitor - WARNING] Estimated ~30% context remaining (>= 140k tokens).',
     'Starting new complex tasks at this point may lead to incomplete results.',
     'It may be a good time to wrap up current work or consolidate progress.',
     'Running /Qcompact can help reclaim context space.',
   ].join(' '),
 
   [SEVERITY.CRITICAL]: [
-    '[Context Monitor - CRITICAL] Context usage is at a critical level — estimated ~25% remaining.',
+    '[Context Monitor - CRITICAL] Context usage is at a critical level (>= 170k tokens) — estimated ~15% remaining.',
     'Context exhaustion is imminent.',
     'Running Ecompact-executor now is strongly recommended to preserve session continuity.',
     'If in Utopia mode, Ecompact-executor will handle compaction automatically.',
@@ -62,20 +62,18 @@ const MESSAGES = {
 };
 
 /**
- * Estimate context severity based on tool call count.
+ * Estimate context severity based on token usage.
  *
- * Abstraction layer: when Claude Code exposes real context metrics,
- * replace this function body without changing the interface.
- *
- * @param {number} toolCalls - Current tool call count
+ * @param {object} usage - Current usage object from stats
  * @param {object} thresholds - Threshold configuration
  * @returns {string} Severity level (SEVERITY.NONE | WARNING | CRITICAL)
  */
-export function estimateSeverity(toolCalls, thresholds) {
-  if (toolCalls >= thresholds.context_critical_calls) {
+export function estimateSeverity(usage, thresholds) {
+  const inputTokens = usage?.input_tokens || 0;
+  if (inputTokens >= thresholds.context_critical_tokens) {
     return SEVERITY.CRITICAL;
   }
-  if (toolCalls >= thresholds.context_warning_calls) {
+  if (inputTokens >= thresholds.context_warning_tokens) {
     return SEVERITY.WARNING;
   }
   return SEVERITY.NONE;
@@ -121,8 +119,8 @@ export function shouldDebounce(currentSeverity, stats, thresholds) {
 export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
   const cfg = preloadedCfg || loadConfig(cwd);
   const thresholds = {
-    context_warning_calls: cfg.context_warning_calls ?? cfg.context_pressure_warn ?? DEFAULT_THRESHOLDS.context_warning_calls,
-    context_critical_calls: cfg.context_critical_calls ?? DEFAULT_THRESHOLDS.context_critical_calls,
+    context_warning_tokens: cfg.context_warning_tokens ?? cfg.context_pressure_warn ?? DEFAULT_THRESHOLDS.context_warning_tokens,
+    context_critical_tokens: cfg.context_critical_tokens ?? DEFAULT_THRESHOLDS.context_critical_tokens,
     context_debounce_count: cfg.context_debounce_count ?? DEFAULT_THRESHOLDS.context_debounce_count,
   };
 
@@ -133,7 +131,7 @@ export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
     stats = preloadedStats;
   } else {
     statsFile = join(cwd, '.qe', 'state', 'session-stats.json');
-    stats = { tool_calls: 0, session_start: Date.now() };
+    stats = { tool_calls: 0, session_start: Date.now(), usage: { input_tokens: 0 } };
     if (existsSync(statsFile)) {
       try {
         stats = JSON.parse(readFileSync(statsFile, 'utf8'));
@@ -143,8 +141,7 @@ export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
     }
   }
 
-  const toolCalls = stats.tool_calls || 0;
-  const severity = estimateSeverity(toolCalls, thresholds);
+  const severity = estimateSeverity(stats.usage, thresholds);
 
   if (severity === SEVERITY.NONE) {
     return { message: null, severity, stats };
@@ -156,7 +153,7 @@ export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
   }
 
   // Update stats with warning metadata
-  stats.last_warning_at = toolCalls;
+  stats.last_warning_at = stats.usage?.input_tokens || 0;
   stats.warning_severity = severity;
 
   // Only write to disk when stats were loaded from disk (not preloaded).
@@ -178,8 +175,8 @@ export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
         const utopiaState = JSON.parse(readFileSync(utopiaFile, 'utf8'));
         if (utopiaState.enabled === true) {
           message = [
-            '[Context Monitor - CRITICAL] Estimated ~25% context remaining.',
-            'Context exhaustion is imminent in Utopia mode.',
+            '[Context Monitor - CRITICAL] Estimated ~15% context remaining.',
+            'Context exhaustion is imminent in Utopia mode (>= 170k tokens).',
             'Ecompact-executor should be triggered now to preserve autonomous session continuity.',
           ].join(' ');
         }

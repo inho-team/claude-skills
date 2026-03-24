@@ -22,6 +22,9 @@ A sub-agent that receives delegation for chapter/section writing from academic s
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Draft paper chapters/sections following academic conventions
 - Maintain consistent citation format throughout
 - Verify continuity with preceding and following sections

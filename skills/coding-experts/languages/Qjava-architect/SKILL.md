@@ -2,15 +2,17 @@
 name: Qjava-architect
 description: Use when building, configuring, or debugging enterprise Java applications with Spring Boot 3.x, microservices, or reactive programming. Invoke to implement WebFlux endpoints, optimize JPA queries and database performance, configure Spring Security with OAuth2/JWT, or resolve authentication issues and async processing challenges in cloud-native Spring applications.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: language
-  triggers: Spring Boot, Java, microservices, Spring Cloud, JPA, Hibernate, WebFlux, reactive, Java Enterprise
-  role: architect
-  scope: implementation
-  output-format: code
-  related-skills: fullstack-guardian, api-designer, devops-engineer, database-optimizer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: language
+triggers: Spring Boot, Java, microservices, Spring Cloud, JPA, Hibernate, WebFlux, reactive, Java Enterprise
+role: architect
+scope: implementation
+output-format: code
+related-skills: fullstack-guardian, api-designer, devops-engineer, database-optimizer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Java Architect

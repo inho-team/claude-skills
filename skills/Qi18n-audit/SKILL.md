@@ -1,10 +1,12 @@
 ---
 name: Qi18n-audit
-description: "Scans source files for hardcoded user-facing strings and generates translation keys. Use for i18n audit, translation check, hardcoded string detection, missing translation, 번역 누락, 하드코딩 문자열, 다국어 검사, i18n 감사. Distinct from Qdoc-converter (format conversion) — this scans .tsx/.ts/.jsx files for untranslated strings and replaces them with t('key') calls."
-metadata:
-  author: anthropic
-  version: "1.0.0"
+description: Scans source files for hardcoded user-facing strings and generates translation keys. Use for i18n audit, translation check, hardcoded string detection, missing translation, 번역 누락, 하드코딩 문자열, 다국어 검사, i18n 감사. Distinct from Qdoc-converter (format conversion) — this scans .tsx/.ts/.jsx files for untranslated strings and replaces them with t('key') calls.
+metadata: 
+author: anthropic
+version: 1.0.0
 user_invocable: true
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qi18n-audit — i18n Coverage Auditor

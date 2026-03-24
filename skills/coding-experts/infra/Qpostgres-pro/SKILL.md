@@ -2,15 +2,17 @@
 name: Qpostgres-pro
 description: Use when optimizing PostgreSQL queries, configuring replication, or implementing advanced database features. Invoke for EXPLAIN analysis, JSONB operations, extension usage, VACUUM tuning, performance monitoring.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: infrastructure
-  triggers: PostgreSQL, Postgres, EXPLAIN ANALYZE, pg_stat, JSONB, streaming replication, logical replication, VACUUM, PostGIS, pgvector
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: database-optimizer, devops-engineer, sre-engineer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: infrastructure
+triggers: PostgreSQL, Postgres, EXPLAIN ANALYZE, pg_stat, JSONB, streaming replication, logical replication, VACUUM, PostGIS, pgvector
+role: specialist
+scope: implementation
+output-format: code
+related-skills: database-optimizer, devops-engineer, sre-engineer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # PostgreSQL Pro

@@ -1,7 +1,9 @@
 ---
 name: Qprofessional-communication
-description: "Technical communication guide for software developers. Use when writing professional emails, composing team messages, or preparing meeting agendas."
+description: Technical communication guide for software developers. Use when writing professional emails, composing team messages, or preparing meeting agendas.
 allowed-tools: Read, Glob, Grep
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

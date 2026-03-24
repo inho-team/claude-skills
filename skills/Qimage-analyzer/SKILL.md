@@ -1,6 +1,8 @@
 ---
 name: Qimage-analyzer
-description: Analyzes images and extracts insights. Analyzes screenshots, diagrams, charts, wireframes, UI screens, and document images to provide descriptions, OCR text extraction, structure identification, and improvement suggestions. Use for requests like "analyze this image", "describe this screenshot", "what is in this picture", "extract text", or "analyze wireframe".
+description: 'Analyzes images and extracts insights. Analyzes screenshots, diagrams, charts, wireframes, UI screens, and document images to provide descriptions, OCR text extraction, structure identification, and improvement suggestions. Use for requests like "analyze this image", "describe this screenshot", "what is in this picture", "extract text", or "analyze wireframe".'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

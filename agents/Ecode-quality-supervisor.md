@@ -18,6 +18,9 @@ Code quality supervision covers: test coverage sufficiency, code smell detection
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Delegate deep review work to **Ecode-reviewer** and **Ecode-test-engineer**, then synthesize their outputs into a single grade
 - Evaluate test coverage sufficiency against the scope of changed code
 - Detect code smells: long methods, large classes, feature envy, primitive obsession, god objects

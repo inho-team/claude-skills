@@ -1,6 +1,8 @@
 ---
 name: Qalias
-description: Defines aliases for folders, paths, and commands. Allows quick reference to long paths or complex commands using short names. Use when the user requests "alias", "shortcut", or similar.
+description: 'Defines aliases for folders, paths, and commands. Allows quick reference to long paths or complex commands using short names. Use when the user requests "alias", "shortcut", or similar.'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

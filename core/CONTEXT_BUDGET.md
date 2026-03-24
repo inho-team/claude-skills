@@ -37,18 +37,24 @@ The split is ordered by recoverability cost. If Critical context is absent, the 
 
 ## Context Pressure Zones
 
-| Zone | Tool Calls | Action |
-|------|-----------|--------|
-| Green | 0-100 | Normal operation |
-| Yellow | 100-150 | Prefer `.qe/analysis/` over raw file reads |
-| Orange | 150-200 | Run Ecompact-executor snapshot save |
-| Red | 200+ | Warn user, suggest `/Qcompact` |
+| Zone | Input Tokens | Action |
+|------|--------------|--------|
+| Green | 0 - 100k | Normal operation |
+| Yellow | 100k - 140k | Prefer `.qe/analysis/` summaries; trigger semantic compression |
+| Orange | 140k - 170k | **Snapshot Required**: Run `Ecompact-executor` immediately |
+| Red | 170k+ | **Critical**: Immediate compaction or session termination |
 
-**Why these zone boundaries:**
-- **Green (0-100):** Empirically, the first 100 tool calls in a session rarely fill more than 50% of the context window for typical tasks. Full operation without restriction is safe.
-- **Yellow (100-150):** Context accumulation accelerates after 100 calls as agent responses grow in length. Switching to summary reads (`.qe/analysis/`) at this threshold reduces per-call token cost by ~60% compared to raw file reads, buying time before compaction is needed.
-- **Orange (150-200):** At 150 calls the context window is typically 70-80% full. A snapshot at this point captures the full task state while there is still room to write it cleanly. Waiting until 200 risks the snapshot itself causing truncation.
-- **Red (200+):** Beyond 200 calls, context pressure is severe enough that further tool calls risk losing earlier conversation turns. User intervention (/Qcompact) is required because automated compaction at this stage may itself be truncated mid-write.
+**Why these token-based boundaries:**
+- **Green (0-100k)**: Most tasks operate safely within the first 100k tokens (50% of a 200k window). Full context is preserved.
+- **Yellow (100k-140k)**: Token accumulation accelerates. Switching to `.qe/analysis/` summaries and triggering `Ecompact-executor`'s **Semantic Compression** (Haiku-tier summary) at 140k ensures context integrity before the window is too full.
+- **Orange (140k-170k)**: At 140k tokens, the window is ~70% full. Capturing a snapshot at this point allows for a complete state save while there is still enough output token budget to write it cleanly.
+- **Red (170k+)**: Beyond 170k tokens (~85%), context drift and truncation become imminent. User intervention or hard compaction is mandatory to prevent task failure.
+
+## Token Estimation Fallback (Minimal I/O Rule)
+
+When real-time API usage metrics are unavailable, use the following calculation:
+- **Rule**: `Total Characters / 4 = Estimated Tokens`
+- **Application**: All hooks (`pre-tool-use`, `post-tool-use`) must use this fallback to update `unified-state.json` if the `usage` payload is missing.
 
 ## Anti-Patterns
 

@@ -18,6 +18,9 @@ Analysis supervision covers: evidential sufficiency (are claims backed by data?)
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Evaluate the strength and sourcing of evidence behind each major claim
 - Assess whether conclusions are logically connected to the evidence presented
 - Check whether the analysis scope is appropriate to the question being asked

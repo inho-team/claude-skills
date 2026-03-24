@@ -2,9 +2,11 @@
 name: Qproject-sync
 description: "Synchronizes a project with a reference/standard project. Use when syncing project code with a template or upstream standard, merging upstream changes, or keeping a project aligned with a canonical base. Trigger phrases: 'project sync', 'sync standard', 'sync template', 'merge upstream', '프로젝트 동기화', '스탠다드 싱크', '템플릿 동기화'. Distinct from Qrefresh which refreshes .qe/ analysis data — this syncs actual project source files with a reference/standard project."
 user_invocable: true
-metadata:
-  author: anthropic
-  version: "1.0.0"
+metadata: 
+author: anthropic
+version: 1.0.0
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qproject-sync — Project Sync with Standard/Reference

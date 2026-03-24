@@ -2,15 +2,17 @@
 name: Qangular-architect
 description: Generates Angular 17+ standalone components, configures advanced routing with lazy loading and guards, implements NgRx state management, applies RxJS patterns, and optimizes bundle performance. Use when building Angular 17+ applications with standalone components or signals, setting up NgRx stores, establishing RxJS reactive patterns, performance tuning, or writing Angular tests for enterprise apps.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: frontend
-  triggers: Angular, Angular 17, standalone components, signals, RxJS, NgRx, Angular performance, Angular routing, Angular testing
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: typescript-pro, test-master
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: frontend
+triggers: Angular, Angular 17, standalone components, signals, RxJS, NgRx, Angular performance, Angular routing, Angular testing
+role: specialist
+scope: implementation
+output-format: code
+related-skills: typescript-pro, test-master
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Angular Architect

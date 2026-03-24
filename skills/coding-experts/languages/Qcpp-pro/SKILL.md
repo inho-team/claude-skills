@@ -2,15 +2,17 @@
 name: Qcpp-pro
 description: Writes, optimizes, and debugs C++ applications using modern C++20/23 features, template metaprogramming, and high-performance systems techniques. Use when building or refactoring C++ code requiring concepts, ranges, coroutines, SIMD optimization, or careful memory management — or when addressing performance bottlenecks, concurrency issues, and build system configuration with CMake.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: language
-  triggers: C++, C++20, C++23, modern C++, template metaprogramming, systems programming, performance optimization, SIMD, memory management, CMake
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: rust-engineer, embedded-systems
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: language
+triggers: C++, C++20, C++23, modern C++, template metaprogramming, systems programming, performance optimization, SIMD, memory management, CMake
+role: specialist
+scope: implementation
+output-format: code
+related-skills: rust-engineer, embedded-systems
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # C++ Pro

@@ -1,6 +1,8 @@
 ---
 name: Qwriting-clearly
-description: "Refines text for clarity and conciseness using Strunk's principles. Use when writing or polishing documentation, commit messages, error messages, reports, or UI text." 
+description: Refines text for clarity and conciseness using Strunk's principles. Use when writing or polishing documentation, commit messages, error messages, reports, or UI text.
+invocation_trigger: When improving prose or documentation clarity.
+recommendedModel: haiku
 ---
 
 

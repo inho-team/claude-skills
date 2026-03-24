@@ -1,10 +1,12 @@
 ---
 name: Qvisual-qa
-description: "Chrome browser-based visual QA. Navigates to URLs, takes screenshots, and compares rendered screens against reference images (Stitch screen.png or prior baseline) to detect layout, color, font, alignment, and spacing regressions. Use for 'visual qa', 'screenshot compare', 'visual test', 'check screen', 'UI compare', '화면 비교', '시각적 QA', '스크린샷 비교'. Distinct from Qweb-design-guidelines (which audits source code) — this skill compares actual rendered screens."
-metadata:
-  author: anthropic
-  version: "1.0.0"
+description: Chrome browser-based visual QA. Navigates to URLs, takes screenshots, and compares rendered screens against reference images (Stitch screen.png or prior baseline) to detect layout, color, font, alignment, and spacing regressions. Use for 'visual qa', 'screenshot compare', 'visual test', 'check screen', 'UI compare', '화면 비교', '시각적 QA', '스크린샷 비교'. Distinct from Qweb-design-guidelines (which audits source code) — this skill compares actual rendered screens.
+metadata: 
+author: anthropic
+version: 1.0.0
 user_invocable: true
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qvisual-qa — Chrome Visual QA

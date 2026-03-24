@@ -1,6 +1,8 @@
 ---
 name: Qarchive
-description: "Archives completed task files into .qe/.archive/. Use when archiving tasks, cleaning up completed tasks, or organizing finished work files."
+description: Archives completed task files into .qe/.archive/. Use when archiving tasks, cleaning up completed tasks, or organizing finished work files.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

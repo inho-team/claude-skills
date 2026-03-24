@@ -1,6 +1,8 @@
 ---
 name: Qc4-architecture
-description: Generates architecture documentation using C4 model Mermaid diagrams. Use for requests like "architecture diagram", "C4 diagram", "system context", "container diagram", "component diagram", or "deployment diagram".
+description: 'Generates architecture documentation using C4 model Mermaid diagrams. Use for requests like "architecture diagram", "C4 diagram", "system context", "container diagram", "component diagram", or "deployment diagram".'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

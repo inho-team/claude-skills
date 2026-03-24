@@ -1,6 +1,8 @@
 ---
 name: Qfind-skills
-description: "Finds and installs skills from skills.sh. Use when you want to find a skill, install a skill, browse available skills, or search skills.sh. Fetches skill content and creates SKILL.md files directly."
+description: Finds and installs skills from skills.sh. Use when you want to find a skill, install a skill, browse available skills, or search skills.sh. Fetches skill content and creates SKILL.md files directly.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

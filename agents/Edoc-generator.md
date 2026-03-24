@@ -23,6 +23,9 @@ A sub-agent that performs document generation work in the background, delegated 
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Generate document files in supported formats
 - Process multiple documents in parallel during batch operations
 - Apply templates when provided

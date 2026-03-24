@@ -1,6 +1,8 @@
 ---
 name: Qlesson-learned
-description: "Analyzes recent code changes via git history and extracts software engineering lessons. Use when the user asks for a retrospective, key takeaways, or engineering lessons learned."
+description: Analyzes recent code changes via git history and extracts software engineering lessons. Use when the user asks for a retrospective, key takeaways, or engineering lessons learned.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

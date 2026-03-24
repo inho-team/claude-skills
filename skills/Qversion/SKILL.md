@@ -1,6 +1,8 @@
 ---
 name: Qversion
-description: "Shows the current QE Framework version. Use when asked 'what version', 'qe version', 'show version', or 'check version'."
+description: Shows the current QE Framework version. Use when asked 'what version', 'qe version', 'show version', or 'check version'.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qversion — Version Info

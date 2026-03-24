@@ -1,9 +1,11 @@
 ---
 name: Qxlsx
-description: "All tasks related to spreadsheet files (.xlsx, .xlsm, .csv, .tsv). Use when opening, reading, editing, or creating spreadsheets, Excel files, formulas, formatting, charts, and data cleanup."
-metadata:
-  source: https://skills.sh/anthropics/skills/xlsx
-  author: anthropic
+description: All tasks related to spreadsheet files (.xlsx, .xlsm, .csv, .tsv). Use when opening, reading, editing, or creating spreadsheets, Excel files, formulas, formatting, charts, and data cleanup.
+metadata: 
+source: "https://skills.sh/anthropics/skills/xlsx"
+author: anthropic
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

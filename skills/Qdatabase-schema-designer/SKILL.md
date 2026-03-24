@@ -1,7 +1,9 @@
 ---
 name: Qdatabase-schema-designer
-description: "Designs SQL/NoSQL database schemas with normalization, indexing, migration, and constraint recommendations. Use when the user asks for database design, schema design, DB schema, table structure, ERD, or schema optimization."
+description: Designs SQL/NoSQL database schemas with normalization, indexing, migration, and constraint recommendations. Use when the user asks for database design, schema design, DB schema, table structure, ERD, or schema optimization.
 license: MIT
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Database Schema Design

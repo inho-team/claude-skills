@@ -1,10 +1,12 @@
 ---
 name: Qscenario-test
-description: "Generates scenario specs from existing implementations, executes them (browser/API/CLI), and verifies results. Use for scenario testing, E2E scenarios, user flow verification, or acceptance testing."
+description: Generates scenario specs from existing implementations, executes them (browser/API/CLI), and verifies results. Use for scenario testing, E2E scenarios, user flow verification, or acceptance testing.
 user_invocable: true
-metadata:
-  author: inho
-  version: "1.0.0"
+metadata: 
+author: inho
+version: 1.0.0
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Scenario Test Skill

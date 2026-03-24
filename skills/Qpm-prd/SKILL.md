@@ -1,6 +1,8 @@
 ---
 name: Qpm-prd
-description: "Writes PRDs (Product Requirements Documents) with P0/P1/P2 prioritization and 10-section template. Use for 'write a PRD', 'product spec', 'requirements document', 'product planning', 'PRD 작성', '요구사항 문서'. Distinct from Qpm-user-story (individual stories) — this produces the full PRD document."
+description: Writes PRDs (Product Requirements Documents) with P0/P1/P2 prioritization and 10-section template. Use for 'write a PRD', 'product spec', 'requirements document', 'product planning', 'PRD 작성', '요구사항 문서'. Distinct from Qpm-user-story (individual stories) — this produces the full PRD document.
+invocation_trigger: When product discovery, requirements, or roadmap planning is required.
+recommendedModel: sonnet
 ---
 
 

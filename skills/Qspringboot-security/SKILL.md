@@ -1,9 +1,11 @@
 ---
 name: Qspringboot-security
 description: "Spring Security best practices guide. Use for security-related tasks in Java Spring Boot services: authentication/authorization, input validation, CSRF, secrets management, security headers, rate limiting, and dependency security."
-metadata:
-  source: https://skills.sh/affaan-m/everything-claude-code/springboot-security
-  author: affaan-m
+metadata: 
+source: "https://skills.sh/affaan-m/everything-claude-code/springboot-security"
+author: affaan-m
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 ## Role Boundary (Absolute Rule)

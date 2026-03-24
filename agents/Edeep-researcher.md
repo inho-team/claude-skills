@@ -1,8 +1,8 @@
 ---
 name: Edeep-researcher
-description: "Multi-step research agent that performs in-depth investigations across multiple sources. Use when the user asks to 'research this', 'compare these options', 'which technology is better', or needs technology selection, comparative analysis, market research, or decision support with structured findings."
+description: Multi-step research agent that performs in-depth investigations across multiple sources. Use when the user asks to 'research this', 'compare these options', 'which technology is better', or needs technology selection, comparative analysis, market research, or decision support with structured findings.
 tools: Read, Write, Bash, Grep, Glob, Edit, WebSearch, WebFetch
-recommendedModel: sonnet
+recommendedModel: opus
 ---
 
 # Deep Research Agent
@@ -39,6 +39,9 @@ Indicate confidence level for each conclusion:
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Comparative technology analysis
 - Architecture decision support
 - Trend and ecosystem research

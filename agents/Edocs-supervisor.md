@@ -18,6 +18,9 @@ Documentation supervision covers: completeness (missing required sections), accu
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Audit all documentation files within the specified scope
 - Verify required sections are present and non-empty
 - Check for factually incorrect information against the codebase (function signatures, config keys, file paths)

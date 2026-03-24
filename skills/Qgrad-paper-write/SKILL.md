@@ -1,6 +1,8 @@
 ---
 name: Qgrad-paper-write
-description: Systematically drafts academic papers. Follows Abstract, Introduction, Method, Result, Discussion structure and provides section-by-section guidance and academic style editing. Use for requests like "write a paper", "paper draft", "academic writing".
+description: 'Systematically drafts academic papers. Follows Abstract, Introduction, Method, Result, Discussion structure and provides section-by-section guidance and academic style editing. Use for requests like "write a paper", "paper draft", "academic writing".'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

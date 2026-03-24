@@ -1,7 +1,9 @@
 ---
 name: Qaudio-transcriber
-description: Analyzes audio recording files (MP3, WAV, M4A, OGG, FLAC, WEBM) and converts them into professional Markdown documents such as meeting minutes, subtitles, and summaries. Use for requests like "analyze this audio file", "generate meeting minutes", or "convert recording to text".
+description: 'Analyzes audio recording files (MP3, WAV, M4A, OGG, FLAC, WEBM) and converts them into professional Markdown documents such as meeting minutes, subtitles, and summaries. Use for requests like "analyze this audio file", "generate meeting minutes", or "convert recording to text".'
 license: MIT
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

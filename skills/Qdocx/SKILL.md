@@ -1,13 +1,15 @@
 ---
 name: Qdocx
-description: "Comprehensive Word document creation, editing, and analysis. Use for creating new .docx files, editing with tracked changes, extracting text/tables, and converting formats."
-metadata:
-  source: https://github.com/tfriedel/claude-office-skills
-  author: tfriedel
-  version: "2.0.0"
-  triggers: docx, word, document, tracked changes, redline
-  related-skills: Qpdf, Qdoc-converter
+description: Comprehensive Word document creation, editing, and analysis. Use for creating new .docx files, editing with tracked changes, extracting text/tables, and converting formats.
+metadata: 
+source: "https://github.com/tfriedel/claude-office-skills"
+author: tfriedel
+version: 2.0.0
+triggers: docx, word, document, tracked changes, redline
+related-skills: Qpdf, Qdoc-converter
 keywords: docx, word, document, tracked changes, redlining, OOXML, pandoc
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # DOCX — Word Document Creation/Editing/Analysis

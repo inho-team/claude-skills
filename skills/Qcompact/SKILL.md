@@ -1,6 +1,8 @@
 ---
 name: Qcompact
-description: "Context preservation and session handoff. Use when the user wants to save state, handoff, save context, end session, or continue later."
+description: Context preservation and session handoff. Use when the user wants to save state, handoff, save context, end session, or continue later.
+invocation_trigger: When the context window is full or under pressure (Orange/Red zone).
+recommendedModel: haiku
 ---
 
 

@@ -1,9 +1,11 @@
 ---
 name: Qmcp-builder
-description: "MCP (Model Context Protocol) server creation guide. Use when building MCP servers that allow LLMs to interact with external services using Python (FastMCP) or TypeScript (MCP SDK)."
-metadata:
-  source: https://skills.sh/anthropics/skills/mcp-builder
-  author: anthropic
+description: MCP (Model Context Protocol) server creation guide. Use when building MCP servers that allow LLMs to interact with external services using Python (FastMCP) or TypeScript (MCP SDK).
+metadata: 
+source: "https://skills.sh/anthropics/skills/mcp-builder"
+author: anthropic
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 ## Role Boundary (Absolute Rule)

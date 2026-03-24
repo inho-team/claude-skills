@@ -1,15 +1,17 @@
 ---
 name: Mtest-skill
-description: "Automated skill/agent routing tester. Generates virtual user prompts, simulates intent classification, and verifies correct routing. Use when auditing skill descriptions, validating routing accuracy, or after adding/modifying skills. Distinct from Mcreate-skill (which creates/modifies skills) — this skill tests and benchmarks them."
-metadata:
-  version: "1.0.0"
-  domain: quality
-  triggers: test skills, skill test, routing test, verify skills, audit routing, skill tester, skill routing audit
-  role: specialist
-  scope: analysis
-  output-format: report
-  related-skills: Mcreate-skill, Qfind-skills
+description: Automated skill/agent routing tester. Generates virtual user prompts, simulates intent classification, and verifies correct routing. Use when auditing skill descriptions, validating routing accuracy, or after adding/modifying skills. Distinct from Mcreate-skill (which creates/modifies skills) — this skill tests and benchmarks them.
+metadata: 
+version: 1.0.0
+domain: quality
+triggers: test skills, skill test, routing test, verify skills, audit routing, skill tester, skill routing audit
+role: specialist
+scope: analysis
+output-format: report
+related-skills: Mcreate-skill, Qfind-skills
 keywords: skill test, intent routing, trigger verification, self-improvement, quality assurance
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Skill Tester — Automated Routing Verification

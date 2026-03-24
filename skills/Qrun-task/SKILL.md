@@ -1,6 +1,8 @@
 ---
 name: Qrun-task
-description: "Executes spec-based tasks from TASK_REQUEST and VERIFY_CHECKLIST documents. Use when running a task, implementing a spec, or executing a checklist."
+description: Executes spec-based tasks from TASK_REQUEST and VERIFY_CHECKLIST documents. Use when running a task, implementing a spec, or executing a checklist.
+invocation_trigger: When a TASK_REQUEST or checklist needs implementation or verification.
+recommendedModel: haiku
 ---
 
 # Task Execution Skill
@@ -40,10 +42,9 @@ Read the TASK_REQUEST checklist for `<!-- complexity: ... -->` tags, then pick t
 Pass the selected model as the `model` parameter when spawning `Etask-executor`.
 
 ---
-
 ## Step 1: Document Discovery
 
-1. Read `CLAUDE.md` for context
+1. **Use State Utility**: Call `parseClaudeTaskTable(cwd)` from `lib/state.mjs` to get the list of tasks from `CLAUDE.md`.
 2. Glob `.qe/tasks/{pending,in-progress,on-hold}/*.md` for TASK_REQUEST files
 3. Backward compat: check project root if `.qe/tasks/` missing
 4. Multiple tasks → ask which to run. UUID argument → select directly
@@ -52,25 +53,13 @@ Pass the selected model as the `model` parameter when spawning `Etask-executor`.
 ## Step 2: Summary and Approval
 
 Read TASK_REQUEST + VERIFY_CHECKLIST, show summary:
-
-| `type:` | Banner |
-|---------|--------|
-| `code` | `⚠️ TYPE: CODE — will CREATE or MODIFY source code` |
-| `docs` | `📄 TYPE: DOCS — will CREATE or MODIFY documentation` |
-| `analysis` | `🔍 TYPE: ANALYSIS — read-only analysis` |
-| `other` | `🔧 TYPE: OTHER` |
-| unset | `❓ TYPE: UNSET — review carefully` |
-
-```
-[Banner]
-## Task Summary: [Name]
-**What:** [1-2 sentences]  **How:** [core method]
-**Steps** (N items): [list]  **Validation** (M items): [list]
-```
+... (omitted summary table) ...
 
 **Chained execution skip:** If TASK_REQUEST contains `<!-- chained-from: Qgenerate-spec -->`, skip the approval prompt (user already approved in Qgenerate-spec). Remove the comment after reading.
 
-Otherwise, use `AskUserQuestion` for approval. On approve → move files to `in-progress/`, set CLAUDE.md to 🔶.
+Otherwise, use `AskUserQuestion` for approval. On approve:
+- Move files to `in-progress/`
+- **Update Status**: Call `updateClaudeStatus(cwd, uuid, "🔶")`.
 
 ## Step 3: Execute
 
@@ -134,7 +123,7 @@ Skip agent triggers if no trigger files exist.
 
 1. Mark all items `[x]` in TASK_REQUEST and VERIFY_CHECKLIST
 2. Move files to `completed/`
-3. Update CLAUDE.md to ✅
+3. **Update Status**: Call `updateClaudeStatus(cwd, uuid, "✅")`.
 4. `type: code` → call `Ecode-doc-writer`; `type: docs` → call `Edoc-generator`
 5. Auto-run `/Qarchive` in background
 6. Clean up `.qe/agent-results/` (delete result files older than current task)

@@ -1,17 +1,19 @@
 ---
 name: Qfact-checker
-description: "Extracts factual claims from documents and verifies them through evidence-based research. Use when asked to fact-check this, verify these claims, is this true, check accuracy, or when reviewing reports for factual correctness. Distinct from Qsource-verifier (which checks source credibility/authenticity) — this skill verifies specific factual claims. Produces claim-by-claim ratings with evidence."
-metadata:
-  source: https://github.com/jamditis/claude-skills-journalism
-  author: jamditis
-  version: "1.0.0"
-  domain: writing
-  triggers: fact check, verify claims, is this true, check accuracy, verify statement, fact-check, truth check, claim verification
-  role: specialist
-  scope: analysis
-  output-format: report
-  related-skills: Qsource-verifier, Qcontent-research-writer, Qwriting-clearly
+description: Extracts factual claims from documents and verifies them through evidence-based research. Use when asked to fact-check this, verify these claims, is this true, check accuracy, or when reviewing reports for factual correctness. Distinct from Qsource-verifier (which checks source credibility/authenticity) — this skill verifies specific factual claims. Produces claim-by-claim ratings with evidence.
+metadata: 
+source: "https://github.com/jamditis/claude-skills-journalism"
+author: jamditis
+version: 1.0.0
+domain: writing
+triggers: fact check, verify claims, is this true, check accuracy, verify statement, fact-check, truth check, claim verification
+role: specialist
+scope: analysis
+output-format: report
+related-skills: Qsource-verifier, Qcontent-research-writer, Qwriting-clearly
 keywords: fact-check, verification, claims, evidence, accuracy, truth
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Fact-Checker — 주장 검증 워크플로우

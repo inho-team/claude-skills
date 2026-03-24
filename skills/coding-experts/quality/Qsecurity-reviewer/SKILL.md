@@ -3,15 +3,17 @@ name: Qsecurity-reviewer
 description: Identifies security vulnerabilities, generates structured audit reports with severity ratings, and provides actionable remediation guidance. Use when conducting security audits, reviewing code for vulnerabilities, or analyzing infrastructure security. Invoke for SAST scans, penetration testing, DevSecOps practices, cloud security reviews, dependency audits, secrets scanning, or compliance checks. Produces vulnerability reports, prioritized recommendations, and compliance checklists.
 license: MIT
 allowed-tools: Read, Grep, Glob, Bash
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: security
-  triggers: security review, vulnerability scan, SAST, security audit, penetration test, code audit, security analysis, infrastructure security, DevSecOps, cloud security, compliance audit
-  role: specialist
-  scope: review
-  output-format: report
-  related-skills: secure-code-guardian, code-reviewer, devops-engineer, cloud-architect, kubernetes-specialist
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: security
+triggers: security review, vulnerability scan, SAST, security audit, penetration test, code audit, security analysis, infrastructure security, DevSecOps, cloud security, compliance audit
+role: specialist
+scope: review
+output-format: report
+related-skills: secure-code-guardian, code-reviewer, devops-engineer, cloud-architect, kubernetes-specialist
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Security Reviewer

@@ -1,17 +1,19 @@
 ---
 name: Qsource-verifier
-description: "Verifies source credibility and digital content authenticity using the SIFT method (Stop, Investigate, Find, Trace). Use when asked to 'verify this source', 'check credibility', 'is this reliable', or when investigating social media accounts, verifying images/videos/documents, or building verification trails. Produces structured verification records with confidence ratings."
-metadata:
-  source: https://github.com/jamditis/claude-skills-journalism
-  author: jamditis
-  version: "1.0.0"
-  domain: writing
-  triggers: verify source, check credibility, is this reliable, source check, verify image, verify document, SIFT, verification trail
-  role: specialist
-  scope: analysis
-  output-format: report
-  related-skills: Qfact-checker, Qcontent-research-writer
+description: Verifies source credibility and digital content authenticity using the SIFT method (Stop, Investigate, Find, Trace). Use when asked to 'verify this source', 'check credibility', 'is this reliable', or when investigating social media accounts, verifying images/videos/documents, or building verification trails. Produces structured verification records with confidence ratings.
+metadata: 
+source: "https://github.com/jamditis/claude-skills-journalism"
+author: jamditis
+version: 1.0.0
+domain: writing
+triggers: verify source, check credibility, is this reliable, source check, verify image, verify document, SIFT, verification trail
+role: specialist
+scope: analysis
+output-format: report
+related-skills: Qfact-checker, Qcontent-research-writer
 keywords: source verification, credibility, SIFT, digital verification, image verification, document verification
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

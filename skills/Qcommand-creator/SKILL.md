@@ -1,6 +1,8 @@
 ---
 name: Qcommand-creator
-description: A skill for creating Claude Code slash commands. Use when the user requests "create a command", "add a slash command", or wants to turn a repetitive workflow into a reusable command.
+description: 'A skill for creating Claude Code slash commands. Use when the user requests "create a command", "add a slash command", or wants to turn a repetitive workflow into a reusable command.'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

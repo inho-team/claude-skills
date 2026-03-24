@@ -1,6 +1,8 @@
 ---
 name: Qstitch-cli
-description: "Google Stitch MCP setup and CLI usage guide. Use when setting up Stitch MCP, configuring Stitch, or troubleshooting Stitch connections — NOT for executing Stitch design operations. Invoke for 'stitch setup', 'stitch mcp', 'connect stitch', 'stitch cli'."
+description: Google Stitch MCP setup and CLI usage guide. Use when setting up Stitch MCP, configuring Stitch, or troubleshooting Stitch connections — NOT for executing Stitch design operations. Invoke for 'stitch setup', 'stitch mcp', 'connect stitch', 'stitch cli'.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qstitch-cli — Google Stitch MCP Setup & CLI

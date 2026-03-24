@@ -1,6 +1,8 @@
 ---
 name: Qdata-analysis
-description: "Data exploration, statistical analysis, and visualization. Use when the user asks to analyze data, explore datasets, compute statistics, find correlations, or visualize data."
+description: Data exploration, statistical analysis, and visualization. Use when the user asks to analyze data, explore datasets, compute statistics, find correlations, or visualize data.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

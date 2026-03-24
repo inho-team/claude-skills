@@ -1,9 +1,11 @@
 ---
 name: Mcreate-skill
 description: "Create, modify, diagnose, and benchmark QE Framework skills. Use when creating a skill from scratch, editing/optimizing an existing one, or fixing a skill that incorrectly blocks, misroutes, or mishandles a request. Trigger phrases: 'create a skill', 'fix this skill', 'skill is blocking', 'improve skill logic', 'tune the framework'."
-metadata:
-  author: anthropic
-  version: "3.0.0"
+metadata: 
+author: anthropic
+version: 3.0.0
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

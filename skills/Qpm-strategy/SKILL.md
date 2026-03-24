@@ -1,6 +1,8 @@
 ---
 name: Qpm-strategy
 description: "Applies strategic analysis frameworks: Lean Canvas, SWOT, PESTLE, Porter's Five Forces, Vision/Value Proposition, pricing strategy. Use for 'product strategy', 'lean canvas', 'SWOT', 'Porter', 'pricing', 'business model', '전략', '린 캔버스', '경쟁 분석'. Distinct from Qpm-discovery (customer validation) — this analyzes market position and business models."
+invocation_trigger: When product discovery, requirements, or roadmap planning is required.
+recommendedModel: sonnet
 ---
 
 

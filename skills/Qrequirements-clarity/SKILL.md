@@ -1,6 +1,8 @@
 ---
 name: Qrequirements-clarity
 description: Clarifies ambiguous requirements through focused dialogue before implementation. Use when requirements are unclear, the feature is complex (2+ days), or cross-team collaboration is needed. Secures clarity before coding through two core questions — Why? (YAGNI check) and Simpler? (KISS check).
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

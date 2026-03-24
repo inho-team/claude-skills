@@ -1,6 +1,8 @@
 ---
 name: Qrefresh
-description: "Manually refreshes project analysis data. Use when refreshing, updating, or syncing .qe/analysis/ files."
+description: Manually refreshes project analysis data. Use when refreshing, updating, or syncing .qe/analysis/ files.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

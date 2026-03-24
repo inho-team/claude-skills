@@ -1,7 +1,9 @@
 ---
 name: Qupdate
-description: Updates the QE Framework plugin to the latest version. Use for "update plugin", "upgrade", "update qe".
-allowed-tools: Bash(claude plugin:*)
+description: 'Updates the QE Framework plugin to the latest version. Use for "update plugin", "upgrade", "update qe".'
+allowed-tools: "Bash(claude plugin:*)"
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qupdate — Plugin Self-Update

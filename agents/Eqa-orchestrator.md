@@ -23,8 +23,13 @@ Handles loop management internally (iteration count, result collection, pass/fai
 ## Execution Steps
 
 ### Quality Loop (Up to 3 Iterations)
-1. **Test**: Call Ecode-test-engineer → write/run tests
-2. **Review**: Call Ecode-reviewer → check code quality/security/performance
+
+**Minimal I/O Rule**: Eqa-orchestrator MUST act as the **context broker** for its sub-agents. 
+- **ContextMemo**: Leverage the `ContextMemo` system to share critical file contents (specs, config) with `Ecode-test-engineer` and `Ecode-reviewer`.
+- **Injection**: Instruct sub-agents to check for `[MEMO HIT]` hints to avoid re-reading the same files from disk.
+
+1. **Test**: Call Ecode-test-engineer → write/run tests (Pass memo)
+2. **Review**: Call Ecode-reviewer → check code quality/security/performance (Pass memo)
 3. **Fix**: If review issues are found, execute fixes
 4. **Judgment**: All tests pass + review passes → done; otherwise, repeat from step 1
 

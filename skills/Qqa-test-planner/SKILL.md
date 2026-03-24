@@ -1,7 +1,9 @@
 ---
 name: Qqa-test-planner
-description: "Generates test plans, manual test cases, regression suites, and bug reports for QA workflows. Use when creating a test plan, generating test cases, building a regression suite, drafting bug report templates, or producing QA documentation."
+description: Generates test plans, manual test cases, regression suites, and bug reports for QA workflows. Use when creating a test plan, generating test cases, building a regression suite, drafting bug report templates, or producing QA documentation.
 user_invocable: true
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

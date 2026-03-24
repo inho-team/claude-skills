@@ -2,15 +2,17 @@
 name: Qspark-engineer
 description: Use when writing Spark jobs, debugging performance issues, or configuring cluster settings for Apache Spark applications, distributed data processing pipelines, or big data workloads. Invoke to write DataFrame transformations, optimize Spark SQL queries, implement RDD pipelines, tune shuffle operations, configure executor memory, process .parquet files, handle data partitioning, or build structured streaming analytics.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: data-ml
-  triggers: Apache Spark, PySpark, Spark SQL, distributed computing, big data, DataFrame API, RDD, Spark Streaming, structured streaming, data partitioning, Spark performance, cluster computing, data processing pipeline
-  role: expert
-  scope: implementation
-  output-format: code
-  related-skills: python-pro, sql-pro, devops-engineer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: data-ml
+triggers: Apache Spark, PySpark, Spark SQL, distributed computing, big data, DataFrame API, RDD, Spark Streaming, structured streaming, data partitioning, Spark performance, cluster computing, data processing pipeline
+role: expert
+scope: implementation
+output-format: code
+related-skills: python-pro, sql-pro, devops-engineer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Spark Engineer

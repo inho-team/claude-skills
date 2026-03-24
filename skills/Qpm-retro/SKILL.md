@@ -1,6 +1,8 @@
 ---
 name: Qpm-retro
-description: "Facilitates retrospectives (Start/Stop/Continue, 4Ls, Sailboat), pre-mortem analysis, and release notes generation. Use for 'retrospective', 'retro', 'pre-mortem', 'release notes', 'sprint review', 'postmortem', '회고', '릴리즈 노트'. Distinct from Qlesson-learned (git history analysis) — this runs structured team reflection sessions."
+description: Facilitates retrospectives (Start/Stop/Continue, 4Ls, Sailboat), pre-mortem analysis, and release notes generation. Use for 'retrospective', 'retro', 'pre-mortem', 'release notes', 'sprint review', 'postmortem', '회고', '릴리즈 노트'. Distinct from Qlesson-learned (git history analysis) — this runs structured team reflection sessions.
+invocation_trigger: When product discovery, requirements, or roadmap planning is required.
+recommendedModel: sonnet
 ---
 
 

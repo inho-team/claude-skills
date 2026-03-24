@@ -1,6 +1,8 @@
 ---
 name: Qmermaid-diagrams
 description: A comprehensive guide for generating software diagrams using Mermaid syntax. Use when creating or visualizing class diagrams, sequence diagrams, flowcharts, ERDs, C4 architecture diagrams, state diagrams, Git graphs, Gantt charts, and more.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

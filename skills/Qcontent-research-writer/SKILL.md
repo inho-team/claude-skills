@@ -1,17 +1,19 @@
 ---
 name: Qcontent-research-writer
-description: "Research-driven content writing assistant. Use when writing articles, reports, or documentation that requires research, citations, and iterative refinement. Conducts research, adds citations, improves hooks, provides section-by-section feedback while preserving the writer's voice."
-metadata:
-  source: https://github.com/ComposioHQ/awesome-claude-skills
-  author: ComposioHQ
-  version: "1.0.0"
-  domain: writing
-  triggers: write article, write report, research and write, content writing, draft article, blog post, newsletter, write with citations, improve writing
-  role: specialist
-  scope: implementation
-  output-format: document
-  related-skills: Qwriting-clearly, Qhumanizer, Qfact-checker
+description: Research-driven content writing assistant. Use when writing articles, reports, or documentation that requires research, citations, and iterative refinement. Conducts research, adds citations, improves hooks, provides section-by-section feedback while preserving the writer's voice.
+metadata: 
+source: "https://github.com/ComposioHQ/awesome-claude-skills"
+author: ComposioHQ
+version: 1.0.0
+domain: writing
+triggers: write article, write report, research and write, content writing, draft article, blog post, newsletter, write with citations, improve writing
+role: specialist
+scope: implementation
+output-format: document
+related-skills: Qwriting-clearly, Qhumanizer, Qfact-checker
 keywords: content writing, research, citations, articles, reports, editing, hooks, drafting
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

@@ -2,15 +2,17 @@
 name: Qterraform-engineer
 description: Use when implementing infrastructure as code with Terraform across AWS, Azure, or GCP. Invoke for module development (create reusable modules, manage module versioning), state management (migrate backends, import existing resources, resolve state conflicts), provider configuration, multi-environment workflows, and infrastructure testing.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: infrastructure
-  triggers: Terraform, infrastructure as code, IaC, terraform module, terraform state, AWS provider, Azure provider, GCP provider, terraform plan, terraform apply
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: cloud-architect, devops-engineer, kubernetes-specialist
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: infrastructure
+triggers: Terraform, infrastructure as code, IaC, terraform module, terraform state, AWS provider, Azure provider, GCP provider, terraform plan, terraform apply
+role: specialist
+scope: implementation
+output-format: code
+related-skills: cloud-architect, devops-engineer, kubernetes-specialist
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Terraform Engineer

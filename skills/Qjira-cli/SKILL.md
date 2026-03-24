@@ -1,16 +1,18 @@
 ---
 name: Qjira-cli
-description: "Lightweight Jira CLI wrapper for quick issue management without MCP server setup. Use when querying issues with JQL, creating/updating tickets, managing sprints, or viewing boards from the terminal. Complements Qatlassian-mcp as a fast alternative for Jira-only tasks."
-metadata:
-  version: "1.0.0"
-  domain: platform
-  triggers: jira, jira-cli, issue, ticket, sprint, board, backlog, JQL, jira issue, jira sprint
-  role: expert
-  scope: implementation
-  output-format: code
-  related-skills: Qatlassian-mcp
-allowed-tools: Bash(jira:*), Bash(jira *)
+description: Lightweight Jira CLI wrapper for quick issue management without MCP server setup. Use when querying issues with JQL, creating/updating tickets, managing sprints, or viewing boards from the terminal. Complements Qatlassian-mcp as a fast alternative for Jira-only tasks.
+metadata: 
+version: 1.0.0
+domain: platform
+triggers: jira, jira-cli, issue, ticket, sprint, board, backlog, JQL, jira issue, jira sprint
+role: expert
+scope: implementation
+output-format: code
+related-skills: Qatlassian-mcp
+allowed-tools: "Bash(jira:*), Bash(jira *)"
 keywords: jira, cli, issue, ticket, sprint, board, backlog, JQL
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

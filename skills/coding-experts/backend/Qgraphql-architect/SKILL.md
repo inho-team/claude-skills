@@ -2,15 +2,17 @@
 name: Qgraphql-architect
 description: Use when designing GraphQL schemas, implementing Apollo Federation, or building real-time subscriptions. Invoke for schema design, resolvers with DataLoader, query optimization, federation directives.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: api-architecture
-  triggers: GraphQL, Apollo Federation, GraphQL schema, API graph, GraphQL subscriptions, Apollo Server, schema design, GraphQL resolvers, DataLoader
-  role: architect
-  scope: design
-  output-format: schema
-  related-skills: api-designer, microservices-architect, database-optimizer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: api-architecture
+triggers: GraphQL, Apollo Federation, GraphQL schema, API graph, GraphQL subscriptions, Apollo Server, schema design, GraphQL resolvers, DataLoader
+role: architect
+scope: design
+output-format: schema
+related-skills: api-designer, microservices-architect, database-optimizer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # GraphQL Architect

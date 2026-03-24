@@ -44,12 +44,23 @@ If compact-trigger.json exists, use its data directly (no need to re-run git dif
 - Recently changed files: `git diff --name-only`
 - Key decisions: extract decisions explicitly made by the user during the conversation
 
-### Step 2: Write snapshot.md
-Save current state to `.qe/context/snapshot.md`.
+### Step 2: Generate SNAPSHOT_SUMMARY.md (Semantic Compression)
+
+**Critical Task**: Use Haiku intelligence to "compress" the current session's context. 
+Create `.qe/context/SNAPSHOT_SUMMARY.md` with the following dense sections:
+- **Technical State**: Current architecture, integrated components, and logic flow.
+- **Key Decisions**: Major design choices made during this session.
+- **Next Steps**: Exact pending tasks and expected outcomes.
+- **Context Anchor**: A 2-3 sentence "narrative" that allows the next agent to immediately understand the project's "vibe" and current momentum.
+
+*Optimization Hint*: Keep this summary under 500 tokens. Focus on *why* and *how*, not just *what*.
+
+### Step 3: Write snapshot.md
+Save current file-level state to `.qe/context/snapshot.md`.
 - Keep it concise, core content only (within 200 lines to save tokens)
 - File paths and change summaries only, not code content
 
-### Step 3: Update decisions.md
+### Step 4: Update decisions.md
 Append this session's decisions to `.qe/context/decisions.md`.
 - Record in reverse chronological order (newest at top)
 - Group by date
@@ -62,7 +73,8 @@ Verify that `.qe/context/snapshot.md` exists.
 - If yes → proceed to Step 2
 
 ### Step 2: Load Context
-Read `snapshot.md` and `decisions.md` and inject context into the current session.
+Read `SNAPSHOT_SUMMARY.md`, `snapshot.md`, and `decisions.md` and inject context into the current session.
+Priority: `SNAPSHOT_SUMMARY.md` is the primary source for understanding the "current state of mind" of the framework.
 Also read `compact-trigger.json` if it exists — include `modified_files` and `active_task_uuids` in the restoration summary so the AI knows which files were being edited and which tasks were active before compaction.
 
 ### Step 3: Validate
@@ -79,6 +91,9 @@ Also read `compact-trigger.json` if it exists — include `modified_files` and `
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Detect context pressure
 - Auto-save to .qe/context/snapshot.md
 - Accumulate records in .qe/context/decisions.md

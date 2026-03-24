@@ -1,7 +1,9 @@
 ---
 name: Mbump
-description: "Bumps the QE Framework version in plugin.json and package.json. Use for version bump, bump version, release. Supports major, minor, and patch levels."
+description: Bumps the QE Framework version in plugin.json and package.json. Use for version bump, bump version, release. Supports major, minor, and patch levels.
 allowed-tools: Bash(git *)
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Mbump — QE Framework Version Bump

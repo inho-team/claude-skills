@@ -1,10 +1,12 @@
 ---
 name: Qyoutube-transcript-api
-description: "Extracts, transcribes, and translates YouTube video subtitles/captions. Uses the YouTubeTranscript.dev V2 API for caption extraction, ASR audio transcription, batch processing (up to 100 videos), and translation into 100+ languages. Use for tasks involving YouTube videos, subtitles, captions, or video-to-text conversion."
-metadata:
-  source: https://skills.sh/youtube-transcript-dev/youtube-transcript-api
-  author: YouTubeTranscript.dev
-  license: MIT
+description: Extracts, transcribes, and translates YouTube video subtitles/captions. Uses the YouTubeTranscript.dev V2 API for caption extraction, ASR audio transcription, batch processing (up to 100 videos), and translation into 100+ languages. Use for tasks involving YouTube videos, subtitles, captions, or video-to-text conversion.
+metadata: 
+source: "https://skills.sh/youtube-transcript-dev/youtube-transcript-api"
+author: YouTubeTranscript.dev
+license: MIT
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 ## Pre-check: API Key Configuration

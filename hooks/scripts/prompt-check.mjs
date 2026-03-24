@@ -4,7 +4,8 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { atomicWriteJson } from './lib/state.mjs';
+import { createHash } from 'crypto';
+import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -33,8 +34,16 @@ if (!userMessage) {
   process.exit(0);
 }
 
+const cachePath = join(cwd, '.planning', 'cache', 'cjk-translations.json');
+
+// --- Load Unified State ---
+const state = readUnifiedState(cwd);
+
 const hints = [];
 const msgLower = userMessage.toLowerCase();
+
+// --- QE Conventions Memory Check ---
+// ... (omitted for brevity, assume unchanged until negative feedback) ...
 
 // --- QE Conventions Memory Check ---
 // If the user's auto-memory doesn't have qe_conventions_routing.md, hint Claude to read QE_CONVENTIONS.md
@@ -84,15 +93,12 @@ if (!isAmbiguous && words.length > 5) {
   if ((koreanCorrection || englishCorrection) && !hasCodeBlock) {
     hints.push('[FEEDBACK] User correction detected. Save this feedback to auto-memory as a feedback type memory so it persists across sessions. Extract the specific rule the user is enforcing.');
     // Persist feedback for follow-up enforcement
-    try {
-      const stateDir = join(cwd, '.qe', 'state');
-      if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
-      writeFileSync(join(stateDir, 'pending-feedback.json'), JSON.stringify({
-        message: userMessage,
-        detected_at: new Date().toISOString(),
-        acted: false
-      }, null, 2));
-    } catch {}
+    state.pending_feedback = {
+      message: userMessage,
+      detected_at: new Date().toISOString(),
+      acted: false
+    };
+    writeUnifiedState(cwd, state);
   }
 }
 
@@ -147,7 +153,7 @@ if (!isAmbiguous) try {
   if (hasCJK) {
     try {
       const routeKeys = Object.keys(routesConfig.routes).join(', ');
-      translatedTerms = await translateToKeywords(userMessage, routeKeys);
+      translatedTerms = await translateToKeywords(userMessage, routeKeys, cachePath);
     } catch {}
   }
 
@@ -232,16 +238,13 @@ if (!isAmbiguous) try {
   }
 
   if (bestMatch && bestScore >= cfg.intent_confidence_threshold) {
-    const stateDir = join(cwd, '.qe', 'state');
-    if (!existsSync(stateDir)) {
-      mkdirSync(stateDir, { recursive: true });
-    }
-    atomicWriteJson(join(stateDir, 'intent-route.json'), {
+    state.intent_route = {
       intent: bestMatch.intent,
       routed_to: bestMatch.routed_to,
       confidence: bestScore,
       classified_at: new Date().toISOString()
-    });
+    };
+    writeUnifiedState(cwd, state);
     hints.push(`[INTENT] SKILL REQUIRED: Invoke /${bestMatch.routed_to} BEFORE generating any response. Do NOT answer without the skill. (intent: ${bestMatch.intent})`);
   }
 } catch {
@@ -264,7 +267,17 @@ if (hints.length > 0) {
  * Translate non-English user message to English keywords via claude CLI (Haiku).
  * Returns space-separated English keywords for intent matching.
  */
-async function translateToKeywords(message, routeKeys) {
+async function translateToKeywords(message, routeKeys, cachePath) {
+  // --- Cache Check ---
+  const hash = createHash('md5').update(message).digest('hex');
+  let cache = {};
+  try {
+    if (existsSync(cachePath)) {
+      cache = JSON.parse(readFileSync(cachePath, 'utf8'));
+      if (cache[hash]) return cache[hash];
+    }
+  } catch {}
+
   // Read Claude Code OAuth token for direct API call (fast, no CLI startup)
   const credPath = join(process.env.HOME || '/root', '.claude', '.credentials.json');
   if (!existsSync(credPath)) return '';
@@ -273,27 +286,46 @@ async function translateToKeywords(message, routeKeys) {
   const token = creds?.claudeAiOauth?.accessToken;
   if (!token) return '';
 
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': token,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 50,
-      messages: [{
-        role: 'user',
-        content: `TASK: keyword extraction. Output ONLY space-separated English keywords. No sentences.\nAvailable: ${routeKeys}\nMessage: "${message}"\nKeywords:`
-      }]
-    }),
-    signal: AbortSignal.timeout(3000),
-  });
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': token,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 50,
+        messages: [{
+          role: 'user',
+          content: `TASK: keyword extraction. Output ONLY space-separated English keywords. No sentences.\nAvailable: ${routeKeys}\nMessage: "${message}"\nKeywords:`
+        }]
+      }),
+      signal: AbortSignal.timeout(800),
+    });
 
-  if (!resp.ok) return '';
-  const body = await resp.json();
-  return (body.content?.[0]?.text || '').trim().toLowerCase();
+    if (!resp.ok) return '';
+    const body = await resp.json();
+    const keywords = (body.content?.[0]?.text || '').trim().toLowerCase();
+
+    // --- Update Cache ---
+    if (keywords) {
+      try {
+        const cacheDir = dirname(cachePath);
+        if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+        cache[hash] = keywords;
+        // Limit cache size to ~100 entries (LRU-ish)
+        const keys = Object.keys(cache);
+        if (keys.length > 100) delete cache[keys[0]];
+        writeFileSync(cachePath, JSON.stringify(cache, null, 2));
+      } catch {}
+    }
+
+    return keywords;
+  } catch {
+    return '';
+  }
 }
 
 /**

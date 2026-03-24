@@ -1,11 +1,13 @@
 ---
 name: Qweb-design-guidelines
 description: Reviews UI code against Web Interface Guidelines. Use for requests like review my UI, accessibility check, design audit, UX review, or check site best practices. Distinct from Qfrontend-design (which builds new UI from scratch) — this skill reviews and audits existing UI code.
-metadata:
-  author: vercel
-  version: "1.0.0"
-  source: https://skills.sh/vercel-labs/agent-skills/web-design-guidelines
-  argument-hint: <file-or-pattern>
+metadata: 
+author: vercel
+version: 1.0.0
+source: "https://skills.sh/vercel-labs/agent-skills/web-design-guidelines"
+argument-hint: <file-or-pattern>
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 ## Role Boundary (Absolute Rule)

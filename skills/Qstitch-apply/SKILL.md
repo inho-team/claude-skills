@@ -2,9 +2,11 @@
 name: Qstitch-apply
 description: "Converts Stitch HTML designs into production-ready React TSX components. Use when applying Stitch output to a React project, converting HTML to React, or adapting Stitch screens into a theme-aware component. Trigger phrases: 'stitch apply', 'stitch to react', 'HTML to React', 'convert stitch', 'stitch 적용', 'stitch 변환', 'stitch 코드 적용', 'stitch 리액트 변환'. Distinct from Qstitch-cli which handles setup/configuration only — this skill performs the actual design-to-code conversion."
 user_invocable: true
-metadata:
-  author: qe-framework
-  version: "1.0.0"
+metadata: 
+author: qe-framework
+version: 1.0.0
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qstitch-apply — Stitch HTML to React TSX Converter

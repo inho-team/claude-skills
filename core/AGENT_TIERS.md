@@ -48,19 +48,19 @@ Optimizes cost while maintaining quality.
 | Ecode-reviewer | MEDIUM | — |
 | Ecode-test-engineer | MEDIUM | — |
 | Ecode-doc-writer | MEDIUM | — |
-| Edoc-generator | MEDIUM | — |
+| Edoc-generator | LOW | MEDIUM (batch docs) |
 | Egrad-writer | MEDIUM | HIGH (Discussion section) |
 | Epm-planner | MEDIUM | HIGH (complex PRD) |
 | Edeep-researcher | HIGH | — |
 | Eqa-orchestrator | MEDIUM | HIGH (after 3 failures) |
-| Erefresh-executor | MEDIUM | — |
-| Ecompact-executor | MEDIUM | — |
-| Ehandoff-executor | MEDIUM | — |
-| Eanalysis-supervisor | MEDIUM | HIGH (complex analysis) |
-| Ecode-quality-supervisor | MEDIUM | HIGH (architecture review) |
-| Edocs-supervisor | MEDIUM | — |
-| Esecurity-officer | HIGH | — |
-| Esupervision-orchestrator | HIGH | — |
+| Erefresh-executor | LOW | — |
+| Ecompact-executor | LOW | — |
+| Ehandoff-executor | LOW | — |
+| Eanalysis-supervisor | LOW | HIGH (complex analysis) |
+| Ecode-quality-supervisor | LOW | HIGH (architecture review) |
+| Edocs-supervisor | LOW | — |
+| Esecurity-officer | LOW | HIGH (vulnerability audit) |
+| Esupervision-orchestrator | LOW | HIGH (quality audit) |
 
 ## Escalation Rules
 - 2 failures at MEDIUM → auto-escalate to HIGH

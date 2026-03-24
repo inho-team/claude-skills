@@ -1,6 +1,8 @@
 ---
 name: Qgrad-paper-review
-description: Analyzes academic paper reviewer comments and writes Response Letters. Supports response strategy planning, revision planning, and point-by-point response drafting. Use for requests like "reviewer response", "reviewer comment", "rebuttal", "response letter", or "revision".
+description: 'Analyzes academic paper reviewer comments and writes Response Letters. Supports response strategy planning, revision planning, and point-by-point response drafting. Use for requests like "reviewer response", "reviewer comment", "rebuttal", "response letter", or "revision".'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

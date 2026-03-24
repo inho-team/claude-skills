@@ -1,9 +1,11 @@
 ---
 name: Qsystematic-debugging
-description: "Finds root causes of bugs through systematic hypothesis-driven investigation BEFORE applying any fixes. Use when encountering bugs, test failures, or unexpected behavior where the cause is unknown. Distinct from Ecode-debugger (which analyzes and fixes errors) — this skill enforces a disciplined 'diagnose first, fix second' methodology."
-metadata:
-  source: https://skills.sh/obra/superpowers/systematic-debugging
-  author: obra
+description: Finds root causes of bugs through systematic hypothesis-driven investigation BEFORE applying any fixes. Use when encountering bugs, test failures, or unexpected behavior where the cause is unknown. Distinct from Ecode-debugger (which analyzes and fixes errors) — this skill enforces a disciplined 'diagnose first, fix second' methodology.
+metadata: 
+source: "https://skills.sh/obra/superpowers/systematic-debugging"
+author: obra
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

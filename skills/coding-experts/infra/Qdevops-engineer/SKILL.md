@@ -2,15 +2,17 @@
 name: Qdevops-engineer
 description: Creates Dockerfiles, configures CI/CD pipelines, writes Kubernetes manifests, and generates Terraform/Pulumi infrastructure templates. Handles deployment automation, GitOps configuration, incident response runbooks, and internal developer platform tooling. Use when setting up CI/CD pipelines, containerizing applications, managing infrastructure as code, deploying to Kubernetes clusters, configuring cloud platforms, automating releases, or responding to production incidents. Invoke for pipelines, Docker, Kubernetes, GitOps, Terraform, GitHub Actions, on-call, or platform engineering.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: devops
-  triggers: DevOps, CI/CD, deployment, Docker, Kubernetes, Terraform, GitHub Actions, infrastructure, platform engineering, incident response, on-call, self-service
-  role: engineer
-  scope: implementation
-  output-format: code
-  related-skills: 
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: devops
+triggers: DevOps, CI/CD, deployment, Docker, Kubernetes, Terraform, GitHub Actions, infrastructure, platform engineering, incident response, on-call, self-service
+role: engineer
+scope: implementation
+output-format: code
+related-skills: 
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # DevOps Engineer

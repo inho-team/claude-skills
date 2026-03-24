@@ -11,6 +11,9 @@ recommendedModel: sonnet
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Write PM deliverables such as PRDs, user stories, roadmaps, and meeting notes
 - Convert brainstorming and notes into structured planning documents
 - Analyze images, screenshots, and wireframes and integrate them into planning documents

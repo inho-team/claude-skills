@@ -72,14 +72,52 @@ Create a team with 3 teammates:
 
 The lead evaluates the request and spawns separate Claude Code instances.
 
-## Communication
+## Multi-Agent Collaboration Standard
 
+### 1. Lead/Team Relationship
+In any multi-agent execution (Subagents or Agent Teams), roles are strictly defined:
+- **Lead Agent**: Responsible for high-level strategy, dependency analysis, and final synthesis. Owns "Shared Files" (e.g., `package.json`).
+- **Team Agent**: Responsible for executing a specific scoped requirement within a partitioned file set. Operates autonomously within the assigned boundary.
+
+### 2. Handoff Packet Standard (UUID + Memo + Requirements)
+When delegating a task, the Lead MUST provide a **Handoff Packet** to ensure the Team Agent has sufficient context without redundant I/O:
+
+```markdown
+---
+uuid: {UUID}
+memo: {ContextMemo Object}
+parent_task: {Parent UUID}
+expected_outcome: {Detailed description of success}
+known_constraints: {Specific limitations or anti-patterns to avoid}
+---
+## Requirements
+- {Specific goal 1}
+- {Specific goal 2}
+
+## Assigned Files (Ownership)
+- {Path 1}
+- {Path 2} (Read-only/Edit)
+```
+
+- **UUID**: Unique transaction ID for tracking and result aggregation.
+- **Expected Outcome**: Defines exactly what the Lead expects to see upon completion (e.g., "A passing test suite for the auth module with 80% coverage").
+- **Known Constraints**: List any project-specific constraints or anti-patterns the Team Agent must respect (e.g., "Do not use external libraries for encryption").
+- **Memo**: Pre-collected context (Phase 3 Protocol) to prevent re-reading the same specs or config.
+- **Requirements**: Clear, concise implementation or analysis goals.
+
+### 3. Standardized Return Format
+All Team Agents must return results in a consistent format for the Lead to synthesize:
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `status` | Enum | `SUCCESS`, `FAILURE`, `PARTIAL`, `ESCALATE` |
+| `findings` | Array | Key technical discoveries or blockers |
+| `changed_files`| Array | List of modified files with brief summaries |
+| `usage` | Object | Token usage stats for the sub-session |
+
+### 4. Communication Patterns
+... (omitted) ...
 | Mechanism | Purpose | Direction |
-|-----------|---------|-----------|
-| Messages | Direct peer-to-peer | Teammate → Teammate |
-| Broadcast | One-to-all announcement | Teammate → All |
-| Shared task list | Work coordination, dependencies | System-managed |
-| Idle notifications | Lead knows when teammate finished | Automatic |
 
 ## File Ownership Rule
 

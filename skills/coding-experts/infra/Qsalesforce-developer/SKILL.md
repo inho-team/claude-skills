@@ -2,15 +2,17 @@
 name: Qsalesforce-developer
 description: Writes and debugs Apex code, builds Lightning Web Components, optimizes SOQL queries, implements triggers, batch jobs, platform events, and integrations on the Salesforce platform. Use when developing Salesforce applications, customizing CRM workflows, managing governor limits, bulk processing, or setting up Salesforce DX and CI/CD pipelines.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: platform
-  triggers: Salesforce, Apex, Lightning Web Components, LWC, SOQL, SOSL, Visualforce, Salesforce DX, governor limits, triggers, platform events, CRM integration, Sales Cloud, Service Cloud
-  role: expert
-  scope: implementation
-  output-format: code
-  related-skills: api-designer, java-architect, cloud-architect, devops-engineer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: platform
+triggers: Salesforce, Apex, Lightning Web Components, LWC, SOQL, SOSL, Visualforce, Salesforce DX, governor limits, triggers, platform events, CRM integration, Sales Cloud, Service Cloud
+role: expert
+scope: implementation
+output-format: code
+related-skills: api-designer, java-architect, cloud-architect, devops-engineer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Salesforce Developer

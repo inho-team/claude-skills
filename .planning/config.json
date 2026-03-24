@@ -1,0 +1,15 @@
+{
+  "project_name": "qe-framework-optimization",
+  "workflow": "standard",
+  "priority": "high",
+  "optimization_targets": [
+    "latency",
+    "token_efficiency",
+    "io_overhead"
+  ],
+  "agents": {
+    "orchestrator": "Eqa-orchestrator",
+    "executor": "Etask-executor",
+    "researcher": "Edeep-researcher"
+  }
+}

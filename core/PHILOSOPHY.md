@@ -23,6 +23,19 @@ This loop — the **SVS Loop** — is not optional. It is the framework.
 
 ---
 
+## The Efficiency Philosophy
+
+> **Efficiency is Accuracy.**
+
+In a context-constrained environment, every unnecessary token is a potential source of drift. Every redundant I/O operation is a source of latency that degrades the "speed of thought."
+
+We treat efficiency not as a cost-saving measure, but as a **reliability requirement**:
+1. **Minimal Context Drift**: By preserving only the most relevant "semantic context" (via Phase 2 Semantic Compression), we ensure the agent remains focused on the core task.
+2. **Deterministic State**: By using a Unified State (Phase 1), we ensure all hooks and agents operate on a single version of the truth, preventing race conditions and stale data.
+3. **Low Latency Interaction**: By optimizing CJK translation and model tiering, we keep the feedback loop tight, allowing for more iterations within the same human time-budget.
+
+---
+
 ## The SVS Loop
 
 ```

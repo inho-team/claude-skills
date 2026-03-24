@@ -2,15 +2,17 @@
 name: Qfeature-forge
 description: Conducts structured requirements workshops to produce feature specifications, user stories, EARS-format functional requirements, acceptance criteria, and implementation checklists. Use when defining new features, gathering requirements, or writing specifications. Invoke for feature definition, requirements gathering, user stories, EARS format specs, PRDs, acceptance criteria, or requirement matrices.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: workflow
-  triggers: requirements, specification, feature definition, user stories, EARS, planning
-  role: specialist
-  scope: design
-  output-format: document
-  related-skills: fullstack-guardian, spec-miner, test-master
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: workflow
+triggers: requirements, specification, feature definition, user stories, EARS, planning
+role: specialist
+scope: design
+output-format: document
+related-skills: fullstack-guardian, spec-miner, test-master
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Feature Forge

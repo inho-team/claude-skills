@@ -2,15 +2,17 @@
 name: Qmonitoring-expert
 description: Configures monitoring systems, implements structured logging pipelines, creates Prometheus/Grafana dashboards, defines alerting rules, and instruments distributed tracing. Implements Prometheus/Grafana stacks, conducts load testing, performs application profiling, and plans infrastructure capacity. Use when setting up application monitoring, adding observability to services, debugging production issues with logs/metrics/traces, running load tests with k6 or Artillery, profiling CPU/memory bottlenecks, or forecasting capacity needs.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: devops
-  triggers: monitoring, observability, logging, metrics, tracing, alerting, Prometheus, Grafana, DataDog, APM, performance testing, load testing, profiling, capacity planning, bottleneck
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: devops-engineer, debugging-wizard, architecture-designer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: devops
+triggers: monitoring, observability, logging, metrics, tracing, alerting, Prometheus, Grafana, DataDog, APM, performance testing, load testing, profiling, capacity planning, bottleneck
+role: specialist
+scope: implementation
+output-format: code
+related-skills: devops-engineer, debugging-wizard, architecture-designer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Monitoring Expert

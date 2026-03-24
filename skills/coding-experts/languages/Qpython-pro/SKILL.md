@@ -2,15 +2,17 @@
 name: Qpython-pro
 description: Use when building Python 3.11+ applications requiring type safety, async programming, or robust error handling. Generates type-annotated Python code, configures mypy in strict mode, writes pytest test suites with fixtures and mocking, and validates code with black and ruff. Invoke for type hints, async/await patterns, dataclasses, dependency injection, logging configuration, and structured error handling.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: language
-  triggers: Python development, type hints, async Python, pytest, mypy, dataclasses, Python best practices, Pythonic code
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: fastapi-expert, devops-engineer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: language
+triggers: Python development, type hints, async Python, pytest, mypy, dataclasses, Python best practices, Pythonic code
+role: specialist
+scope: implementation
+output-format: code
+related-skills: fastapi-expert, devops-engineer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Python Pro

@@ -217,6 +217,9 @@ Last updated: 2026-03-16
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Record command patterns from tool call history
 - Collect writing style and abbreviations from user messages
 - Record correction history from negative feedback patterns

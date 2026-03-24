@@ -48,6 +48,9 @@ Runs silently in the background.
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Archive completed files
 - Auto-determine version
 - Save CLAUDE.md snapshot

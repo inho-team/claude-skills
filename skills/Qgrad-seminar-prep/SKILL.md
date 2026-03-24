@@ -1,6 +1,8 @@
 ---
 name: Qgrad-seminar-prep
-description: Prepares academic presentations for seminars, conferences, and lab meetings. Generates slide structure, presentation scripts, and anticipated Q&A. Use for requests like "prepare presentation", "seminar", "conference talk", or "slides".
+description: 'Prepares academic presentations for seminars, conferences, and lab meetings. Generates slide structure, presentation scripts, and anticipated Q&A. Use for requests like "prepare presentation", "seminar", "conference talk", or "slides".'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

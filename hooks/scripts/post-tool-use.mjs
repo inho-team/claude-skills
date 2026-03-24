@@ -3,7 +3,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { atomicWriteJson, getCwd } from './lib/state.mjs';
+import { readUnifiedState, writeUnifiedState, updateContextMemo, invalidateContextMemo, getCwd } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
 
 let input = '';
@@ -31,21 +31,59 @@ const isError = data.tool_response?.includes?.('error') ||
 
 const hints = [];
 
-// --- Error tracking (only reads/writes on actual errors or to clear on success) ---
-const errorFile = join(cwd, '.qe', 'state', 'tool-errors.json');
+// --- Load Unified State ---
+const state = readUnifiedState(cwd);
 
-if (isError) {
-  let errorState = { errors: [], window_start: Date.now() };
-
-  if (existsSync(errorFile)) {
-    try {
-      errorState = JSON.parse(readFileSync(errorFile, 'utf8'));
-    } catch {}
+// --- ContextMemo Maintenance ---
+if (!isError && toolName === 'Read') {
+  const toolInput = data.tool_input || data.toolInput || {};
+  const filePath = toolInput.file_path || toolInput.filePath || '';
+  if (filePath && data.tool_response) {
+    updateContextMemo(state, filePath, data.tool_response);
   }
+} else if (['Write', 'Edit'].includes(toolName)) {
+  const toolInput = data.tool_input || data.toolInput || {};
+  const filePath = toolInput.file_path || toolInput.filePath || '';
+  if (filePath) {
+    invalidateContextMemo(state, filePath);
+  }
+}
+
+// --- Real-time Token Tracking ---
+if (!state.session_stats) {
+  state.session_stats = { tool_calls: 0, session_start: Date.now(), context_loaded: [], usage: { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 } };
+}
+const stats = state.session_stats;
+if (!stats.usage) {
+  stats.usage = { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 };
+}
+
+// Extract usage from Claude Code payload
+const usage = data.usage || data.metadata?.usage || {};
+if (Object.keys(usage).length > 0) {
+  stats.usage.input_tokens += usage.input_tokens || 0;
+  stats.usage.output_tokens += usage.output_tokens || 0;
+  stats.usage.cache_read_tokens += usage.cache_read_input_tokens || 0;
+  stats.usage.cache_creation_tokens += usage.cache_creation_input_tokens || 0;
+} else {
+  // Fallback: Estimate tokens based on payload size (chars / 4)
+  const estimatedInput = Math.ceil(JSON.stringify(data.tool_input || {}).length / 4);
+  const estimatedOutput = Math.ceil(String(data.tool_response || '').length / 4);
+  stats.usage.input_tokens += estimatedInput;
+  stats.usage.output_tokens += estimatedOutput;
+}
+
+// --- Error tracking ---
+if (isError) {
+  if (!state.tool_errors) {
+    state.tool_errors = { errors: [], window_start: Date.now() };
+  }
+  const errorState = state.tool_errors;
 
   // Reset window if older than configured threshold
   if (Date.now() - errorState.window_start > cfg.error_window_ms) {
-    errorState = { errors: [], window_start: Date.now() };
+    errorState.errors = [];
+    errorState.window_start = Date.now();
   }
 
   errorState.errors.push({
@@ -54,10 +92,6 @@ if (isError) {
     preview: String(data.tool_response || '').slice(0, 200)
   });
 
-  try {
-    atomicWriteJson(errorFile, errorState);
-  } catch {}
-
   const recentCount = errorState.errors.filter(e => e.tool === toolName).length;
 
   if (recentCount >= cfg.error_delegate_count) {
@@ -65,16 +99,13 @@ if (isError) {
   } else if (recentCount >= cfg.error_escalate_count) {
     hints.push(`${toolName} tool failed ${recentCount} times in error window. Consider using /Qsystematic-debugging to find the root cause before retrying.`);
   }
-} else if (existsSync(errorFile)) {
-  // Success - clear error tracking for this tool (only if error file exists)
-  try {
-    const errorState = JSON.parse(readFileSync(errorFile, 'utf8'));
-    const filtered = errorState.errors.filter(e => e.tool !== toolName);
-    if (filtered.length !== errorState.errors.length) {
-      errorState.errors = filtered;
-      atomicWriteJson(errorFile, errorState);
-    }
-  } catch {}
+} else if (state.tool_errors) {
+  // Success - clear error tracking for this tool
+  const errorState = state.tool_errors;
+  const filtered = errorState.errors.filter(e => e.tool !== toolName);
+  if (filtered.length !== errorState.errors.length) {
+    errorState.errors = filtered;
+  }
 }
 
 // --- Quality Check Hints (Write/Edit only — matcher ensures this) ---
@@ -95,21 +126,14 @@ if (['Write', 'Edit'].includes(toolName)) {
 
     // Agentation hint for .tsx files (once per session)
     if (/\.tsx$/.test(filePath) && !isError) {
-      const statsFile = join(cwd, '.qe', 'state', 'session-stats.json');
-      let alreadyHinted = false;
-      if (existsSync(statsFile)) {
-        try {
-          const s = JSON.parse(readFileSync(statsFile, 'utf8'));
-          alreadyHinted = s._agentation_hinted || false;
-        } catch {}
+      if (!state.session_stats) {
+        state.session_stats = { tool_calls: 0, session_start: Date.now(), context_loaded: [] };
       }
-      if (!alreadyHinted) {
+      const s = state.session_stats;
+
+      if (!s._agentation_hinted) {
         hints.push('Frontend file modified. Use /Qagentation or /Qvisual-qa for visual verification.');
-        try {
-          const s = existsSync(statsFile) ? JSON.parse(readFileSync(statsFile, 'utf8')) : {};
-          s._agentation_hinted = true;
-          atomicWriteJson(statsFile, s);
-        } catch {}
+        s._agentation_hinted = true;
       }
     }
   }
@@ -120,6 +144,11 @@ if (['Write', 'Edit'].includes(toolName)) {
     hints.push('Security-sensitive code detected. Run Esecurity-officer before completing.');
   }
 }
+
+// --- Final Unified State Write ---
+try {
+  writeUnifiedState(cwd, state);
+} catch {}
 
 if (hints.length > 0) {
   console.log(JSON.stringify({

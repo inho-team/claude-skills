@@ -1,6 +1,8 @@
 ---
 name: Qresume
-description: "Restores saved context after compaction or session break. Use when resuming work, restoring context, continuing from where you left off, or loading a previous session."
+description: Restores saved context after compaction or session break. Use when resuming work, restoring context, continuing from where you left off, or loading a previous session.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

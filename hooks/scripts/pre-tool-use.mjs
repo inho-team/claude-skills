@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { loadConfig } from './lib/config.mjs';
 import { checkContextPressure } from './context-monitor.mjs';
 import { loadPendingContext } from './lib/context-loader.mjs';
-import { atomicWriteJson } from './lib/state.mjs';
+import { atomicWriteJson, readUnifiedState, writeUnifiedState, getContextMemo } from './lib/state.mjs';
 import { getTeamContext } from './lib/team-detect.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -32,19 +32,35 @@ const cfg = loadConfig(cwd);
 const toolName = data.tool_name || data.toolName || '';
 const hints = [];
 
-// --- Read session-stats.json ONCE (single source of truth for this hook) ---
-const statsFile = join(cwd, '.qe', 'state', 'session-stats.json');
-let stats = { tool_calls: 0, session_start: Date.now(), context_loaded: [] };
+// --- Load Unified State (Single I/O call) ---
+const state = readUnifiedState(cwd);
 
-if (existsSync(statsFile)) {
-  try {
-    stats = JSON.parse(readFileSync(statsFile, 'utf8'));
-  } catch {}
+// --- ContextMemo Check ---
+if (toolName === 'Read') {
+  const toolInput = data.tool_input || data.toolInput || {};
+  const filePath = toolInput.file_path || toolInput.filePath || '';
+  const cachedContent = getContextMemo(state, filePath);
+  if (cachedContent) {
+    hints.push(`[MEMO HIT] Content for ${filePath} is already in the ContextMemo. You can use it directly without calling Read again.`);
+  }
+}
+
+if (!state.session_stats) {
+  state.session_stats = {
+    tool_calls: 0,
+    session_start: Date.now(),
+    context_loaded: [],
+    usage: { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 }
+  };
+}
+const stats = state.session_stats;
+if (!stats.usage) {
+  stats.usage = { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 };
 }
 
 const toolCalls = stats.tool_calls || 0;
 
-// --- Increment tool call counter (moved from post-tool-use.mjs) ---
+// --- Increment tool call counter ---
 stats.tool_calls = toolCalls + 1;
 stats.last_tool = toolName;
 stats.last_call = Date.now();
@@ -53,43 +69,28 @@ stats.last_call = Date.now();
 const isFirstCall = toolCalls <= 1;
 const isEarlySession = toolCalls <= 5;
 
-// --- Intent Gate Routing (only during early session) ---
+// --- Intent Gate Routing ---
 if (isEarlySession) {
-  try {
-    const intentRouteFile = join(cwd, '.qe', 'state', 'intent-route.json');
+  if (isFirstCall) {
+    hints.push('[INTENT GATE] User intent will be auto-classified by UserPromptSubmit hook.');
+  }
 
-    if (isFirstCall) {
-      hints.push('[INTENT GATE] User intent will be auto-classified by UserPromptSubmit hook.');
-    }
-
-    if (existsSync(intentRouteFile)) {
-      const route = JSON.parse(readFileSync(intentRouteFile, 'utf8'));
-      if (route.routed_to && route.intent) {
-        hints.push(`SKILL REQUIRED: You MUST invoke /${route.routed_to} before responding. (intent: ${route.intent})`);
-      }
-    }
-  } catch {
-    // Fault-tolerant: ignore intent routing errors
+  const route = state.intent_route;
+  if (route && route.routed_to && route.intent) {
+    hints.push(`SKILL REQUIRED: You MUST invoke /${route.routed_to} before responding. (intent: ${route.intent})`);
   }
 }
 
-// --- Pending Feedback Follow-up (2-stage enforcement) ---
-try {
-  const feedbackFile = join(cwd, '.qe', 'state', 'pending-feedback.json');
-  if (existsSync(feedbackFile)) {
-    const fb = JSON.parse(readFileSync(feedbackFile, 'utf8'));
-    const ageMs = Date.now() - new Date(fb.detected_at).getTime();
-    if (fb.acted) {
-      // Already acted — clean up
-      try { unlinkSync(feedbackFile); } catch {}
-    } else if (ageMs > 10 * 60 * 1000) {
-      // Expired (10 min TTL) — clean up
-      try { unlinkSync(feedbackFile); } catch {}
-    } else {
-      hints.push(`[FEEDBACK PENDING] Unresolved user feedback: "${fb.message.slice(0, 100)}". Save to auto-memory as feedback type. Then update .qe/state/pending-feedback.json with acted:true.`);
-    }
+// --- Pending Feedback Follow-up ---
+const fb = state.pending_feedback;
+if (fb) {
+  const ageMs = Date.now() - new Date(fb.detected_at).getTime();
+  if (fb.acted || ageMs > 10 * 60 * 1000) {
+    delete state.pending_feedback;
+  } else {
+    hints.push(`[FEEDBACK PENDING] Unresolved user feedback: "${fb.message.slice(0, 100)}". Save to auto-memory as feedback type. Then update .qe/state/pending-feedback.json with acted:true.`);
   }
-} catch {}
+}
 
 // --- Skill Usage Tracking ---
 if (toolName === 'Skill') {
@@ -137,22 +138,15 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
   }
 }
 
-// --- Skill Override Guard (QE_CONVENTIONS.md § System Default Override Map) ---
-// Enforces that registered skills are used instead of raw operations.
-// Bypass: .qe/state/skill-bypass.json with {active:true, skill:"Qxxx", ts:...} (60s TTL)
+// --- Skill Override Guard ---
 {
   const toolInput = data.tool_input || data.toolInput || {};
 
-  // Check bypass flag (set by approved agents like Ecommit-executor)
-  const bypassFile = join(cwd, '.qe', 'state', 'skill-bypass.json');
+  // Check bypass flag
+  const bypass = state.skill_bypass;
   let bypassSkill = null;
-  if (existsSync(bypassFile)) {
-    try {
-      const bypass = JSON.parse(readFileSync(bypassFile, 'utf8'));
-      if (bypass.active && (Date.now() - (bypass.ts || 0)) < 60000) {
-        bypassSkill = bypass.skill || null;
-      }
-    } catch {}
+  if (bypass && bypass.active && (Date.now() - (bypass.ts || 0)) < 60000) {
+    bypassSkill = bypass.skill || null;
   }
 
   // Define override rules: [condition, blocked skill name, message]
@@ -275,80 +269,50 @@ if (['Write', 'Edit'].includes(toolName)) {
   }
 }
 
-// --- Qutopia QA mode: verify loop reminder (every 10 tool calls) ---
-try {
-  const utopiaFile = join(cwd, '.qe', 'state', 'utopia-state.json');
-  if (existsSync(utopiaFile)) {
-    const utopiaState = JSON.parse(readFileSync(utopiaFile, 'utf8'));
-    if (utopiaState.enabled && utopiaState.mode === 'qa') {
-      const lastReminder = stats._last_verify_reminder || 0;
-      if (currentCalls - lastReminder >= 10) {
-        // Check if in-progress checklists exist
-        const clDir = join(cwd, '.qe', 'checklists', 'in-progress');
-        if (existsSync(clDir)) {
-          try {
-            const clFiles = readdirSync(clDir).filter(f => f.endsWith('.md'));
-            if (clFiles.length > 0) {
-              hints.push('[UTOPIA QA] VERIFY_CHECKLIST item-by-item verification is MANDATORY. Each item needs a concrete check (glob, grep, build, test). "Build passed" alone is NOT sufficient.');
-              stats._last_verify_reminder = currentCalls;
-            }
-          } catch {}
+// --- Qutopia QA mode: verify loop reminder ---
+const currentCalls = stats.tool_calls;
+const utopia = state.utopia_state;
+if (utopia && utopia.enabled && utopia.mode === 'qa') {
+  const lastReminder = stats._last_verify_reminder || 0;
+  if (currentCalls - lastReminder >= 10) {
+    const clDir = join(cwd, '.qe', 'checklists', 'in-progress');
+    if (existsSync(clDir)) {
+      try {
+        const clFiles = readdirSync(clDir).filter(f => f.endsWith('.md'));
+        if (clFiles.length > 0) {
+          hints.push('[UTOPIA QA] VERIFY_CHECKLIST item-by-item verification is MANDATORY. Each item needs a concrete check (glob, grep, build, test). "Build passed" alone is NOT sufficient.');
+          stats._last_verify_reminder = currentCalls;
         }
-      }
+      } catch {}
     }
   }
-} catch {}
+}
 
-// --- Context pressure check (reuse stats and cfg — no duplicate I/O) ---
+// --- Context pressure check ---
 try {
   const { message: ctxMessage } = checkContextPressure(cwd, stats, cfg);
-  if (ctxMessage) {
-    hints.push(ctxMessage);
-  }
-} catch {
-  // Fault-tolerant: ignore context monitor errors
-}
-
-// --- Profile/docs collection triggers (moved from post-tool-use.mjs) ---
-const currentCalls = stats.tool_calls;
-
-// Read tool-errors.json ONCE for both profile and docs triggers
-let hasRecentToolErrors = false;
-try {
-  const errorFile = join(cwd, '.qe', 'state', 'tool-errors.json');
-  if (existsSync(errorFile)) {
-    const errState = JSON.parse(readFileSync(errorFile, 'utf8'));
-    hasRecentToolErrors = Array.isArray(errState.errors) &&
-      errState.errors.length > 0 &&
-      (Date.now() - (errState.window_start || 0)) <= cfg.error_window_ms;
-  }
-} catch {
-  // Fault-tolerant: assume no errors if read fails
-}
-
-try {
-  if (currentCalls > 0 && currentCalls % cfg.profile_collect_interval === 0) {
-    if (!hasRecentToolErrors) {
-      hints.push('Run Eprofile-collector in background to update command patterns.');
-    }
-  }
+  if (ctxMessage) hints.push(ctxMessage);
 } catch {}
 
-try {
-  const docsInterval = cfg.docs_collect_interval || 100;
-  if (currentCalls > 0 && currentCalls % docsInterval === 0) {
-    if (!hasRecentToolErrors) {
-      hints.push('Check .qe/docs/ for domain knowledge if relevant to current task.');
-    }
-  }
-} catch {}
+// --- Profile/docs collection triggers ---
+const errState = state.tool_errors || { errors: [] };
+const hasRecentToolErrors = Array.isArray(errState.errors) &&
+  errState.errors.length > 0 &&
+  (Date.now() - (errState.window_start || 0)) <= cfg.error_window_ms;
 
-// --- Write stats ONCE (single write for counter + context_loaded + analysis hint flag) ---
-try {
-  atomicWriteJson(statsFile, stats);
-} catch {
-  // Fault-tolerant: proceed even if write fails
+if (currentCalls > 0 && currentCalls % cfg.profile_collect_interval === 0 && !hasRecentToolErrors) {
+  hints.push('Run Eprofile-collector in background to update command patterns.');
 }
+
+const docsInterval = cfg.docs_collect_interval || 100;
+if (currentCalls > 0 && currentCalls % docsInterval === 0 && !hasRecentToolErrors) {
+  hints.push('Check .qe/docs/ for domain knowledge if relevant to current task.');
+}
+
+// --- Write Unified State ONCE ---
+try {
+  writeUnifiedState(cwd, state);
+} catch {}
 
 if (hints.length > 0) {
   console.log(JSON.stringify({

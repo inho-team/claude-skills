@@ -1,7 +1,9 @@
 ---
 name: Qchrome
-description: "Claude-in-Chrome MCP setup and browser automation guide. Use when setting up Chrome browser tools, configuring Claude-in-Chrome extension, or troubleshooting browser automation. Invoke for 'chrome setup', 'browser setup', 'claude chrome', 'chrome mcp', 'browser automation setup'. Distinct from Qagent-browser (which uses agent-browser CLI) — this skill sets up Chrome extension-based browser control via MCP."
+description: Claude-in-Chrome MCP setup and browser automation guide. Use when setting up Chrome browser tools, configuring Claude-in-Chrome extension, or troubleshooting browser automation. Invoke for 'chrome setup', 'browser setup', 'claude chrome', 'chrome mcp', 'browser automation setup'. Distinct from Qagent-browser (which uses agent-browser CLI) — this skill sets up Chrome extension-based browser control via MCP.
 keywords: chrome, browser, mcp, extension, automation, claude-in-chrome, setup
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qchrome — Claude-in-Chrome MCP Setup & Usage

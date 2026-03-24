@@ -14,14 +14,8 @@
 | Qgolang | Go (strict standards) |
 | Qgolang-pro | Go (general) |
 | Qjava-architect | Java / Spring Boot |
-| Qjavascript-pro | JavaScript |
+| Qjs-ts-expert | JavaScript / TypeScript |
 | Qkotlin-specialist | Kotlin |
-| Qphp-pro | PHP |
-| Qpython-pro | Python |
-| Qrust-engineer | Rust |
-| Qsql-pro | SQL |
-| Qswift-expert | Swift |
-| Qtypescript-pro | TypeScript |
 
 ## frontend/ (12)
 

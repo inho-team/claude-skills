@@ -2,15 +2,17 @@
 name: Qdebugging-wizard
 description: Parses error messages, traces execution flow through stack traces, correlates log entries to identify failure points, and applies systematic hypothesis-driven methodology to isolate and resolve bugs. Use when investigating errors, analyzing stack traces, finding root causes of unexpected behavior, troubleshooting crashes, or performing log analysis, error investigation, or root cause analysis.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: quality
-  triggers: debug, error, bug, exception, traceback, stack trace, troubleshoot, not working, crash, fix issue
-  role: specialist
-  scope: analysis
-  output-format: analysis
-  related-skills: test-master, fullstack-guardian, monitoring-expert
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: quality
+triggers: debug, error, bug, exception, traceback, stack trace, troubleshoot, not working, crash, fix issue
+role: specialist
+scope: analysis
+output-format: analysis
+related-skills: test-master, fullstack-guardian, monitoring-expert
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Debugging Wizard

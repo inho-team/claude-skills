@@ -65,6 +65,9 @@ See `core/rules/git-workflow.md` for full git workflow standards.
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Analyze diff and generate commit message
 - Selective staging
 - Exclude sensitive files

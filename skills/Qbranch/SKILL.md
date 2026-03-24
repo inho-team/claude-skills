@@ -1,7 +1,9 @@
 ---
 name: Qbranch
-description: "Git branch workflow manager — creates branches, commits via Qcommit, and opens PRs. Use when starting a feature, fix, hotfix, or any branch-based work."
+description: Git branch workflow manager — creates branches, commits via Qcommit, and opens PRs. Use when starting a feature, fix, hotfix, or any branch-based work.
 user_invocable: true
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qbranch — Git Branch Workflow Manager

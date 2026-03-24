@@ -1,13 +1,15 @@
 ---
 name: Qdoc-converter
-description: "Document format converter with multi-tool orchestration. Use when converting between MD, DOCX, PDF, PPTX, HTML formats. Supports Quick Mode (fast, single tool) and Heavy Mode (best quality, multi-tool merge)."
-metadata:
-  source: https://github.com/daymade/claude-code-skills
-  author: daymade
-  version: "1.0.0"
-  triggers: convert document, md to docx, md to pdf, docx to md, pdf to md, format conversion, convert, format convert
-  related-skills: Qdocx, Qpdf, Qpptx
+description: Document format converter with multi-tool orchestration. Use when converting between MD, DOCX, PDF, PPTX, HTML formats. Supports Quick Mode (fast, single tool) and Heavy Mode (best quality, multi-tool merge).
+metadata: 
+source: "https://github.com/daymade/claude-code-skills"
+author: daymade
+version: 1.0.0
+triggers: convert document, md to docx, md to pdf, docx to md, pdf to md, format conversion, convert, format convert
+related-skills: Qdocx, Qpdf, Qpptx
 keywords: conversion, pandoc, markitdown, pymupdf4llm, markdown, docx, pdf, pptx
+invocation_trigger: When improving prose or documentation clarity.
+recommendedModel: haiku
 ---
 
 # Doc Converter — Document Format Conversion

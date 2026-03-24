@@ -2,15 +2,17 @@
 name: Qmcp-developer
 description: Use when building, debugging, or extending MCP servers or clients that connect AI systems with external tools and data sources. Invoke to implement tool handlers, configure resource providers, set up stdio/HTTP/SSE transport layers, validate schemas with Zod or Pydantic, debug protocol compliance issues, or scaffold complete MCP server/client projects using TypeScript or Python SDKs.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: api-architecture
-  triggers: MCP, Model Context Protocol, MCP server, MCP client, Claude integration, AI tools, context protocol, JSON-RPC
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: fastapi-expert, typescript-pro, security-reviewer, devops-engineer
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: api-architecture
+triggers: MCP, Model Context Protocol, MCP server, MCP client, Claude integration, AI tools, context protocol, JSON-RPC
+role: specialist
+scope: implementation
+output-format: code
+related-skills: fastapi-expert, typescript-pro, security-reviewer, devops-engineer
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # MCP Developer

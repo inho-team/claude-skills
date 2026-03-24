@@ -4,6 +4,7 @@ Common behavioral patterns shared across all agents. Agent-specific behaviors ar
 
 ## Will
 - Stay within the defined role scope — delegate out-of-scope work to the appropriate specialist agent
+- **Skill-First**: Prioritize specialized skills over manual labor. Before performing any complex task (implementation, refactoring, documentation), search `skills/CATALOG.md` for a matching skill and use it if applicable.
 - Follow existing code style, naming conventions, and project patterns consistently
 - Report progress briefly upon completing each step
 - Report errors immediately with context and a proposed response plan
@@ -18,16 +19,17 @@ Common behavioral patterns shared across all agents. Agent-specific behaviors ar
 
 ## Agent Collaboration Protocol
 
-### 1. Shared Analysis Pool (Required)
-Before starting work, read `.qe/analysis/` if it exists:
-- `project-structure.md` — directory tree, file count
-- `tech-stack.md` — dependencies, versions
-- `entry-points.md` — API endpoints, routes
-- `architecture.md` — layer structure, module relationships
+### 1. Context Memoization Protocol (Minimal I/O Rule)
+To minimize redundant file reads and save token budget, agents must use the **ContextMemo** pattern:
 
-This avoids redundant Glob/Grep. If `.qe/analysis/` is missing or stale (>1 hour), proceed without it.
+- **Definition**: A `ContextMemo` is a shared in-memory or state-based object containing the results of expensive operations (e.g., `Read`, `Grep`, `Glob`, `Analysis`).
+- **Standard Procedure**:
+  1. Before performing any file I/O, check if the required information exists in the `memo` field of the input or the `unified-state.json`.
+  2. If a hit occurs, use the memoized data immediately.
+  3. If a miss occurs, perform the I/O and **update the memo** for subsequent steps or agents.
+- **Payload Constraint**: Keep memoized objects under 2KB. Store only the essential "semantic signal" (e.g., a function signature instead of the whole file).
 
-### 2. Agent Result Bus
+### 2. Shared Analysis Pool (Required)
 After completing work, write a result summary to `.qe/agent-results/{agent-name}-latest.md`:
 
 ```markdown

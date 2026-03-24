@@ -2,15 +2,17 @@
 name: Qflutter-expert
 description: Use when building cross-platform applications with Flutter 3+ and Dart. Invoke for widget development, Riverpod/Bloc state management, GoRouter navigation, platform-specific implementations, performance optimization.
 license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: frontend
-  triggers: Flutter, Dart, widget, Riverpod, Bloc, GoRouter, cross-platform
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: react-native-expert, test-master, fullstack-guardian
+metadata: 
+author: "https://github.com/Jeffallan"
+version: 1.1.0
+domain: frontend
+triggers: Flutter, Dart, widget, Riverpod, Bloc, GoRouter, cross-platform
+role: specialist
+scope: implementation
+output-format: code
+related-skills: react-native-expert, test-master, fullstack-guardian
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Flutter Expert

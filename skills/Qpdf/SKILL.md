@@ -1,13 +1,15 @@
 ---
 name: Qpdf
-description: "Comprehensive PDF processing toolkit. Use when extracting text/tables, creating new PDFs, merging/splitting, rotating, watermarking, form filling, encrypting, running OCR, or extracting images from PDFs."
-metadata:
-  source: https://github.com/tfriedel/claude-office-skills
-  author: tfriedel
-  version: "2.0.0"
-  triggers: pdf, PDF, merge pdf, split pdf, extract text, OCR, watermark, form fill
-  related-skills: Qdocx, Qdoc-converter
+description: Comprehensive PDF processing toolkit. Use when extracting text/tables, creating new PDFs, merging/splitting, rotating, watermarking, form filling, encrypting, running OCR, or extracting images from PDFs.
+metadata: 
+source: "https://github.com/tfriedel/claude-office-skills"
+author: tfriedel
+version: 2.0.0
+triggers: pdf, PDF, merge pdf, split pdf, extract text, OCR, watermark, form fill
+related-skills: Qdocx, Qdoc-converter
 keywords: pdf, pypdf, pdfplumber, reportlab, OCR, merge, split, watermark, form
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # PDF — 종합 PDF 처리 가이드

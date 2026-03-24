@@ -1,6 +1,8 @@
 ---
 name: Qpm-user-story
-description: "Writes user stories (Mike Cohn format) with Gherkin acceptance criteria and INVEST validation. Use for 'write user stories', 'create a story', 'acceptance criteria', 'backlog items', '유저 스토리', '인수 조건'. Distinct from Qpm-prd (full PRD document) — this produces individual development-ready stories."
+description: Writes user stories (Mike Cohn format) with Gherkin acceptance criteria and INVEST validation. Use for 'write user stories', 'create a story', 'acceptance criteria', 'backlog items', '유저 스토리', '인수 조건'. Distinct from Qpm-prd (full PRD document) — this produces individual development-ready stories.
+invocation_trigger: When product discovery, requirements, or roadmap planning is required.
+recommendedModel: sonnet
 ---
 
 

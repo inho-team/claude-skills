@@ -24,6 +24,27 @@
 
 ---
 
+## Performance & Optimization Standard
+
+To maintain high reasoning quality and low latency, all agents and skills must adhere to these standards:
+
+### 1. Minimal I/O Rule
+- **Never read or write the same file twice** in a single execution turn.
+- **ContextMemo**: Always check for `[MEMO HIT]` hints from `pre-tool-use` before calling `Read`.
+- **Unified State**: Use `unified-state.json` via `hooks/scripts/lib/state.mjs` for all persistent session data.
+
+### 2. Token-Aware Context Management
+- **Thresholds**: Monitor context pressure at **140k tokens** (Warning/Snapshot) and **170k tokens** (Critical/Hard Stop).
+- **Semantic Compression**: When context is high, prioritize `SNAPSHOT_SUMMARY.md` over raw history preservation.
+- **Token Fallback**: If real-time metrics are missing, use `Characters / 4` for estimation.
+
+### 3. Optimized Model Tiering
+- **Haiku (LOW)**: Default for pattern matching, structural verification (S1-S5), file I/O, and simple text transforms.
+- **Sonnet (MEDIUM)**: Default for code implementation, test writing, and complex reasoning.
+- **Skill-First**: Always check `skills/CATALOG.md` before manual labor. Skills are pre-optimized workflows.
+
+---
+
 ## Preferred Skill Map
 
 These skills are optimized for common workflows and consistently outperform generic approaches.

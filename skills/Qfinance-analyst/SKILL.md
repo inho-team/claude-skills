@@ -1,6 +1,8 @@
 ---
 name: Qfinance-analyst
-description: Financial analysis, valuation modeling, and quantitative investment tools. Covers ratio analysis, DCF valuation, Monte Carlo simulation, sensitivity analysis, and portfolio optimization. Use for requests like "financial analysis", "valuation", "DCF", "Monte Carlo", "quant", "investment analysis", "portfolio".
+description: 'Financial analysis, valuation modeling, and quantitative investment tools. Covers ratio analysis, DCF valuation, Monte Carlo simulation, sensitivity analysis, and portfolio optimization. Use for requests like "financial analysis", "valuation", "DCF", "Monte Carlo", "quant", "investment analysis", "portfolio".'
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

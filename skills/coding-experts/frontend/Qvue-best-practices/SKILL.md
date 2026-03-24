@@ -2,9 +2,11 @@
 name: Qvue-best-practices
 description: MUST be used for Vue.js tasks. Strongly recommends Composition API with `<script setup>` and TypeScript as the standard approach. Covers Vue 3, SSR, Volar, vue-tsc. Load for any Vue, .vue files, Vue Router, Pinia, or Vite with Vue work. ALWAYS use Composition API unless the project explicitly requires Options API.
 license: MIT
-metadata:
-  author: github.com/vuejs-ai
-  version: "18.0.0"
+metadata: 
+author: github.com/vuejs-ai
+version: 18.0.0
+invocation_trigger: When specialized language or framework best practices are needed.
+recommendedModel: haiku
 ---
 
 # Vue Best Practices Workflow

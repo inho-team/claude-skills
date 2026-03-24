@@ -1,6 +1,8 @@
 ---
 name: Qprofile
-description: "Analyzes command patterns, writing style, and common expressions to build a user profile. Use when updating the user profile, learning user style, or improving intent recognition."
+description: Analyzes command patterns, writing style, and common expressions to build a user profile. Use when updating the user profile, learning user style, or improving intent recognition.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 

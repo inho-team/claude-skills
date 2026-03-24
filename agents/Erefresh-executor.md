@@ -84,6 +84,9 @@ All other commits are considered external (manual user edits, CI/CD, other tools
 > Base patterns: see core/AGENT_BASE.md
 
 ## Will
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
+
 - Detect project changes (git diff, file system)
 - Update 4 files in .qe/analysis/
 - Record history in .qe/changelog.md

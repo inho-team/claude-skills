@@ -1,6 +1,8 @@
 ---
 name: Qagentation
-description: "Agentation setup and usage guide — visual UI feedback tool for AI coding agents. Use for 'agentation', 'agentation setup', 'UI annotation tool', 'visual feedback setup', 'UI feedback tool'. Distinct from Qweb-design-guidelines (which audits UI code) — this skill sets up a visual annotation layer that feeds structured context to AI agents."
+description: Agentation setup and usage guide — visual UI feedback tool for AI coding agents. Use for 'agentation', 'agentation setup', 'UI annotation tool', 'visual feedback setup', 'UI feedback tool'. Distinct from Qweb-design-guidelines (which audits UI code) — this skill sets up a visual annotation layer that feeds structured context to AI agents.
+invocation_trigger: When framework initialization, maintenance, or audit is required.
+recommendedModel: haiku
 ---
 
 # Qagentation — Visual UI Feedback for AI Agents

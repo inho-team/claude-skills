@@ -21,21 +21,24 @@ Read the `TASK_REQUEST` and identify items suitable for parallel execution:
 ### Step 2: Swarm Initiation
 Create an **Agent Team** using the `Agent` tool:
 - Assign **one Haiku Teammate per atomic item**.
-- Provide each teammate with a **Handoff Packet** containing the specific item, expected outcome, and `ContextMemo`.
+- **Atomic Commits**: Teammates MUST perform a `git commit` immediately after completing their specific item.
+- **Technical Summary**: Teammates MUST create a `.qe/planning/phases/{X}/SUMMARY_{Item#}.md` describing precisely what changed and any side-effects.
 - Set teammates to `haiku` model for maximum speed and efficiency.
 
 ### Step 3: Result Synthesis
 As Haiku teammates complete their tasks:
-- Lead session (Sonnet) monitors progress and resolves any merge conflicts in shared files.
+- Lead session (Opus/Sonnet) reads all `SUMMARY_*.md` files.
+- Synthesize changes without re-reading entire files unless a merge conflict occurs.
 - Aggregate all changes into the main working branch.
 
 ### Step 4: Quality Loop
 After all atomic items are done, automatically trigger `/Qcode-run-task` to ensure the combined implementation is architecturally sound.
 
 ## Execution Rules
-- **Haiku-First**: Always use `haiku` for teammates unless an item is explicitly marked as `high` complexity.
-- **Context Integrity**: Use `ContextMemo` to ensure teammates don't waste tokens re-reading the same specs.
-- **Atomicity**: One teammate = One checklist item.
+- **Wave Model**: Group independent items from `TASK_REQUEST` into execution waves. Wave N+1 starts only after Wave N is verified.
+- **File Ownership**: No two teammates can modify the same file within the same wave. Lead (Sonnet) must partition files before spawning.
+- **Haiku-First**: Always use `haiku` for teammates. If an item requires Sonnet, it's not "Atomic" and should be handled by standard `/Qrt`.
+- **Context Integrity**: Use `ContextMemo` to ensure teammates have current state without redundant I/O.
 
 ## Will
 - Orchestrate parallel execution via Agent Teams

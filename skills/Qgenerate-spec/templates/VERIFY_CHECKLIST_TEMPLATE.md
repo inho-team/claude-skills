@@ -5,6 +5,11 @@
 - [ ] {{this}}
 {{/each}}
 
+## 프레임워크 무결성 체크 (Mandatory)
+- [ ] **No Stubs**: `TODO`, `FIXME`, `lorem ipsum` 등의 플레이스홀더가 코드에 남아있지 않은가?
+- [ ] **Real Logic**: 함수가 단순히 `null`이나 빈 객체를 반환하지 않고 실제 비즈니스 로직을 수행하는가?
+- [ ] **Wiring**: 새로운 컴포넌트나 API가 기존 시스템에 실제로 연결(Import/Route)되어 작동하는가?
+
 ## 추가 메모
 {{verifyNotes}}
 

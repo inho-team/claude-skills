@@ -117,12 +117,25 @@ Spawn **both agents in parallel** using a single message with two Agent tool cal
 ```
 
 ### Step 4: Judgment and Fix
-
 Assess based on combined test and review results.
 
+### Step 4.5: Phase Goal Alignment (GSD Verifier Logic)
+... (omitted) ...
+
+### Step 4.6: Regression Gate
+... (omitted) ...
+
+### Step 4.7: Nyquist Audit (Gap Discovery)
+Even if tests pass, perform a **Coverage Gap Audit**:
+1. Review implementation vs. Requirements.
+2. **Identify**: Are there any "Ghost Requirements" (implied but not tested)?
+3. **Audit**: Do the tests cover edge cases (null inputs, network timeouts, etc.)?
+4. If gaps are found, add them to the **Decimal Phase** list for the next iteration.
+
 **Pass criteria:**
-- 0 test failures
+- 0 test failures (Current + Prior phases)
 - 0 review Critical items
+- 100% Alignment with Phase Goal and Requirements
 
 **On pass:** → Proceed to Step 5
 

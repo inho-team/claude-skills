@@ -33,8 +33,9 @@ Design a phased roadmap in `.qe/planning/ROADMAP.md`:
 
 ### Step 3: Atomic Spec & Execution Handoff
 - **Activate Phase**: Update `.qe/planning/STATE.md` to reflect the active wave.
-- **PSE Trigger**: Internally invoke **Qgs** to generate "Haiku-Ready" atomic tasks for the active phase.
-- **PSE Execution**: Internally invoke **Qatomic-run** once the spec is approved.
+- **PSE Spec Trigger**: Internally invoke **Qgs** immediately. 
+  - Instruction: "Generate the Haiku-Ready atomic spec for Phase {X}: {PhaseName} using the requirements defined in REQUIREMENTS.md."
+- **PSE Execution**: Once the spec is approved, internally invoke **Qatomic-run**.
 
 ### Step 4: Verification & Transition
 - **Goal Check**: After execution, use **Qcode-run-task** to verify if the *Phase Goal* is met.

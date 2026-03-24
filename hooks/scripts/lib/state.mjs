@@ -300,3 +300,10 @@ export function updateClaudeStatus(cwd, uuid, newStatus) {
     return false;
   }
 }
+
+/**
+ * Get current working directory
+ */
+export function getCwd() {
+  return process.cwd();
+}

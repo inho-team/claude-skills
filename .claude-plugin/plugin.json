@@ -1,7 +1,7 @@
 {
   "name": "qe-framework",
-  "version": "2.11.2",
-  "description": "QE Framework — Spec-driven task execution for Claude Code with SVS loop, 139 skills, and 21 agents",
+  "version": "2.14.0",
+  "description": "QE Framework v2.14.0 — High-Performance AI Engineering with GSD-Native PSE Loop (Plan-Spec-Execute) and Haiku Swarm.",
   "author": { "name": "inho-team" },
   "skills": "./skills/",
   "hooks": {

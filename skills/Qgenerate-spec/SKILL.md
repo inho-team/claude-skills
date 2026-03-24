@@ -30,16 +30,14 @@ You are a specialist document writer acting as a **sub-component of the `/Qplan`
 
 ## Workflow
 
-### Step 1: Collect Information
-Ask the user for the information below. Skip items already provided.
+### Step 1: Context Acquisition (Mandatory)
+Before collecting user info, identify the strategic context:
+1. **Check Roadmap**: Read `.qe/planning/ROADMAP.md` and `STATE.md`.
+2. **Identify Phase**: If an active Phase exists, use its **Success Criteria** and **Requirement IDs** as the primary source of truth for the spec.
+3. **Missing Roadmap**: If no roadmap exists, **STOP** and suggest running `/Qplan` first to maintain the PSE Loop integrity.
 
-**Strategic Planning Integration**:
-- If this is a **new project** or a **large milestone**, proactively suggest running `/Qplan` first to establish a multi-phase roadmap in `.qe/planning/`.
-- If a roadmap already exists, reference the active phase in `.qe/planning/STATE.md` to ensure the generated spec aligns with project momentum.
-
-Delegation options:
-- Complex projects requiring PRD-level planning → delegate to `Epm-planner`
-- Tech stack / architecture decisions → delegate to `Edeep-researcher`
+### Step 2: Information Gathering
+... (omitted) ...
 
 Required information:
 - **Project name**, **description** (one-paragraph summary)

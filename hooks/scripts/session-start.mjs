@@ -5,6 +5,7 @@ import { readFileSync, existsSync, statSync, unlinkSync, writeFileSync, mkdirSyn
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { loadConfig } from './lib/config.mjs';
+import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 
 // Read stdin (Claude Code provides JSON with cwd, session_id, etc.)
 let input = '';
@@ -134,11 +135,6 @@ try {
   // Fault tolerance — ignore cleanup errors
 }
 
-import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
-import { loadConfig } from './lib/config.mjs';
-
-// ... (existing code) ...
-
 // Reset or initialize unified-state for fresh session tracking
 try {
   const state = readUnifiedState(cwd);
@@ -161,13 +157,13 @@ try {
 }
 
 if (messages.length > 0) {
-  console.log(JSON.stringify({
+  process.stdout.write(JSON.stringify({
     continue: true,
     hookSpecificOutput: {
       hookEventName: "SessionStart",
       additionalContext: `[QE Framework] ${messages.join(' | ')}`
     }
-  }));
+  }) + '\n');
 } else {
-  console.log(JSON.stringify({ continue: true }));
+  process.stdout.write(JSON.stringify({ continue: true }) + '\n');
 }

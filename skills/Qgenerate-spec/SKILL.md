@@ -75,14 +75,10 @@ When verification runs, perform **both structural and executability checks in a 
 
 Any fail → fix automatically. After max iterations, proceed with best version.
 
-### Step 3: Review, Create, and Execute (Single Confirmation)
-> **MANDATORY:** Use `AskUserQuestion` tool to collect user choice. Do NOT output options as plain text.
-
-Show drafts to user and collect feedback with a **single `AskUserQuestion`** offering these options:
-- **"Generate & Execute"** — Standard execution via `/Qrun-task {UUID}`
-- **"Generate & Atomic-Run"** — High-speed parallel execution via `/Qatomic-run {UUID}`. **Suggest this if the checklist contains 5+ independent, simple items.**
-- **"Generate Only"** — Create files only
-- **"Needs Revision"** — Revise after feedback
+### Step 3: Review, Create, and Execute (The High-Performance Path)
+- **MANDATORY**: Use `AskUserQuestion` to present these options.
+- **Recommend Atomic-Run**: If the checklist has 4+ independent items, clearly label **"Generate & Atomic-Run (Swarm)"** as the **[Recommended]** path. Explain that it uses multiple parallel Haiku agents for maximum speed.
+- **Auto-Chain**: Once the user selects an execution option, immediately invoke the corresponding skill (`/Qrun-task` or `/Qatomic-run`) with the generated UUIDs.
 
 On "Generate & Atomic-Run":
 - Auto-create directories and files

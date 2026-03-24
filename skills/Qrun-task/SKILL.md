@@ -5,10 +5,10 @@ invocation_trigger: When a TASK_REQUEST or checklist needs implementation or ver
 recommendedModel: haiku
 ---
 
-# Task Execution Skill
+# Task Execution Skill (Qplan PSE Loop Component)
 
 ## Role
-Execute tasks and complete verification based on spec documents from `/Qgenerate-spec`.
+Execute tasks based on spec documents. This is a **secondary execution engine** within the `/Qplan` PSE Loop, used when tasks cannot be fully atomized for `/Qatomic-run`.
 
 > **MANDATORY:** All user confirmations MUST use the `AskUserQuestion` tool. Do NOT output options as plain text — always call the tool.
 

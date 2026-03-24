@@ -134,21 +134,28 @@ try {
   // Fault tolerance — ignore cleanup errors
 }
 
-// Reset session-stats.json for fresh session tracking
-// context_loaded: [] tracks which On-Demand items have been injected this session.
-// pre-tool-use.mjs reads this array to know what still needs lazy injection.
+import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
+import { loadConfig } from './lib/config.mjs';
+
+// ... (existing code) ...
+
+// Reset or initialize unified-state for fresh session tracking
 try {
-  const stateDir = join(cwd, '.qe', 'state');
-  mkdirSync(stateDir, { recursive: true });
-  const sessionStatsPath = join(stateDir, 'session-stats.json');
-  writeFileSync(sessionStatsPath, JSON.stringify({
-    tool_calls: 0,
-    session_start: Date.now(),
-    last_warning_at: 0,
-    warning_severity: 'none',
-    debounce_counter: 0,
-    context_loaded: [],
-  }));
+  const state = readUnifiedState(cwd);
+  if (!state.session_stats) {
+    state.session_stats = {
+      tool_calls: 0,
+      session_start: Date.now(),
+      last_warning_at: 0,
+      warning_severity: 'none',
+      context_loaded: [],
+      usage: { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 }
+    };
+  } else {
+    // Session persistent stats - keep usage, but reset session-specific flags if needed
+    state.session_stats.session_start = Date.now();
+  }
+  writeUnifiedState(cwd, state);
 } catch {
   // Fault tolerance — ignore reset errors
 }

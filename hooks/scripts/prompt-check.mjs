@@ -34,7 +34,7 @@ if (!userMessage) {
   process.exit(0);
 }
 
-const cachePath = join(cwd, '.planning', 'cache', 'cjk-translations.json');
+const cachePath = join(cwd, '.qe', 'planning', 'cache', 'cjk-translations.json');
 
 // --- Load Unified State ---
 const state = readUnifiedState(cwd);
@@ -138,6 +138,14 @@ try {
   }
 } catch {
   // Fault-tolerant: skip language detection on error
+}
+
+// --- Strategic Planning Hint ---
+if (!isAmbiguous) {
+  const planKeywords = /\b(new project|start project|roadmap|milestone|planning|plan phase|architecture|overall|전략|계획|로드맵|마일스톤)\b/i;
+  if (planKeywords.test(userMessage)) {
+    hints.push('[PLAN] Strategic roadmap detected. This project uses the PSE Loop (Plan-Spec-Execute). Run `/Qplan` first to establish/update the roadmap before Spec generation.');
+  }
 }
 
 // --- Intent Auto-Classification (skip if ambiguous) ---

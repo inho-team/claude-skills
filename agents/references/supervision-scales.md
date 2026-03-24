@@ -1,3 +1,6 @@
+---
+recommendedModel: sonnet
+---
 # Supervision Scales & Procedures Reference
 
 ## Supervision Grade Definitions
@@ -45,3 +48,6 @@ Each domain supervision agent must return:
 - **Issue:** {description}
 - **Suggestion:** {improvement suggestion}
 ```
+
+## Minimal I/O Rule (ContextMemo)
+Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.

@@ -45,6 +45,22 @@ After all atomic items are done, automatically trigger `/Qcode-run-task` to ensu
 - Monitor Haiku teammate performance
 - Synthesize results and handle merges
 
+## Mandatory Handoff Message
+After all atomic items are complete, you MUST display this EXACTLY:
+
+```
+---
+## PSE 다음 단계
+
+실행이 완료되었습니다. 검증을 위해 다음 명령을 실행하세요:
+
+  /Qcode-run-task
+
+PSE 체인: ✅ /Qplan → ✅ /Qgs → ✅ /Qatomic-run → 👉 /Qcode-run-task
+---
+```
+
 ## Will Not
 - Implement complex architectural changes (handle via standard **Etask-executor**)
 - Bypass the quality loop
+- Skip the handoff message

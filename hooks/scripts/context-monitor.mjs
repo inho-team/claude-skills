@@ -15,7 +15,7 @@
  * - Debounce: after the first alert, suppress re-alerts for 5 tool calls
  *   unless severity escalates.
  * - State is persisted in session-stats.json alongside existing fields.
- * - Does not use imperative tone toward the user (GSD principle).
+ * - Does not use imperative tone toward the user (QE principle).
  */
 
 import { readFileSync, existsSync } from 'fs';

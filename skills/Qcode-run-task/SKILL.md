@@ -119,7 +119,7 @@ Spawn **both agents in parallel** using a single message with two Agent tool cal
 ### Step 4: Judgment and Fix
 Assess based on combined test and review results.
 
-### Step 4.5: Phase Goal Alignment (GSD Verifier Logic)
+### Step 4.5: Phase Goal Alignment (QE Verifier Logic)
 ... (omitted) ...
 
 ### Step 4.6: Regression Gate

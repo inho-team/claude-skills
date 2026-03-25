@@ -138,7 +138,7 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 ## Document Writing Rules
 
 ### TASK_REQUEST
-- **What vs How**: Clearly separate the business goal from the technical implementation logic (from GSD Plan patterns).
+- **What vs How**: Clearly separate the business goal from the technical implementation logic (from QE planning patterns).
 - **Atomic Items**: Every checklist item must be **independent** and **verifiable**.
 - **Dependency Mapping**: If an item depends on another, mark it: `- [ ] {desc} <!-- depends_on: [UUID/Item#] -->`.
 - **Haiku-Ready**: Ensure items are small enough to be implemented without Sonnet-level reasoning.
@@ -160,6 +160,23 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 ## Self-Evolving
 - After completing tasks, if recurring patterns found, suggest template improvements
 - On user approval, reflect patterns in future generation
+
+## Mandatory Handoff Message
+After generating spec files (on "Generate Only"), you MUST display this EXACTLY:
+
+```
+---
+## PSE 다음 단계
+
+스펙 생성이 완료되었습니다. 실행을 위해 다음 명령을 실행하세요:
+
+  /Qatomic-run {UUID}
+
+PSE 체인: ✅ /Qplan → ✅ /Qgs → 👉 /Qatomic-run → /Qcode-run-task
+---
+```
+
+Note: "Generate & Execute" and "Generate & Atomic-Run" options auto-chain, so the handoff message is only needed for "Generate Only".
 
 ## Output Format
 - Wrap document content in markdown code blocks when displaying

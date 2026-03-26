@@ -40,7 +40,7 @@
 ---
 
 > [!IMPORTANT]
-> **QE Framework v3.0.1** - Multi-model role orchestration, runner-based role mapping, plugin-installable workflow updates, and clearer `/Qinit` role assignment UX.
+> **QE Framework v3.0.2** - Multi-model role orchestration, runner-based role mapping, plugin-installable workflow updates, and stricter `/Qinit` role assignment confirmation.
 >
 > **Changelog:** See [commit history](https://github.com/inho-team/qe-framework/commits/main) | **[Update instructions](#update-to-latest-version)**
 

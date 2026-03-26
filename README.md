@@ -40,7 +40,7 @@
 ---
 
 > [!IMPORTANT]
-> **QE Framework v2.2.0** - Agent Teams detection infrastructure, team mode rewrite for all agents, task history extracted from CLAUDE.md to `.qe/TASK_LOG.md`.
+> **QE Framework v3.0.1** - Multi-model role orchestration, runner-based role mapping, plugin-installable workflow updates, and clearer `/Qinit` role assignment UX.
 >
 > **Changelog:** See [commit history](https://github.com/inho-team/qe-framework/commits/main) | **[Update instructions](#update-to-latest-version)**
 

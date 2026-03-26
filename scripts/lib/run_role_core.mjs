@@ -4,7 +4,13 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { spawnSync } from 'child_process';
 import { join, resolve } from 'path';
 import { randomUUID } from 'crypto';
-import { ensureDirectory, loadAiTeamConfig, validateAiTeamConfig, writeJsonFile } from './ai_team_config.mjs';
+import {
+  ensureDirectory,
+  getWorkflowMode,
+  loadAiTeamConfig,
+  validateAiTeamConfig,
+  writeJsonFile,
+} from './ai_team_config.mjs';
 import { getProviderAdapter, listSupportedProviders } from './provider_adapters.mjs';
 
 export function parseRunRoleArgs(argv) {
@@ -82,8 +88,8 @@ function executeInvocation(command, prompt, cwd, timeoutMs) {
   });
 }
 
-function resolveConfiguredInvocation({ provider, config, roleConfig, cwd, outputFile, defaultInvocation }) {
-  const override = config.providers?.[provider]?.command;
+function resolveConfiguredInvocation({ provider, config, runnerConfig, cwd, outputFile, defaultInvocation }) {
+  const override = runnerConfig.command || config.providers?.[provider]?.command;
   if (override) {
     if (!override.executable || !Array.isArray(override.args)) {
       throw new Error(`Invalid command override for provider ${provider}. Expected { executable, args[] }.`);
@@ -92,7 +98,7 @@ function resolveConfiguredInvocation({ provider, config, roleConfig, cwd, output
       executable: override.executable,
       args: interpolateArgs(override.args, {
         cwd,
-        model: roleConfig.model,
+        model: runnerConfig.model,
         outputFile,
         prompt: defaultInvocation.prompt,
         systemPrompt: defaultInvocation.system_prompt,
@@ -108,7 +114,7 @@ function resolveConfiguredInvocation({ provider, config, roleConfig, cwd, output
     executable: defaultInvocation.suggested_cli.executable,
     args: interpolateArgs(defaultInvocation.suggested_cli.args || [], {
       cwd,
-      model: roleConfig.model,
+      model: runnerConfig.model,
       outputFile,
       prompt: defaultInvocation.prompt,
       systemPrompt: defaultInvocation.system_prompt,
@@ -133,12 +139,29 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
     throw new Error(`Invalid AI team config: ${configPath}\n- ${errors.join('\n- ')}`);
   }
 
+  const workflowMode = getWorkflowMode(config);
+  if (workflowMode === 'single-model') {
+    return {
+      ok: false,
+      help: false,
+      workflow_mode: workflowMode,
+      config_path: configPath,
+      message: 'AI team config mode is single-model; run_role_core dispatch is inactive.',
+    };
+  }
+
   const roleConfig = config.roles?.[args.role];
   if (!roleConfig) {
     throw new Error(`Unknown role: ${args.role}`);
   }
 
-  const adapter = getProviderAdapter(roleConfig.provider);
+  const runnerName = roleConfig.runner;
+  const runnerConfig = config.runners?.[runnerName];
+  if (!runnerConfig) {
+    throw new Error(`Role ${args.role} references missing runner: ${runnerName}`);
+  }
+
+  const adapter = getProviderAdapter(runnerConfig.provider);
   const inputText = loadInputText(cwd, args.input);
   const artifacts = resolveArtifacts(cwd, args.artifacts);
   const runId = args.runId || randomUUID().slice(0, 8);
@@ -147,7 +170,9 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
 
   const invocation = adapter({
     role: args.role,
+    runnerName,
     roleConfig,
+    runnerConfig,
     inputText,
     artifacts,
   });
@@ -160,7 +185,7 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
   const execution = {
     requested: args.execute,
     attempted: false,
-    timeout_ms: args.timeoutMs ?? config.providers?.[roleConfig.provider]?.timeout_ms ?? 120000,
+    timeout_ms: args.timeoutMs ?? runnerConfig.timeout_ms ?? config.providers?.[runnerConfig.provider]?.timeout_ms ?? 120000,
     command: null,
     exit_code: null,
     stdout_path: null,
@@ -170,16 +195,16 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
 
   if (args.execute) {
     const command = resolveConfiguredInvocation({
-      provider: roleConfig.provider,
+      provider: runnerConfig.provider,
       config,
-      roleConfig,
+      runnerConfig,
       cwd,
       outputFile: outputPath,
       defaultInvocation: invocation,
     });
 
     if (!command) {
-      execution.error = `No executable command is configured for provider ${roleConfig.provider}.`;
+      execution.error = `No executable command is configured for runner ${runnerName} (${runnerConfig.provider}).`;
     } else {
       execution.attempted = true;
       execution.command = command;
@@ -206,8 +231,10 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
   const result = {
     run_id: runId,
     role: args.role,
-    provider: roleConfig.provider,
-    model: roleConfig.model,
+    runner: runnerName,
+    provider: runnerConfig.provider,
+    model: runnerConfig.model,
+    workflow_mode: workflowMode,
     prompt_path: promptPath,
     run_ledger_path: ledgerPath,
     output_path: outputPath,
@@ -221,8 +248,10 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
     created_at: new Date().toISOString(),
     config_path: configPath,
     role: args.role,
-    provider: roleConfig.provider,
-    model: roleConfig.model,
+    runner: runnerName,
+    provider: runnerConfig.provider,
+    model: runnerConfig.model,
+    workflow_mode: workflowMode,
     responsibility: roleConfig.responsibility,
     input_path: args.input ? resolve(cwd, args.input) : null,
     artifact_paths: artifacts,

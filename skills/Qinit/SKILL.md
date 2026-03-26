@@ -128,6 +128,33 @@ Created with `mkdir -p`.
 #### Multi-Model Orchestration Scaffolding (Opt-in)
 Only run this block when the user explicitly wants multi-model or hybrid orchestration. Confirm via `AskUserQuestion` (yes/no) before touching `.qe/ai-team/`.
 
+Before seeding the config, ask how the user wants to map **roles to runner instances**.
+- Do not ask only for provider names.
+- A runner is a named execution slot with its own provider, model, command, and timeout.
+- Multiple roles may reuse the same runner.
+- The same provider may appear in multiple runners, such as `claude_planner`, `claude_reviewer`, and `claude_supervisor`.
+
+Recommended presets to offer:
+- `Claude + Codex + Gemini`
+- `All Claude`
+- `Custom`
+
+If the user picks `All Claude`, still create distinct runners by default:
+- `claude_planner`
+- `claude_implementer`
+- `claude_reviewer`
+- `claude_supervisor`
+
+If the user picks `Custom`, collect for each role:
+- runner name
+- provider
+- model
+- executable path
+- argument template
+- timeout
+
+Then build `roles.{role}.runner` plus the matching `runners.{runnerName}` entries.
+
 1. **Create directories**
    ```text
    .qe/ai-team/
@@ -139,6 +166,7 @@ Only run this block when the user explicitly wants multi-model or hybrid orchest
 
 2. **Seed `team-config.json`**
    - Copy `templates/ai-team/team-config.json` into `.qe/ai-team/config/team-config.json`.
+   - Rewrite the template so it matches the user's chosen role-to-runner mapping before validation.
    - Immediately run `node scripts/validate_ai_team_config.mjs .qe/ai-team/config/team-config.json` and show the pass/fail result to the user.
    - If validation fails, fix the template first; do not leave an invalid config on disk.
 

@@ -55,7 +55,7 @@ function roleDirectives(role) {
   return common;
 }
 
-function buildUserPrompt({ role, roleConfig, inputText, artifacts }) {
+function buildUserPrompt({ role, roleConfig, runnerName, runnerConfig, inputText, artifacts }) {
   const taskLineByRole = {
     planner: 'Create a planner spec and a task bundle from the provided input. Do not ask follow-up questions. Make minimal explicit assumptions when needed. Always return both the markdown spec and the final fenced json task bundle.',
     implementer: 'Implement the approved work described by the provided input and artifacts. If blocked, explain the blocker precisely.',
@@ -66,6 +66,9 @@ function buildUserPrompt({ role, roleConfig, inputText, artifacts }) {
   return [
     taskLineByRole[role] || `Perform the ${role} role.`,
     `Assigned workflow role: ${role}`,
+    `Assigned runner: ${runnerName}`,
+    `Execution provider: ${runnerConfig.provider}`,
+    `Execution model: ${runnerConfig.model}`,
     `Primary responsibility: ${roleConfig.responsibility}`,
     '',
     ...(role === 'planner'
@@ -102,11 +105,12 @@ function buildUserPrompt({ role, roleConfig, inputText, artifacts }) {
   ].join('\n');
 }
 
-function buildPromptBundle({ role, roleConfig, inputText, artifacts }) {
+function buildPromptBundle({ role, roleConfig, runnerName, runnerConfig, inputText, artifacts }) {
   return [
     `Role: ${role}`,
-    `Provider: ${roleConfig.provider}`,
-    `Model: ${roleConfig.model}`,
+    `Runner: ${runnerName}`,
+    `Provider: ${runnerConfig.provider}`,
+    `Model: ${runnerConfig.model}`,
     `Responsibility: ${roleConfig.responsibility}`,
     '',
     'Role Directives:',
@@ -196,6 +200,27 @@ const registry = {
           '',
           '--model',
           '{model}',
+        ],
+        prompt,
+      }),
+    };
+  },
+  gpt(context) {
+    const prompt = buildPromptBundle(context);
+    const executable = resolveWindowsCmd('gpt') || resolveWindowsCmd('openai') || 'openai';
+    return {
+      provider: 'gpt',
+      mode: 'prompt-bundle',
+      prompt,
+      suggested_cli: buildCliInvocation({
+        executable,
+        args: [
+          'api',
+          'chat.completions.create',
+          '--model',
+          '{model}',
+          '--input',
+          '{prompt}',
         ],
         prompt,
       }),

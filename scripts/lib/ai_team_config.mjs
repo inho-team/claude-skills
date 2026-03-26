@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 
 export const REQUIRED_ROLES = ['planner', 'implementer', 'reviewer', 'supervisor'];
+export const WORKFLOW_MODES = ['single-model', 'multi-model', 'hybrid'];
 const DEFAULT_SCHEMA_PATH = 'core/schemas/team-config.schema.json';
 
 const schemaCache = new Map();
@@ -16,10 +17,58 @@ export function getTeamConfigSchemaPath(cwd, schemaArg = DEFAULT_SCHEMA_PATH) {
   return resolve(cwd, schemaArg);
 }
 
+export function hasAiTeamConfig(cwd, fileArg = '.qe/ai-team/config/team-config.json') {
+  const path = getAiTeamConfigPath(cwd, fileArg);
+  return existsSync(path);
+}
+
 export function readJsonFile(path) {
   const raw = readFileSync(path, 'utf8');
   const normalized = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
   return JSON.parse(normalized);
+}
+
+function toRunnerName(role, provider) {
+  return `${provider || 'custom'}_${role}`;
+}
+
+function normalizeLegacyConfig(config) {
+  if (config.runners) return config;
+
+  const normalized = {
+    ...config,
+    roles: { ...(config.roles || {}) },
+    runners: {},
+  };
+
+  for (const role of REQUIRED_ROLES) {
+    const roleConfig = normalized.roles[role];
+    if (!roleConfig) continue;
+
+    if (roleConfig.runner) continue;
+
+    const runnerName = toRunnerName(role, roleConfig.provider);
+    const providerOverride = config.providers?.[roleConfig.provider] || {};
+
+    normalized.runners[runnerName] = {
+      provider: roleConfig.provider,
+      model: roleConfig.model,
+      ...(providerOverride.timeout_ms ? { timeout_ms: providerOverride.timeout_ms } : {}),
+      ...(providerOverride.command ? { command: providerOverride.command } : {}),
+    };
+
+    normalized.roles[role] = {
+      runner: runnerName,
+      responsibility: roleConfig.responsibility,
+    };
+  }
+
+  delete normalized.providers;
+  return normalized;
+}
+
+export function normalizeAiTeamConfig(config) {
+  return normalizeLegacyConfig(config);
 }
 
 export function loadAiTeamConfig(cwd, fileArg) {
@@ -28,7 +77,9 @@ export function loadAiTeamConfig(cwd, fileArg) {
     throw new Error(`Missing AI team config: ${path}`);
   }
 
-  return { path, config: readJsonFile(path) };
+  const rawConfig = readJsonFile(path);
+  const config = normalizeAiTeamConfig(rawConfig);
+  return { path, config, rawConfig };
 }
 
 function loadSchema(schemaPath) {
@@ -203,7 +254,42 @@ export function validateAiTeamConfig(config, options = {}) {
   const cwd = options.cwd ?? process.cwd();
   const schemaPath = options.schemaPath ?? getTeamConfigSchemaPath(cwd);
   const schema = loadSchema(schemaPath);
-  return validateAgainstSchema(schema, config, { path: '', rootSchema: schema });
+  const normalizedConfig = normalizeAiTeamConfig(config);
+  const errors = validateAgainstSchema(schema, normalizedConfig, { path: '', rootSchema: schema });
+
+  for (const role of REQUIRED_ROLES) {
+    const roleConfig = normalizedConfig.roles?.[role];
+    if (!roleConfig?.runner) {
+      errors.push(`roles.${role}.runner is required`);
+      continue;
+    }
+    if (!normalizedConfig.runners?.[roleConfig.runner]) {
+      errors.push(`roles.${role}.runner references missing runner ${roleConfig.runner}`);
+    }
+  }
+
+  return [...new Set(errors)];
+}
+
+export function getWorkflowMode(config, fallback = 'single-model') {
+  const mode = config?.mode;
+  if (typeof mode !== 'string') {
+    return fallback;
+  }
+  return WORKFLOW_MODES.includes(mode) ? mode : fallback;
+}
+
+export function isMultiModelMode(config) {
+  const mode = getWorkflowMode(config);
+  return mode === 'multi-model' || mode === 'hybrid';
+}
+
+export function detectWorkflowMode(cwd, fileArg = '.qe/ai-team/config/team-config.json') {
+  if (!hasAiTeamConfig(cwd, fileArg)) {
+    return 'single-model';
+  }
+  const { config } = loadAiTeamConfig(cwd, fileArg);
+  return getWorkflowMode(config);
 }
 
 export function ensureDirectory(path) {

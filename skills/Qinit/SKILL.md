@@ -128,6 +128,13 @@ Created with `mkdir -p`.
 #### Multi-Model Orchestration Scaffolding (Opt-in)
 Only run this block when the user explicitly wants **multiple AIs assigned by role** (`multi-model`) or a **mixed setup where only some roles use another AI** (`hybrid`). Confirm via `AskUserQuestion` (yes/no) before touching `.qe/ai-team/`.
 
+This block is mandatory once the user opts in.
+- Do not silently copy the default template and continue.
+- Do not assume `Claude + Codex + Gemini` unless the user explicitly picks it.
+- Do not skip role assignment questions when `.qe/ai-team/` is being created for the first time.
+- Before writing `.qe/ai-team/config/team-config.json`, you **must** collect or confirm the role mapping for `planner`, `implementer`, `reviewer`, and `supervisor`.
+- If the user chooses a preset, you **must** still show the resulting role-to-runner mapping and get confirmation before writing the config.
+
 Before seeding the config, explain the setup in user-facing language and then ask how the user wants to assign AIs to roles.
 - First use plain language such as: "Do you want to use one AI for everything, or split work by role (for example: planning with Claude, implementation with Codex, review with Gemini)?"
 - Do not ask only for provider names with no explanation.
@@ -139,6 +146,11 @@ Recommended starting choices to offer:
 - `Claude + Codex + Gemini`
 - `All Claude`
 - `Custom`
+
+Even when the user chooses a quick preset, ask one confirmation question in plain language:
+- `I will assign planning, implementation, review, and final verification using this setup. Do you want to keep this mapping or change any role?`
+
+If the user wants to change any role, switch immediately to role-by-role questions.
 
 If the user picks `All Claude`, still create distinct runners by default:
 - `claude_planner`
@@ -174,11 +186,13 @@ Recommended question flow:
    - `Which AI should handle implementation (implementer)?`
    - `Which AI should handle review (reviewer)?`
    - `Which AI should handle the final decision (supervisor)?`
+   - After each answer, ask the runner details needed to build a valid config if they are not already implied by an existing runner.
 4. After collecting answers, show a short summary such as:
    - `planner -> claude_planner`
    - `implementer -> codex_implementer`
    - `reviewer -> gemini_reviewer`
    - `supervisor -> claude_supervisor`
+5. Ask for explicit confirmation before writing `.qe/ai-team/config/team-config.json`.
 
 1. **Create directories**
    ```text
@@ -192,6 +206,7 @@ Recommended question flow:
 2. **Seed `team-config.json`**
    - Copy `templates/ai-team/team-config.json` into `.qe/ai-team/config/team-config.json`.
    - Rewrite the template so it matches the user's chosen role-to-runner mapping before validation.
+   - If any role mapping was not explicitly chosen or confirmed, stop and ask the missing question before writing the file.
    - Immediately run `node scripts/validate_ai_team_config.mjs .qe/ai-team/config/team-config.json` and show the pass/fail result to the user.
    - If validation fails, fix the template first; do not leave an invalid config on disk.
 

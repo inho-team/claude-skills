@@ -126,6 +126,12 @@ See [core/MULTI_MODEL_ORCHESTRATION.md](core/MULTI_MODEL_ORCHESTRATION.md) and [
 
 Run these commands in your **terminal** (not inside a Claude Code session):
 
+### Step 0: Install Claude Code CLI
+If `claude` is not available yet, install the official CLI first:
+```bash
+claude install
+```
+
 ### Step 1: Register marketplace (first time only)
 ```bash
 claude plugin marketplace add inho-team/qe-framework
@@ -147,6 +153,14 @@ claude plugin list
 ```
 
 ### Troubleshooting
+
+**`claude` command is missing**
+
+Install the official Claude Code CLI first:
+```bash
+claude install
+```
+Then restart your terminal and retry the plugin commands.
 
 **SSH permission denied error during install**
 

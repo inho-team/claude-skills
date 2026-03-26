@@ -4,28 +4,27 @@
   "default_language": "en",
   "roles": {
     "planner": {
-      "provider": "claude",
-      "model": "sonnet",
+      "runner": "claude_planner",
       "responsibility": "Create and refine executable specs"
     },
     "implementer": {
-      "provider": "codex",
-      "model": "gpt-5-codex",
+      "runner": "codex_implementer",
       "responsibility": "Implement approved task items"
     },
     "reviewer": {
-      "provider": "gemini",
-      "model": "gemini-2.5-pro",
+      "runner": "gemini_reviewer",
       "responsibility": "Independently review implementation quality and regressions"
     },
     "supervisor": {
-      "provider": "claude",
-      "model": "opus",
+      "runner": "claude_supervisor",
       "responsibility": "Make the final pass or remediation decision"
     }
   },
-  "providers": {
-    "claude": {
+  "runners": {
+    "claude_planner": {
+      "provider": "claude",
+      "model": "sonnet",
+      "display_name": "Claude Planner",
       "timeout_ms": 300000,
       "command": {
         "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\claude.cmd",
@@ -40,7 +39,10 @@
         ]
       }
     },
-    "codex": {
+    "codex_implementer": {
+      "provider": "codex",
+      "model": "gpt-5-codex",
+      "display_name": "Codex Implementer",
       "timeout_ms": 600000,
       "command": {
         "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\codex.cmd",
@@ -59,7 +61,10 @@
         ]
       }
     },
-    "gemini": {
+    "gemini_reviewer": {
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "display_name": "Gemini Reviewer",
       "timeout_ms": 300000,
       "command": {
         "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\gemini.cmd",
@@ -67,6 +72,24 @@
           "--prompt",
           "",
           "--approval-mode",
+          "plan",
+          "--model",
+          "{model}"
+        ]
+      }
+    },
+    "claude_supervisor": {
+      "provider": "claude",
+      "model": "opus",
+      "display_name": "Claude Supervisor",
+      "timeout_ms": 300000,
+      "command": {
+        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\claude.cmd",
+        "args": [
+          "--print",
+          "--append-system-prompt",
+          "{system_prompt}",
+          "--permission-mode",
           "plan",
           "--model",
           "{model}"

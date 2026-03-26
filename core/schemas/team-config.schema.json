@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://qe-framework/core/schemas/team-config.schema.json",
   "title": "QE AI Team Configuration",
@@ -8,6 +8,7 @@
     "version",
     "mode",
     "roles",
+    "runners",
     "policies"
   ],
   "properties": {
@@ -32,8 +33,10 @@
     },
     "roles": {
       "type": "object",
-      "description": "Role to provider/model assignments.",
-      "additionalProperties": true,
+      "description": "Role to runner assignments. Must include planner, implementer, reviewer, and supervisor; additional roles follow the same schema.",
+      "additionalProperties": {
+        "$ref": "#/$defs/roleDefinition"
+      },
       "required": [
         "planner",
         "implementer",
@@ -55,14 +58,21 @@
         }
       }
     },
-    "providers": {
+    "runners": {
       "type": "object",
-      "description": "Optional provider command overrides.",
+      "description": "Named runner instances used by roles. Multiple roles may share a runner, or a provider may appear more than once with different models and commands.",
       "additionalProperties": false,
       "patternProperties": {
         ".+": {
-          "$ref": "#/$defs/providerConfig"
+          "$ref": "#/$defs/runnerConfig"
         }
+      }
+    },
+    "providers": {
+      "type": "object",
+      "description": "Optional provider-level overrides that apply when multiple runners share a provider.",
+      "additionalProperties": {
+        "$ref": "#/$defs/providerOverride"
       }
     },
     "policies": {
@@ -74,9 +84,37 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "provider",
-        "model",
+        "runner",
         "responsibility"
+      ],
+      "properties": {
+        "runner": {
+          "type": "string"
+        },
+        "responsibility": {
+          "type": "string"
+        }
+      }
+    },
+    "providerOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "command": {
+          "$ref": "#/$defs/providerCommand"
+        }
+      }
+    },
+    "runnerConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model"
       ],
       "properties": {
         "provider": {
@@ -85,15 +123,9 @@
         "model": {
           "type": "string"
         },
-        "responsibility": {
+        "display_name": {
           "type": "string"
-        }
-      }
-    },
-    "providerConfig": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
+        },
         "timeout_ms": {
           "type": "integer",
           "minimum": 1000

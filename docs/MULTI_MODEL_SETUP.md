@@ -4,7 +4,7 @@
 
 ## Overview
 - Multi-model orchestration separates planning, implementation, review, and supervision so no single model plans and grades its own work.
-- The new workflow relies on config + artifacts under `.qe/ai-team/` to pass context between roles and providers.
+- The new workflow relies on config + artifacts under `.qe/ai-team/` to pass context between roles and named runner instances.
 - Backward compatibility is preserved: nothing changes until `team-config.json` exists with `mode` set to `multi-model` or `hybrid`.
 
 ## Modes
@@ -22,12 +22,12 @@
      artifacts/{role-spec.md,task-bundle.json,implementation-report.md,review-report.md,verification-report.md}
      runs/
    ```
-2. Validate configs with `node scripts/validate_ai_team_config.mjs .qe/ai-team/config/team-config.json`.
-3. Edit the template to match your providers. Fields enforced by `core/schemas/team-config.schema.json`:
+2. Validate configs with `node scripts/validate_ai_team_config.mjs .qe/ai-team/config/team-config.json`. Pass `--schema core/schemas/team-config.schema.json` (or another path) when testing schema changes.
+3. Edit the template to match your runner assignments. Fields enforced by `core/schemas/team-config.schema.json`:
    - `version`: must be `1`.
    - `mode`: `single-model`, `multi-model`, or `hybrid`.
-   - `roles`: planner, implementer, reviewer, supervisor definitions (provider/model/responsibility required per role).
-   - `providers` (optional): execution commands, timeouts, etc.
+   - `roles`: planner, implementer, reviewer, supervisor definitions (`runner` + `responsibility` required per role).
+   - `runners`: named execution instances. Each runner defines `provider`, `model`, and optional `command`/`timeout_ms`.
    - `policies`: `max_remediation_rounds`, `reviewer_can_edit`, `implementer_can_modify_spec`, plus optional `require_review_before_complete`.
 
 ### Annotated Example
@@ -37,25 +37,27 @@
   "mode": "multi-model",                     // flips orchestration features on
   "roles": {
     "planner": {
-      "provider": "claude",                  // default provider
-      "model": "sonnet",
+      "runner": "claude_planner",
       "responsibility": "Create and refine executable specs"
     },
     "implementer": {
-      "provider": "codex",
-      "model": "gpt-5-codex",
+      "runner": "codex_implementer",
       "responsibility": "Implement approved task items"
     },
     "reviewer": {
-      "provider": "gemini",
-      "model": "gemini-2.5-pro",
+      "runner": "gemini_reviewer",
       "responsibility": "Independently review implementation quality and regressions"
     },
     "supervisor": {
-      "provider": "claude",
-      "model": "opus",
+      "runner": "claude_supervisor",
       "responsibility": "Approve, reject, or request remediation"
     }
+  },
+  "runners": {
+    "claude_planner": { "provider": "claude", "model": "sonnet" },
+    "codex_implementer": { "provider": "codex", "model": "gpt-5-codex" },
+    "gemini_reviewer": { "provider": "gemini", "model": "gemini-2.5-pro" },
+    "claude_supervisor": { "provider": "claude", "model": "opus" }
   },
   "policies": {
     "max_remediation_rounds": 2,
@@ -65,6 +67,25 @@
   }
 }
 ```
+
+### Why Runners Exist
+
+Roles and provider names are not the same thing.
+
+- A role answers: what responsibility does this step own?
+- A runner answers: which concrete CLI/model instance executes that role?
+
+This matters when you want:
+- Claude for planner and Claude again for supervisor
+- Claude for all four roles, but with different models or flags
+- multiple Codex or Gemini runner variants in the same project
+
+Example presets:
+- `Claude + Codex + Gemini`
+- `All Claude`
+- `Custom`
+
+`/Qinit` should ask for role-to-runner mapping, not just provider names.
 
 ## Role Mappings
 Primary PSE chain with role ownership:
@@ -94,7 +115,7 @@ flowchart LR
 ## Artifact Contract
 | Artifact | Path | Owner | Purpose |
 |----------|------|-------|---------|
-| `team-config.json` | `.qe/ai-team/config/` | project maintainer | Enables multi/hybrid orchestration + provider routing. |
+| `team-config.json` | `.qe/ai-team/config/` | project maintainer | Enables multi/hybrid orchestration + role-to-runner routing. |
 | `role-spec.md` | `.qe/ai-team/artifacts/` | planner only | Objective, scope, constraints, acceptance criteria, execution notes. |
 | `task-bundle.json` | `.qe/ai-team/artifacts/` | planner only | Machine-readable tasks with IDs, owners, wave numbers, acceptance criteria. |
 | `implementation-report.md` | `.qe/ai-team/artifacts/` | implementer | Changed files, commands/checks run, unresolved risks. |
@@ -103,7 +124,7 @@ flowchart LR
 
 ## Getting Started Checklist
 1. **Scaffold**: Run `/Qinit`, opt into multi-model scaffolding, and confirm directories plus placeholder artifacts exist.
-2. **Configure**: Edit `.qe/ai-team/config/team-config.json` for your providers; re-run `scripts/validate_ai_team_config.mjs`.
+2. **Configure**: Edit `.qe/ai-team/config/team-config.json` for your runners; re-run `scripts/validate_ai_team_config.mjs`.
 3. **Plan**: Run `/Qplan`, ensure planner updates `.qe/planning/*`, and write `role-spec.md` + `task-bundle.json`.
 4. **Spec**: Run `/Qgenerate-spec` (Qgs); it mirrors new tasks into the planner artifacts after generating TASK_REQUEST/VERIFY_CHECKLIST files.
 5. **Implement**: Use `/Qatomic-run` (or `/Qrun-task` when necessary). Implementer must append to `implementation-report.md` before handing off.

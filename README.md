@@ -110,10 +110,12 @@ Recommended role split:
 - `supervisor`: decides pass, fail, or remediation
 
 Example mapping:
-- Claude -> planner
-- Codex -> implementer
-- Gemini -> reviewer
-- Claude -> supervisor
+- `planner` -> `claude_planner`
+- `implementer` -> `codex_implementer`
+- `reviewer` -> `gemini_reviewer`
+- `supervisor` -> `claude_supervisor`
+
+Runner definitions then map those names to actual provider/model pairs, so the same provider can appear more than once.
 
 This is configured per project through `.qe/ai-team/config/team-config.json`.
 See [core/MULTI_MODEL_ORCHESTRATION.md](core/MULTI_MODEL_ORCHESTRATION.md) and [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md).

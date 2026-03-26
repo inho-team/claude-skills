@@ -15,7 +15,7 @@ This keeps the QE workflow portable across Claude, Gemini, Codex, GPT, or any fu
 
 The orchestration layer must answer:
 1. Which role runs at each stage?
-2. Which provider/model is assigned to that role?
+2. Which runner instance is assigned to that role?
 3. What artifact does the role read?
 4. What artifact must it produce?
 5. Who can approve, reject, or request remediation?
@@ -34,7 +34,7 @@ Good:
 - `reviewer` performs independent verification against the spec
 - `supervisor` decides pass, fail, or remediation
 
-Provider assignment is configuration, not architecture.
+Runner assignment is configuration, not architecture.
 
 ## Canonical Role Set
 
@@ -114,7 +114,8 @@ Artifacts should live under `.qe/ai-team/`.
 
 Project-level configuration should define:
 - active workflow mode
-- role to provider mapping
+- role to runner mapping
+- runner instance definitions
 - fallback order
 - review strictness
 - remediation limits
@@ -127,24 +128,38 @@ Example:
   "mode": "multi-model",
   "roles": {
     "planner": {
-      "provider": "claude",
-      "model": "sonnet",
+      "runner": "claude_planner",
       "responsibility": "Create and refine executable specs"
     },
     "implementer": {
-      "provider": "codex",
-      "model": "gpt-5-codex",
+      "runner": "codex_implementer",
       "responsibility": "Implement approved checklist items"
     },
     "reviewer": {
-      "provider": "gemini",
-      "model": "gemini-2.5-pro",
+      "runner": "gemini_reviewer",
       "responsibility": "Perform independent review and regression analysis"
     },
     "supervisor": {
-      "provider": "claude",
-      "model": "opus",
+      "runner": "claude_supervisor",
       "responsibility": "Approve, reject, or request remediation"
+    }
+  },
+  "runners": {
+    "claude_planner": {
+      "provider": "claude",
+      "model": "sonnet"
+    },
+    "codex_implementer": {
+      "provider": "codex",
+      "model": "gpt-5-codex"
+    },
+    "gemini_reviewer": {
+      "provider": "gemini",
+      "model": "gemini-2.5-pro"
+    },
+    "claude_supervisor": {
+      "provider": "claude",
+      "model": "opus"
     }
   },
   "policies": {
@@ -206,7 +221,7 @@ The implementer is no longer allowed to silently reshape the task during executi
 Independent review is structurally stronger than self-review, especially for regressions and omitted tests.
 
 ### 4. Lowers vendor lock-in
-Changing providers becomes a config operation instead of a framework rewrite.
+Changing runners or providers becomes a config operation instead of a framework rewrite.
 
 ### 5. Enables cost tuning
 Different roles can use different model classes based on complexity and budget.
@@ -235,6 +250,19 @@ Secondary path:
 
 In single-model mode, Claude may own all roles.
 In multi-model mode, roles are distributed by config.
+
+The same provider may be used multiple times through distinct runner names.
+
+Example:
+- `claude_planner`
+- `claude_implementer`
+- `claude_reviewer`
+- `claude_supervisor`
+
+That allows `/Qinit` to support presets such as:
+- all Claude
+- Claude + Codex + Gemini
+- custom mixed runners
 
 ## Compatibility Strategy
 

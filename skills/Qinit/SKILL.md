@@ -126,15 +126,16 @@ Sets the character budget for slash command tool descriptions so all skills fit 
 Created with `mkdir -p`.
 
 #### Multi-Model Orchestration Scaffolding (Opt-in)
-Only run this block when the user explicitly wants multi-model or hybrid orchestration. Confirm via `AskUserQuestion` (yes/no) before touching `.qe/ai-team/`.
+Only run this block when the user explicitly wants **multiple AIs assigned by role** (`multi-model`) or a **mixed setup where only some roles use another AI** (`hybrid`). Confirm via `AskUserQuestion` (yes/no) before touching `.qe/ai-team/`.
 
-Before seeding the config, ask how the user wants to map **roles to runner instances**.
-- Do not ask only for provider names.
-- A runner is a named execution slot with its own provider, model, command, and timeout.
+Before seeding the config, explain the setup in user-facing language and then ask how the user wants to assign AIs to roles.
+- First use plain language such as: "Do you want to use one AI for everything, or split work by role (for example: planning with Claude, implementation with Codex, review with Gemini)?"
+- Do not ask only for provider names with no explanation.
+- When the word `runner` appears, explain it immediately: `runner (the saved AI execution setup used for a role)`.
 - Multiple roles may reuse the same runner.
 - The same provider may appear in multiple runners, such as `claude_planner`, `claude_reviewer`, and `claude_supervisor`.
 
-Recommended presets to offer:
+Recommended starting choices to offer:
 - `Claude + Codex + Gemini`
 - `All Claude`
 - `Custom`
@@ -145,8 +146,18 @@ If the user picks `All Claude`, still create distinct runners by default:
 - `claude_reviewer`
 - `claude_supervisor`
 
-If the user picks `Custom`, collect for each role:
-- runner name
+If the user picks `Custom`, ask role by role instead of asking for one vague "multi-model" setup.
+- `planner (the role that makes the plan)`:
+  ask which AI should handle planning
+- `implementer (the role that writes the implementation)`:
+  ask which AI should handle implementation
+- `reviewer (the role that checks the work)`:
+  ask which AI should handle review
+- `supervisor (the role that makes the final pass/fail decision)`:
+  ask which AI should handle the final gate
+
+For each role, collect:
+- runner name (`runner`, the saved AI setup used for that role)
 - provider
 - model
 - executable path
@@ -154,6 +165,20 @@ If the user picks `Custom`, collect for each role:
 - timeout
 
 Then build `roles.{role}.runner` plus the matching `runners.{runnerName}` entries.
+
+Recommended question flow:
+1. `Do you want to use one AI for the whole project, or split roles across multiple AIs (multi-model)?`
+2. If split roles is selected: `Do you want a quick preset, or do you want to choose the AI for each role one by one?`
+3. If choosing one by one, ask in this order:
+   - `Which AI should handle planning (planner)?`
+   - `Which AI should handle implementation (implementer)?`
+   - `Which AI should handle review (reviewer)?`
+   - `Which AI should handle the final decision (supervisor)?`
+4. After collecting answers, show a short summary such as:
+   - `planner -> claude_planner`
+   - `implementer -> codex_implementer`
+   - `reviewer -> gemini_reviewer`
+   - `supervisor -> claude_supervisor`
 
 1. **Create directories**
    ```text
@@ -181,7 +206,8 @@ Then build `roles.{role}.runner` plus the matching `runners.{runnerName}` entrie
    Prefill each with a one-line placeholder such as `> Pending output from {role}` so ownership is obvious.
 
 5. **Communicate next steps**
-   - Tell the user that `/Qplan` and `/Qgenerate-spec` must now write the planner artifacts.
+   - Tell the user in plain language: `Setup is complete. The usual workflow is /Qplan -> /Qatomic-run -> /Qcode-run-task.`
+   - Then explain that `/Qplan` and `/Qgenerate-spec` will now write the planner artifacts.
    - Remind them that implementer/reviewer/supervisor roles will produce their reports under `.qe/ai-team/artifacts/`.
 
 Existing single-model initialization must not change when the user declines multi-model scaffolding.

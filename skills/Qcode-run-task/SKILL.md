@@ -22,6 +22,8 @@ An assistant that ensures quality by performing a **test → review → fix → 
 - Task has `type: code` specified in TASK_REQUEST
 - TASK_REQUEST and VERIFY_CHECKLIST documents exist
 
+In the primary `Qplan` chain, `/Qcode-run-task` is the verification stage that follows `/Qatomic-run`.
+
 ## Workflow Overview
 
 ```
@@ -60,6 +62,26 @@ Step 5: Report results
 - Project test structure and patterns
 
 **After Eqa-orchestrator returns**, proceed directly to Step 5 (Report Results) using the returned summary.
+
+## Multi-Model Role Mode
+
+If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qcode-run-task` is where the reviewer and supervisor roles are enforced.
+
+Reviewer enforcement:
+- Read `.qe/ai-team/artifacts/implementation-report.md` and `task-bundle.json` before starting the quality loop.
+- Produce `.qe/ai-team/artifacts/review-report.md` summarizing **findings first**. Required sections: `## Verdict (approve|request_changes)`, `## Findings` (each with `file:line` references), `## Tests Observed`, `## Follow-ups`.
+- Block task completion until the review report exists and, if the verdict is `request_changes`, remediation is either completed or explicitly waived by the supervisor per project policy.
+- Reviewers must not act as second implementers; fixes happen via Etask-executor or implementer reruns.
+
+Supervisor enforcement:
+- After review completes, write `.qe/ai-team/artifacts/verification-report.md` with `## Final Decision (pass|partial|fail|escalate)`, `## Evidence`, and any remediation instructions.
+- Supervisor owns the final gate; do not mark the task finished until this report is written, and do not introduce net-new scope in this stage.
+
+Scope guardrails:
+- Verify that changed files in the implementation report stay within planner-defined ownership from `task-bundle.json`.
+- Escalate (request planner input) if scope drift is detected.
+
+These requirements apply only when the config mode is multi-model/hybrid; in single-model mode, legacy behavior remains unchanged.
 
 **Opt-in manual mode:** If the user explicitly requests step-by-step control, or if Eqa-orchestrator fails, fall back to the manual execution procedure below.
 

@@ -28,6 +28,26 @@ You are a specialist document writer acting as a **sub-component of the `/Qplan`
 - Multiple tasks get separate TASK_REQUEST / VERIFY_CHECKLIST pairs.
 - Newly generated documents always go in `pending/`.
 
+## Multi-Model Role Mode
+
+If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model` or `hybrid`, `/Qgenerate-spec` must also act as the planner-stage artifact generator.
+
+### Artifact emission order
+1. Generate the standard documents (CLAUDE.md, TASK_REQUEST, VERIFY_CHECKLIST) first.
+2. Immediately after writing both TASK_REQUEST and VERIFY_CHECKLIST pairs, mirror that information into:
+
+| Filename | Path | Owner | Content Rules |
+|----------|------|-------|---------------|
+| `role-spec.md` | `.qe/ai-team/artifacts/` | planner | Markdown w/ `# Role Spec`, `## Objective`, `## Scope`, `## Constraints`, `## Acceptance Criteria`, `## Execution Notes`. Populate these sections directly from the current TASK_REQUEST + roadmap context so implementers gain the same scope without reopening /Qplan. |
+| `task-bundle.json` | `.qe/ai-team/artifacts/` | planner | JSON `{ \"tasks\": [ ... ] }`. Each task entry MUST include: `id` (UUID), `title`, `status` (default `pending`), `owner` (role or name), `wave` (phase index), and `acceptance_criteria` (array). Optionally include `checklist`, `files`, or `dependencies` arrays derived from the TASK_REQUEST content. |
+
+### Guardrails
+- Only emit these files when config mode is not `single-model`; otherwise skip entirely.
+- Overwrite planner-owned artifacts only for the UUIDs being regenerated; preserve other tasks in the JSON array.
+- Derive `owner` from the `roles` mapping in `team-config.json` (e.g., `implementer.provider`).
+- Keep planner artifacts in sync with whatever you just wrote to `.qe/tasks/` so reviewers never see conflicting instructions.
+- Never let implementer/reviewer instructions bleed into these files; they must remain planner voice only.
+
 ## Workflow
 
 ### Step 1: Context Acquisition (Mandatory)
@@ -143,6 +163,7 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - **Dependency Mapping**: If an item depends on another, mark it: `- [ ] {desc} <!-- depends_on: [UUID/Item#] -->`.
 - **Haiku-Ready**: Ensure items are small enough to be implemented without Sonnet-level reasoning.
 - **Output files**: Always append `→ output: {file-path}` for direct accountability.
+- **Role ownership**: In multi-model mode, identify the expected implementer-owned files or modules so the reviewer can later judge boundary violations.
 
 ### VERIFY_CHECKLIST
 - Each criterion answerable as yes/no

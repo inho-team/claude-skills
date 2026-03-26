@@ -54,6 +54,38 @@ After execution is complete (by /Qatomic-run + /Qcode-run-task), review the resu
 | `research/` | Deep technical research reports and domain analysis. |
 | `phases/{X}/` | Phase artifacts directory. |
 
+## Multi-Model Role Mode
+
+If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qplan` remains the planner entry point.
+
+Additional responsibilities in that mode:
+- Read the role mapping before planning
+- Record planning decisions so downstream roles inherit the same scope
+- Ensure the active phase in `.qe/planning/STATE.md` matches the objective that later appears in `.qe/ai-team/artifacts/role-spec.md`
+- Treat external provider choice as configuration, not as a change to the planning method
+
+### Planner Artifacts (role-owned outputs)
+Only when multi-model or hybrid mode is active, write the following after Step 3 (phase activation) without altering the legacy `.qe/planning/*` outputs:
+
+| Artifact | Path | Content Requirements |
+|----------|------|----------------------|
+| `role-spec.md` | `.qe/ai-team/artifacts/` | Markdown with headings `# Role Spec`, `## Objective`, `## Scope`, `## Constraints`, `## Acceptance Criteria`, `## Execution Notes`. Populate each section from the active phase, requirements, and decisions. Call out which roles own which responsibilities and reference the relevant TASK_REQUEST UUIDs that will flow into Qgs. |
+| `task-bundle.json` | `.qe/ai-team/artifacts/` | JSON object `{ \"tasks\": [...] }` where each task entry includes `id`, `title`, `status`, `owner`, `wave`, and `acceptance_criteria` (array of strings). Derive IDs from roadmap/phase breakdown so implementers can trace items back to planning. Default `status` to `pending` unless a phase already started. |
+
+Rules:
+- Never emit these planner artifacts in `single-model` mode (keep backward compatibility).
+- Overwrite planner-owned artifacts only when the planner intentionally revises the scope; otherwise append new waves.
+- Keep `.qe/planning/` as the architectural source of truth and mirror, not replace, its content in the planner artifacts so implementers/reviewers can work offline from `.qe/ai-team/artifacts/`.
+
+Planner-stage source of truth in multi-model mode:
+- `.qe/planning/PROJECT.md`
+- `.qe/planning/ROADMAP.md`
+- `.qe/planning/REQUIREMENTS.md`
+- `.qe/planning/DECISION_LOG.md`
+- `.qe/planning/STATE.md`
+- `.qe/ai-team/artifacts/role-spec.md`
+- `.qe/ai-team/artifacts/task-bundle.json`
+
 ## Mandatory Handoff Message
 After completing planning, you MUST display this EXACTLY:
 

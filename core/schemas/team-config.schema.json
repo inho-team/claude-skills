@@ -1,0 +1,159 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qe-framework/core/schemas/team-config.schema.json",
+  "title": "QE AI Team Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "mode",
+    "roles",
+    "policies"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema / config version. Must be 1."
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "single-model",
+        "multi-model",
+        "hybrid"
+      ],
+      "description": "Workflow orchestration mode."
+    },
+    "default_language": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+      "description": "ISO language tag used for generated artifacts (e.g., en or en-US)."
+    },
+    "roles": {
+      "type": "object",
+      "description": "Role to provider/model assignments.",
+      "additionalProperties": true,
+      "required": [
+        "planner",
+        "implementer",
+        "reviewer",
+        "supervisor"
+      ],
+      "properties": {
+        "planner": {
+          "$ref": "#/$defs/roleDefinition"
+        },
+        "implementer": {
+          "$ref": "#/$defs/roleDefinition"
+        },
+        "reviewer": {
+          "$ref": "#/$defs/roleDefinition"
+        },
+        "supervisor": {
+          "$ref": "#/$defs/roleDefinition"
+        }
+      }
+    },
+    "providers": {
+      "type": "object",
+      "description": "Optional provider command overrides.",
+      "additionalProperties": false,
+      "patternProperties": {
+        ".+": {
+          "$ref": "#/$defs/providerConfig"
+        }
+      }
+    },
+    "policies": {
+      "$ref": "#/$defs/policyConfig"
+    }
+  },
+  "$defs": {
+    "roleDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model",
+        "responsibility"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "responsibility": {
+          "type": "string"
+        }
+      }
+    },
+    "providerConfig": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "command": {
+          "$ref": "#/$defs/providerCommand"
+        }
+      }
+    },
+    "providerCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executable",
+        "args"
+      ],
+      "properties": {
+        "executable": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "policyConfig": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "max_remediation_rounds",
+        "reviewer_can_edit",
+        "implementer_can_modify_spec"
+      ],
+      "properties": {
+        "max_remediation_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 2,
+          "description": "Number of remediation loops allowed before escalation. Defaults to 2."
+        },
+        "reviewer_can_edit": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether reviewers may commit code changes. Defaults to false."
+        },
+        "implementer_can_modify_spec": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether implementers may change planner-authored specs. Defaults to false."
+        },
+        "require_review_before_complete": {
+          "type": "boolean",
+          "default": true,
+          "description": "Require review + supervision gate before marking work complete. Defaults to true."
+        }
+      }
+    }
+  }
+}

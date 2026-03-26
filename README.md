@@ -27,20 +27,20 @@
 
 <br/>
 
-**Overview:** [Philosophy](#philosophy) · [SVS Loop](#philosophy) · [Architecture](#architecture) · [How It Works](#background-processing)
+**Overview:** [Philosophy](#philosophy) | [PSE Loop](#philosophy) | [Architecture](#architecture) | [How It Works](#background-processing)
 
-**Get Started:** [Installation](#installation) · [Initialize](#initialize-a-project) · [Usage](#usage)
+**Get Started:** [Installation](#installation) | [Initialize](#initialize-a-project) | [Usage](#usage)
 
-**Reference:** [Skills](#skills-68--72-coding-experts) · [Coding Experts](#coding-expert-skills-72) · [Agents](#agents-21) · [Hooks](#lifecycle-hooks) · [Agent Teams](#agent-teams-experimental)
+**Reference:** [Skills](#skills-68--72-coding-experts) | [Coding Experts](#coding-expert-skills-72) | [Agents](#agents-21) | [Hooks](#lifecycle-hooks) | [Agent Teams](#agent-teams-experimental)
 
-**[English](README.md)** | [한국어](docs/README.ko.md) | [中文](docs/README.zh.md) | [日本語](docs/README.ja.md)
+**[English](README.md)** | [Korean](docs/README.ko.md) | [Chinese](docs/README.zh.md) | [Japanese](docs/README.ja.md)
 
 </div>
 
 ---
 
 > [!IMPORTANT]
-> **QE Framework v2.2.0** — Agent Teams detection infrastructure, team mode rewrite for all agents, task history extracted from CLAUDE.md to `.qe/TASK_LOG.md`.
+> **QE Framework v2.2.0** - Agent Teams detection infrastructure, team mode rewrite for all agents, task history extracted from CLAUDE.md to `.qe/TASK_LOG.md`.
 >
 > **Changelog:** See [commit history](https://github.com/inho-team/qe-framework/commits/main) | **[Update instructions](#update-to-latest-version)**
 
@@ -51,25 +51,32 @@
 
 <div align="center">
 
-## Every query deserves a spec. Every spec deserves verification.
+## Every query deserves a plan, a spec, execution, and verification.
 
 </div>
 
 ## Philosophy
 
-QE Framework turns vague requests into spec-driven, verified, and supervised task execution through the **SVS Loop** (Spec → Verify → Supervise):
+QE Framework turns vague requests into phase-driven execution through the **PSE Loop** (Plan -> Spec -> Execute), followed by the quality verification loop:
 
 ```
-/Qgenerate-spec  →  /Qrun-task  →  Supervision  →  Done
-                                        ↑                |
-                           auto-remediate (max 3x)  ← FAIL
+/Qgenerate-spec  -> /Qrun-task  -> Supervision  -> Done
+                                        |               |
+                           auto-remediate (max 3x)  -> FAIL
+```
+
+Canonical QE flow:
+
+```text
+/Qplan -> /Qgs -> /Qatomic-run -> /Qcode-run-task -> Done
 ```
 
 | Step | What Happens |
 |------|-------------|
-| **`/Qgenerate-spec`** | Creates TASK_REQUEST + VERIFY_CHECKLIST. A Plan agent auto-reviews the spec for executability. |
-| **`/Qrun-task`** | Executes checklist items with progress tracking. Shows task type banner (CODE / DOCS / ANALYSIS). |
-| **Supervision** | Domain-specific supervisors (code quality, security, docs, analysis) do independent review. Failures auto-remediate up to 3x. |
+| **`/Qplan`** | Creates and activates the roadmap, requirements, and active phase in `.qe/planning/`. |
+| **`/Qgs`** | Creates TASK_REQUEST + VERIFY_CHECKLIST from the active phase. |
+| **`/Qatomic-run`** | Executes atomic tasks in parallel through Haiku swarm coordination. |
+| **`/Qcode-run-task`** | Runs the test-review-fix-retest quality loop and final verification gate. |
 | **Result** | You're only asked at 5 points. Everything else is automatic. |
 
 Engineering principles: SOLID, DRY, KISS, YAGNI, evidence-based decisions, minimal change, multilingual (auto language detection).
@@ -84,13 +91,32 @@ QE Framework uses a 3-tier architecture:
 Skills (Q-prefix)          Agents (E-prefix)          Core
 Methodology & process      Execution & delegation     Shared principles
 /Qgenerate-spec            Etask-executor             PRINCIPLES.md
-/Qsystematic-debugging     Ecode-debugger             INTENT_GATE.md
-/Qcommit                   Ecommit-executor           AGENT_TIERS.md
+/Qsystematic-debugging   -> Root cause analysis before applying fixes
+/Qcommit           -> Human-style commits with no AI traces
 ```
 
 - **Skills** define *how* to do something (process, methodology, workflow orchestration)
 - **Agents** *execute* the work (code writing, debugging, reviewing, research)
 - **Core** provides shared principles, intent routing, and model tier selection
+
+### Multi-Model Role Orchestration
+
+QE can also be used as a role orchestration contract across multiple AI systems.
+
+Recommended role split:
+- `planner`: writes executable specs and acceptance criteria
+- `implementer`: writes code and reports changes
+- `reviewer`: performs independent review and regression checks
+- `supervisor`: decides pass, fail, or remediation
+
+Example mapping:
+- Claude -> planner
+- Codex -> implementer
+- Gemini -> reviewer
+- Claude -> supervisor
+
+This is configured per project through `.qe/ai-team/config/team-config.json`.
+See [core/MULTI_MODEL_ORCHESTRATION.md](core/MULTI_MODEL_ORCHESTRATION.md) and [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md).
 
 ---
 
@@ -144,23 +170,34 @@ This creates `CLAUDE.md`, `.qe/` directory structure, and runs initial project a
 
 ### Task Workflow
 
-Generate a spec, then execute it:
+Primary workflow:
 
 ```
-/Qgenerate-spec    → Creates TASK_REQUEST.md + VERIFY_CHECKLIST.md
-/Qrun-task         → Executes the task with automatic quality verification
+/Qplan            -> Creates roadmap + active phase
+/Qgs              -> Creates TASK_REQUEST.md + VERIFY_CHECKLIST.md
+/Qatomic-run      -> Executes atomic task items
+/Qcode-run-task   -> Runs the quality verification loop
 ```
+
+Secondary workflow for non-atomic execution:
+
+```text
+/Qgenerate-spec   -> Creates TASK_REQUEST.md + VERIFY_CHECKLIST.md
+/Qrun-task        -> Fallback executor when swarm partitioning is not appropriate
+```
+
+When multi-model mode is enabled, the planner stage writes artifacts under `.qe/ai-team/artifacts/`, `/Qatomic-run` acts as the default implementer stage, and `/Qcode-run-task` becomes the default reviewer/supervisor gate before final completion.
 
 ### Commit Changes
 
 ```
-/Qcommit           → Human-style commits with no AI traces
+/Qcommit           -> Human-style commits with no AI traces
 ```
 
 ### Debugging
 
 ```
-/Qsystematic-debugging   → Root cause analysis before applying fixes
+/Qsystematic-debugging   -> Root cause analysis before applying fixes
 ```
 
 ### Deep Research
@@ -170,7 +207,8 @@ Invoke the `Edeep-researcher` agent for technology comparison, architecture deci
 ### More Examples
 
 ```
-/Qgenerate-spec + /Qrun-task     → Full task lifecycle
+/Qplan + /Qgs + /Qatomic-run     -> Primary PSE lifecycle
+/Qgenerate-spec + /Qrun-task     -> Secondary non-atomic lifecycle
 /Qfrontend-design                → Create production-grade UI components
 /Qtest-driven-development        → Red-green-refactor TDD workflow
 /Qgrad-paper-write               → Academic paper drafting
@@ -416,47 +454,33 @@ Domain-specific coding experts organized by category. Each skill provides deep e
 
 ## Background Processing
 
-QE Framework runs several agents silently in the background at key lifecycle moments. These agents require no manual invocation — they are triggered automatically by hooks.
+QE Framework runs several agents silently in the background at key lifecycle moments. These agents require no manual invocation - they are triggered automatically by hooks.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        QE Framework Lifecycle                         │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│  Session Start                                                        │
-│  ┌──────────────┐    ┌─────────────────────┐                          │
-│  │ SessionStart │───▶│ Erefresh-executor   │  Update .qe/analysis/    │
-│  │    Hook      │    │ (if analysis stale) │  before any work begins  │
-│  └──────────────┘    └─────────────────────┘                          │
-│         │                                                             │
-│         ▼                                                             │
-│  User Interaction                                                     │
-│  ┌──────────────┐    ┌─────────────────────┐                          │
-│  │ PreToolUse   │───▶│   Intent Gate       │  Route user intent to    │
-│  │    Hook      │    │   Classification    │  the correct skill/agent │
-│  └──────────────┘    └─────────────────────┘                          │
-│         │                                                             │
-│         ▼                                                             │
-│  ┌──────────────┐    ┌─────────────────────┐                          │
-│  │ PostToolUse  │───▶│ Eprofile-collector  │  Learn user patterns     │
-│  │    Hook      │    │ (command, style)    │  and correction history  │
-│  └──────────────┘    └─────────────────────┘                          │
-│         │                                                             │
-│         ▼                                                             │
-│  Context Pressure (75%+)                                              │
-│  ┌──────────────┐    ┌─────────────────────┐                          │
-│  │ PreCompact   │───▶│ Ecompact-executor   │  Save snapshot before    │
-│  │    Hook      │    │ (auto-save context) │  context is lost         │
-│  └──────────────┘    └─────────────────────┘                          │
-│         │                                                             │
-│         ▼                                                             │
-│  Task Completion                                                      │
-│  ┌──────────────┐    ┌─────────────────────┐                          │
-│  │  Qrun-task   │───▶│ Earchive-executor   │  Archive completed tasks │
-│  │  completes   │    │ Ecommit-executor    │  Auto-commit changes     │
-│  └──────────────┘    └─────────────────────┘                          │
-│                                                                       │
-└─────────────────────────────────────────────────────────────────────────┘
+```text
+Session Start
+  SessionStart hook
+    -> Erefresh-executor
+    -> Update .qe/analysis/ before work begins if analysis is stale
+
+User Interaction
+  PreToolUse hook
+    -> Intent gate classification
+    -> Route user intent to the correct skill or agent
+
+  PostToolUse hook
+    -> Eprofile-collector
+    -> Learn command patterns, writing style, and correction history
+
+Context Pressure (75%+)
+  PreCompact hook
+    -> Ecompact-executor
+    -> Save a context snapshot before compaction
+
+Task Completion
+  TaskCompleted hook
+    -> Earchive-executor
+    -> Ecommit-executor
+    -> Archive completed tasks and prepare clean commits
 ```
 
 ### Lifecycle Hooks
@@ -482,7 +506,7 @@ The framework uses 9 lifecycle hooks that fire at specific events:
 Agents are automatically assigned a model tier based on task complexity. See [AGENT_TIERS.md](core/AGENT_TIERS.md) for details.
 
 <details>
-<summary><strong>HIGH Tier (opus) — 3 agents</strong></summary>
+<summary><strong>HIGH Tier (opus) - 3 agents</strong></summary>
 
 | Agent | Description |
 |-------|-------------|
@@ -493,7 +517,7 @@ Agents are automatically assigned a model tier based on task complexity. See [AG
 </details>
 
 <details>
-<summary><strong>MEDIUM Tier (sonnet) — 15 agents</strong></summary>
+<summary><strong>MEDIUM Tier (sonnet) - 15 agents</strong></summary>
 
 | Agent | Description |
 |-------|-------------|
@@ -509,14 +533,14 @@ Agents are automatically assigned a model tier based on task complexity. See [AG
 | Edoc-generator | Background sub-agent for batch document generation (docx/pdf/pptx/xlsx). |
 | Egrad-writer | Writes academic paper chapters with academic writing style and citation rules. |
 | Epm-planner | Planning specialist. Handles PRD, user stories, roadmap, and document generation. |
-| Erefresh-executor | Detects project changes, updates .qe/ analysis data, and records change history. |
+| Erefresh-executor | Detects project changes, updates .qe/analysis data, and records change history. |
 | Ecompact-executor | Detects context window pressure, saves context, and supports restoration. |
 | Ehandoff-executor | Generates and validates session handoff documents. |
 
 </details>
 
 <details>
-<summary><strong>LOW Tier (haiku) — 3 agents</strong></summary>
+<summary><strong>LOW Tier (haiku) - 3 agents</strong></summary>
 
 | Agent | Description |
 |-------|-------------|
@@ -530,7 +554,7 @@ Agents are automatically assigned a model tier based on task complexity. See [AG
 
 ## Agent Teams (Experimental)
 
-QE Framework supports [Claude Agent Teams](https://code.claude.com/docs/en/agent-teams) for complex tasks that benefit from parallel collaboration. Agent Teams spawns **separate Claude Code instances** as teammates — fundamentally different from Agent tool subagents.
+QE Framework supports [Claude Agent Teams](https://code.claude.com/docs/en/agent-teams) for complex tasks that benefit from parallel collaboration. Agent Teams spawns **separate Claude Code instances** as teammates - fundamentally different from Agent tool subagents.
 
 | Agent | Team Trigger | Team Structure | Lead Model |
 |-------|-------------|----------------|------------|
@@ -562,15 +586,15 @@ All agents fall back to Subagent behavior when Agent Teams is not enabled. See [
 
 ## Project Structure
 
-```
+```text
 qe-framework/
-├── .claude-plugin/    # Plugin configuration
-├── agents/            # 21 agents (E-prefix)
-├── skills/            # 68 core + 72 coding expert skills (Q-prefix)
-├── core/              # Shared principles & configuration
-├── hooks/             # 9 lifecycle hooks + i18n translation layer
-├── install.js         # Installation script
-└── package.json
+|- .claude-plugin/    # Plugin configuration
+|- agents/            # 21 agents (E-prefix)
+|- skills/            # 68 core + 72 coding expert skills (Q-prefix)
+|- core/              # Shared principles and configuration
+|- hooks/             # 9 lifecycle hooks and i18n translation layer
+|- install.js         # Installation script
+`- package.json
 ```
 
 ---

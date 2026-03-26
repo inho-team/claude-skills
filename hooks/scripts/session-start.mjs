@@ -90,6 +90,11 @@ if (existsSync(conventionsPath)) {
   );
 }
 
+const aiTeamConfigPath = join(cwd, '.qe', 'ai-team', 'config', 'team-config.json');
+if (existsSync(aiTeamConfigPath)) {
+  messages.push('[AI Team] Multi-model role config detected. Respect role boundaries: planner owns spec artifacts, implementer owns code changes, reviewer performs independent review, supervisor makes the final gate decision.');
+}
+
 // Check 4: User language context (language.md)
 const languagePath = join(cwd, '.qe', 'profile', 'language.md');
 if (existsSync(languagePath)) {

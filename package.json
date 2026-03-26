@@ -4,7 +4,11 @@
   "description": "Spec-driven task execution framework for Claude Code — SVS (Spec-Verify-Supervise) loop with 139 skills and 21 agents",
   "scripts": {
     "postinstall": "node install.js",
-    "preuninstall": "node uninstall.js"
+    "preuninstall": "node uninstall.js",
+    "validate:ai-team": "node scripts/validate_ai_team_config.mjs",
+    "normalize:ai-team-artifacts": "node scripts/normalize_ai_team_artifacts.mjs",
+    "run:role": "node scripts/run_role.mjs",
+    "run:team": "node scripts/run_team_workflow.mjs"
   },
   "repository": {
     "type": "git",

@@ -125,6 +125,39 @@ Sets the character budget for slash command tool descriptions so all skills fit 
 ```
 Created with `mkdir -p`.
 
+#### Multi-Model Orchestration Scaffolding (Opt-in)
+Only run this block when the user explicitly wants multi-model or hybrid orchestration. Confirm via `AskUserQuestion` (yes/no) before touching `.qe/ai-team/`.
+
+1. **Create directories**
+   ```text
+   .qe/ai-team/
+     config/
+     artifacts/
+     runs/
+   ```
+   Never create these folders in single-model setups.
+
+2. **Seed `team-config.json`**
+   - Copy `templates/ai-team/team-config.json` into `.qe/ai-team/config/team-config.json`.
+   - Immediately run `node scripts/validate_ai_team_config.mjs .qe/ai-team/config/team-config.json` and show the pass/fail result to the user.
+   - If validation fails, fix the template first; do not leave an invalid config on disk.
+
+3. **Planner artifact placeholders** (planner-owned, do not pre-fill scope):
+   - `.qe/ai-team/artifacts/role-spec.md` with headings `# Role Spec`, `## Objective`, `## Scope`, `## Constraints`, `## Acceptance Criteria`, `## Execution Notes`.
+   - `.qe/ai-team/artifacts/task-bundle.json` containing `{ "tasks": [] }`.
+
+4. **Execution artifacts** (owned by downstream roles, start empty but present so automation can append):
+   - `.qe/ai-team/artifacts/implementation-report.md`
+   - `.qe/ai-team/artifacts/review-report.md`
+   - `.qe/ai-team/artifacts/verification-report.md`
+   Prefill each with a one-line placeholder such as `> Pending output from {role}` so ownership is obvious.
+
+5. **Communicate next steps**
+   - Tell the user that `/Qplan` and `/Qgenerate-spec` must now write the planner artifacts.
+   - Remind them that implementer/reviewer/supervisor roles will produce their reports under `.qe/ai-team/artifacts/`.
+
+Existing single-model initialization must not change when the user declines multi-model scaffolding.
+
 #### Agent Teams (Optional)
 If the user wants to enable Agent Teams for parallel work:
 ```json
@@ -163,6 +196,7 @@ Show the list of created files and guide the next steps:
 ## Will
 - Create CLAUDE.md from template
 - Create .qe/ directory structure (including analysis/, TASK_LOG.md)
+- Optionally scaffold `.qe/ai-team/config/team-config.json` for multi-model role separation
 - Auto-analyze project and save results
 - Configure .gitignore
 - Create .claude/settings.json

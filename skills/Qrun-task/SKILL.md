@@ -12,6 +12,11 @@ Execute tasks based on spec documents. This is a **secondary execution engine** 
 
 > **MANDATORY:** All user confirmations MUST use the `AskUserQuestion` tool. Do NOT output options as plain text — always call the tool.
 
+## Relationship to the Primary Chain
+- Canonical path: `/Qplan -> /Qgenerate-spec -> /Qatomic-run -> /Qcode-run-task`.
+- Prefer `/Qatomic-run` whenever the checklist can be partitioned; use `/Qrun-task` when tasks are non-atomic, long-form, or explicitly routed for remediation.
+- Even in fallback mode, still hand off to `/Qcode-run-task` to maintain the verification and supervision gate.
+
 ## Workflow
 ```
 /Qgenerate-spec → /Qrun-task → Read → Summarize → Approve → Execute → Verify → ✅ Done
@@ -22,7 +27,28 @@ Execute tasks based on spec documents. This is a **secondary execution engine** 
 .qe/tasks/{pending,in-progress,completed,on-hold}/TASK_REQUEST_*.md
 .qe/checklists/{pending,in-progress,completed,on-hold}/VERIFY_CHECKLIST_*.md
 .qe/tasks/remediation/REMEDIATION_REQUEST_*.md
+.qe/ai-team/config/team-config.json
+.qe/ai-team/artifacts/{role-spec.md,task-bundle.json,implementation-report.md,review-report.md,verification-report.md}
 ```
+
+## Multi-Model Role Mode
+
+If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model` or `hybrid`, `/Qrun-task` must enforce role boundaries in addition to the standard SVS loop. Always read the config before execution; if `mode` resolves to `single-model` or the file is missing, skip the rest of this section to preserve backward-compatible behavior.
+
+`/Qrun-task` is still the secondary execution path in the QE ecosystem. Prefer `/Qatomic-run` when following the primary `Qplan -> Qgs -> Qatomic-run -> Qcode-run-task` chain.
+
+### Required behavior in multi-model mode
+1. Read role configuration before execution (capture planner/implementer/reviewer/supervisor provider assignments for later logging)
+2. Treat `role-spec.md` and `task-bundle.json` as planner-owned artifacts (do not edit them; treat scope as immutable unless planner reopens)
+3. During implementation, require an `implementation-report.md` artifact with changed files, checklist status, commands run, and unresolved risks
+4. Before completion, require a `review-report.md` artifact from the reviewer role (block completion until verdict is `approve` or supervisor override)
+5. Supervision writes the final `verification-report.md` (include final decision + rationale); do not close the task until this file exists
+
+### Boundary rules
+- Implementer may modify code and tests, but must not silently rewrite planner-owned artifacts
+- Reviewer should be read-only by default unless project policy explicitly permits edits
+- Supervisor owns pass/fail/remediation judgment
+- If reviewer verdict is `request_changes`, task cannot move to completed without remediation or supervisor override
 
 ## Delegation Rule
 When checklist has **5+ items**, delegate to `Etask-executor` agent. Main agent tracks progress, state transitions, and verification. After delegation, update timestamps: `- [x] item ✅ (HH:MM)`.
@@ -110,6 +136,11 @@ Track `supervision_iteration` counter in `.qe/state/session-stats.json` to persi
 2. If grade is PASS → proceed to Step 5
 3. If grade is PARTIAL → apply suggested improvements, re-verify
 4. If grade is FAIL → save REMEDIATION_REQUEST, re-execute failed items via Etask-executor
+
+When multi-model mode is active:
+- include `review-report.md` and `implementation-report.md` in the supervision packet
+- require the supervisor to explicitly check whether role boundaries were respected
+- write the final verdict to `.qe/ai-team/artifacts/verification-report.md`
 
 **Agent Trigger Check:** After supervision, check `.qe/agent-triggers/` for trigger files written by agents during execution:
 1. Glob `.qe/agent-triggers/*.trigger.md`
@@ -204,3 +235,4 @@ Reference `skills/coding-experts/` for language/framework best practices. Catalo
 - Only executes existing spec documents
 - Use `/Qgenerate-spec` to create specs
 - Do not modify spec content (except checking off items)
+- In multi-model mode, do not allow implementer-stage execution to mutate planner-owned artifacts except for explicitly approved planner revisions

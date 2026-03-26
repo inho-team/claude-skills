@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "mode": "multi-model",
+  "default_language": "en",
+  "roles": {
+    "planner": {
+      "provider": "claude",
+      "model": "sonnet",
+      "responsibility": "Create and refine executable specs"
+    },
+    "implementer": {
+      "provider": "codex",
+      "model": "gpt-5-codex",
+      "responsibility": "Implement approved task items"
+    },
+    "reviewer": {
+      "provider": "gemini",
+      "model": "gemini-2.5-pro",
+      "responsibility": "Independently review implementation quality and regressions"
+    },
+    "supervisor": {
+      "provider": "claude",
+      "model": "opus",
+      "responsibility": "Make the final pass or remediation decision"
+    }
+  },
+  "providers": {
+    "claude": {
+      "timeout_ms": 300000,
+      "command": {
+        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\claude.cmd",
+        "args": [
+          "--print",
+          "--append-system-prompt",
+          "{system_prompt}",
+          "--permission-mode",
+          "plan",
+          "--model",
+          "{model}"
+        ]
+      }
+    },
+    "codex": {
+      "timeout_ms": 600000,
+      "command": {
+        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\codex.cmd",
+        "args": [
+          "exec",
+          "--sandbox",
+          "workspace-write",
+          "--skip-git-repo-check",
+          "--cd",
+          "{cwd}",
+          "--model",
+          "{model}",
+          "--output-last-message",
+          "{output_file}",
+          "-"
+        ]
+      }
+    },
+    "gemini": {
+      "timeout_ms": 300000,
+      "command": {
+        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\gemini.cmd",
+        "args": [
+          "--prompt",
+          "",
+          "--approval-mode",
+          "plan",
+          "--model",
+          "{model}"
+        ]
+      }
+    }
+  },
+  "policies": {
+    "max_remediation_rounds": 2,
+    "reviewer_can_edit": false,
+    "implementer_can_modify_spec": false,
+    "require_review_before_complete": true
+  }
+}

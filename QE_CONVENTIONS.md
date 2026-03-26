@@ -13,6 +13,13 @@ All engineering work in this project MUST follow the **Plan-Spec-Execute (PSE) L
 3.  **EXECUTE**: `/Qplan` triggers `/Qatomic-run` to execute atomic tasks via **Haiku Swarm**.
 4.  **VERIFY**: Final architectural verification and quality loop via Sonnet.
 
+### Multi-Model Interpretation
+- `Qplan` owns the planner role and `.qe/planning/` state.
+- `Qgs` materializes planner output into executable task specs.
+- `Qatomic-run` is the default implementer stage.
+- `Qcode-run-task` is the default reviewer/supervisor verification stage.
+- `Qrun-task` is the fallback path for non-atomic execution, not the canonical PSE route.
+
 ---
 
 ## QE Rules

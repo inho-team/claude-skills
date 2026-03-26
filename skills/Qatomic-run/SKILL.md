@@ -40,6 +40,22 @@ After all atomic items are done, automatically trigger `/Qcode-run-task` to ensu
 - **Haiku-First**: Always use `haiku` for teammates. If an item requires Sonnet, it's not "Atomic" and should be handled by standard `/Qrt`.
 - **Context Integrity**: Use `ContextMemo` to ensure teammates have current state without redundant I/O.
 
+## Multi-Model Role Mode
+
+If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qatomic-run` is the default implementer stage in the `Qplan` chain.
+
+Implementer invariants in that mode:
+- **Read-only spec**: Consume `.qe/ai-team/artifacts/role-spec.md` + `task-bundle.json` and the TASK_REQUEST pair, but never rewrite planner-owned documents unless the planner explicitly requests changes.
+- **Scope enforcement**: Partition work strictly within the files/modules enumerated in the bundle. If an item would exceed scope, pause and request planner approval rather than editing.
+- **Implementation report output**: After synthesis, append to `.qe/ai-team/artifacts/implementation-report.md` with a markdown block containing:
+  - Changed files (absolute or repo-relative list)
+  - Commands / checks executed (tests, linters, scripts)
+  - Unresolved risks or follow-ups
+  - Date/time stamp + implementer identity
+- **No silent spec rewrites**: Any requirement shifts must bounce back to planner; otherwise proceed with tactical decisions only.
+
+These guardrails are skipped entirely when `mode` is `single-model` to preserve existing behavior.
+
 ## Will
 - Orchestrate parallel execution via Agent Teams
 - Monitor Haiku teammate performance

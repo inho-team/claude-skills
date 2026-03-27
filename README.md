@@ -40,7 +40,7 @@
 ---
 
 > [!IMPORTANT]
-> **QE Framework v3.0.4** - Multi-model role orchestration, runner-based role mapping, stricter `/Qinit` role assignment confirmation, and external runner execution guidance for `/Qatomic-run` and `/Qcode-run-task`.
+> **QE Framework v3.0.5** - Multi-model role orchestration, runner-based role mapping, stricter `/Qinit` role assignment confirmation, and external runner execution guidance for `/Qatomic-run` and `/Qcode-run-task`.
 >
 > **Changelog:** See [commit history](https://github.com/inho-team/qe-framework/commits/main) | **[Update instructions](#update-to-latest-version)**
 

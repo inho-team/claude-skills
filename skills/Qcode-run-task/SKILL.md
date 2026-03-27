@@ -67,6 +67,12 @@ Step 5: Report results
 
 If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qcode-run-task` is where the reviewer and supervisor roles are enforced.
 
+In that mode, `/Qcode-run-task` must prefer the configured external reviewer and supervisor runners over the legacy internal Claude-only quality loop.
+- Read `.qe/ai-team/config/team-config.json` before starting any review.
+- Resolve `roles.reviewer.runner` and `roles.supervisor.runner`.
+- Show the active reviewer/supervisor runner names, providers, and models before execution.
+- Do not silently substitute Claude Haiku reviewers if the config says Gemini or another external runner should review.
+
 Reviewer enforcement:
 - Read `.qe/ai-team/artifacts/implementation-report.md` and `task-bundle.json` before starting the quality loop.
 - Produce `.qe/ai-team/artifacts/review-report.md` summarizing **findings first**. Required sections: `## Verdict (approve|request_changes)`, `## Findings` (each with `file:line` references), `## Tests Observed`, `## Follow-ups`.
@@ -80,6 +86,33 @@ Supervisor enforcement:
 Scope guardrails:
 - Verify that changed files in the implementation report stay within planner-defined ownership from `task-bundle.json`.
 - Escalate (request planner input) if scope drift is detected.
+
+Required execution path in multi-model/hybrid mode:
+
+1. Run the reviewer runner:
+
+```powershell
+node scripts/run_role.mjs --role reviewer --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/implementation-report.md --artifact .qe/ai-team/artifacts/task-bundle.json --artifact .qe/ai-team/artifacts/role-spec.md --execute
+```
+
+2. Inspect the JSON result and confirm:
+   - `execution_attempted` is `true`
+   - `execution_error` is `null`
+   - the configured reviewer provider/model actually ran
+
+3. Then run the supervisor runner:
+
+```powershell
+node scripts/run_role.mjs --role supervisor --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/review-report.md --artifact .qe/ai-team/artifacts/implementation-report.md --artifact .qe/ai-team/artifacts/task-bundle.json --artifact .qe/ai-team/artifacts/role-spec.md --execute
+```
+
+4. Inspect that JSON result with the same checks.
+5. Report clearly to the user which reviewer and supervisor runners actually executed.
+
+Fallback rule:
+- The legacy `Eqa-orchestrator` delegation remains valid for single-model mode.
+- In multi-model/hybrid mode, internal Claude-only delegation is a fallback for runner execution failure, not the default path.
+- If fallback is used, state that the configured external runner did not execute.
 
 These requirements apply only when the config mode is multi-model/hybrid; in single-model mode, legacy behavior remains unchanged.
 

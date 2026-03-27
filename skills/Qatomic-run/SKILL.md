@@ -44,6 +44,16 @@ After all atomic items are done, automatically trigger `/Qcode-run-task` to ensu
 
 If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qatomic-run` is the default implementer stage in the `Qplan` chain.
 
+In that mode, `/Qatomic-run` must prefer the configured external implementer runner over the legacy Haiku swarm path.
+- Read `.qe/ai-team/config/team-config.json` before spawning any teammate.
+- Resolve `roles.implementer.runner` and its matching entry in `runners`.
+- Show a short status line to the user before execution:
+  - `Implementer runner: {runnerName}`
+  - `Provider: {provider}`
+  - `Model: {model}`
+- If the runner points to an external CLI such as Codex or Gemini, do **not** use Haiku teammates for the implementation step.
+- In multi-model/hybrid mode, the Haiku swarm path becomes a fallback only for single-model setups or when the configured implementer runner is explicitly Claude-based and the user chooses the legacy path.
+
 Implementer invariants in that mode:
 - **Read-only spec**: Consume `.qe/ai-team/artifacts/role-spec.md` + `task-bundle.json` and the TASK_REQUEST pair, but never rewrite planner-owned documents unless the planner explicitly requests changes.
 - **Scope enforcement**: Partition work strictly within the files/modules enumerated in the bundle. If an item would exceed scope, pause and request planner approval rather than editing.
@@ -54,7 +64,30 @@ Implementer invariants in that mode:
   - Date/time stamp + implementer identity
 - **No silent spec rewrites**: Any requirement shifts must bounce back to planner; otherwise proceed with tactical decisions only.
 
-These guardrails are skipped entirely when `mode` is `single-model` to preserve existing behavior.
+Required execution path in multi-model/hybrid mode:
+
+1. Validate that `.qe/ai-team/config/team-config.json` exists.
+2. Run the external implementer runner with the project-local command below:
+
+```powershell
+node scripts/run_role.mjs --role implementer --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/role-spec.md --artifact .qe/ai-team/artifacts/task-bundle.json --execute
+```
+
+3. Read the JSON result from the command output.
+4. Confirm that:
+   - `execution_attempted` is `true`
+   - `execution_error` is `null`
+   - `provider` and `model` match the configured implementer runner
+5. Report to the user which runner actually executed.
+6. Only after the external runner completes should `/Qcode-run-task` begin.
+
+If the command fails, surface the failure explicitly:
+- `Configured implementer runner did not execute.`
+- show the provider/model that were intended
+- show the reported error
+- do not claim that Codex/Gemini executed if the fallback stayed inside Claude
+
+These multi-model rules are skipped entirely when `mode` is `single-model`, where legacy Haiku behavior remains the default.
 
 ## Will
 - Orchestrate parallel execution via Agent Teams

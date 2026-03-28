@@ -9,6 +9,12 @@ import { parseRunRoleArgs, prepareRoleRun, runRoleCommand, runRoleUsage } from '
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
+function buildFollowCommand(logPath) {
+  return process.platform === 'win32'
+    ? `Get-Content -Wait "${logPath}"`
+    : `tail -f "${logPath}"`;
+}
+
 function buildWorkerArgs(args, runId) {
   const nextArgs = [SCRIPT_PATH, '--role', args.role, '--run-id', runId, '--execute', '--worker'];
 
@@ -52,10 +58,10 @@ function startBackgroundWorker(args) {
     role: args.role,
     pid: child.pid,
     live_log_path: liveLogPath,
-    // The detached worker will flip this to running/succeeded/failed later.
-    // 실제 워커가 이어서 running/succeeded/failed 로 상태를 전이한다.
+    // The detached worker will later move this to running/succeeded/failed.
+    // 실제 워커가 이어서 running/succeeded/failed 상태로 전이한다.
     status: 'starting',
-    follow_command: `Get-Content -Wait "${liveLogPath}"`,
+    follow_command: buildFollowCommand(liveLogPath),
     started_at: new Date().toISOString(),
   };
 
@@ -117,7 +123,6 @@ function runWorker(args) {
 
   const {
     runId,
-    roleConfig,
     runnerName,
     runnerConfig,
     workflowMode,
@@ -127,7 +132,7 @@ function runWorker(args) {
     configPath,
     invocation,
     artifacts,
-    roleConfig: roleDefinition,
+    roleConfig,
     args: parsedArgs,
     command,
     execution,
@@ -152,7 +157,7 @@ function runWorker(args) {
       provider: runnerConfig.provider,
       model: runnerConfig.model,
       workflow_mode: workflowMode,
-      responsibility: roleDefinition.responsibility,
+      responsibility: roleConfig.responsibility,
       input_path: parsedArgs.input || null,
       artifact_paths: artifacts,
       execution,
@@ -206,9 +211,8 @@ function runWorker(args) {
     run_id: runId,
     role: parsedArgs.role,
     pid: child.pid,
-    // The worker is now live and producing observable state through files only,
-    // which avoids streaming provider chatter into the main Claude context.
-    // 메인 Claude context 오염을 피하기 위해 상태와 로그를 파일로만 노출한다.
+    // Expose provider progress through files only so the main Claude context stays clean.
+    // 메인 Claude context를 오염시키지 않도록 진행 상태는 파일로만 노출한다.
     status: 'running',
     last_output_at: null,
     live_log_path: liveLogPath,
@@ -231,6 +235,7 @@ function runWorker(args) {
     } else {
       stderrStream.write(text);
     }
+
     liveLogStream.write(`[${new Date().toISOString()}] ${kind}: ${text}`);
     updateBackgroundStatus(backgroundPath, {
       status: 'running',
@@ -288,7 +293,7 @@ function runWorker(args) {
         provider: runnerConfig.provider,
         model: runnerConfig.model,
         workflow_mode: workflowMode,
-        responsibility: roleDefinition.responsibility,
+        responsibility: roleConfig.responsibility,
         input_path: parsedArgs.input || null,
         artifact_paths: artifacts,
         execution,
@@ -299,8 +304,8 @@ function runWorker(args) {
       });
 
       updateBackgroundStatus(backgroundPath, {
-        // The final background state is the contract consumed by higher-level workflow polling.
-        // 상위 워크플로는 이 최종 상태값을 읽어 다음 단계 진행 여부를 결정한다.
+        // The higher-level workflow polls this final state to decide whether to continue.
+        // 상위 워크플로는 이 최종 상태를 읽고 다음 단계 진행 여부를 결정한다.
         status: execution.error ? (blockReason || 'failed') : 'succeeded',
         error: execution.error,
         block_reason: blockReason,

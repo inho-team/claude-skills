@@ -27,7 +27,7 @@
       "display_name": "Claude Planner",
       "timeout_ms": 300000,
       "command": {
-        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\claude.cmd",
+        "executable": "claude",
         "args": [
           "--print",
           "--append-system-prompt",
@@ -45,7 +45,7 @@
       "display_name": "Codex Implementer",
       "timeout_ms": 600000,
       "command": {
-        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\codex.cmd",
+        "executable": "codex",
         "args": [
           "exec",
           "--sandbox",
@@ -67,7 +67,7 @@
       "display_name": "Gemini Reviewer",
       "timeout_ms": 300000,
       "command": {
-        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\gemini.cmd",
+        "executable": "gemini",
         "args": [
           "--prompt",
           "",
@@ -84,7 +84,7 @@
       "display_name": "Claude Supervisor",
       "timeout_ms": 300000,
       "command": {
-        "executable": "C:\\Users\\Triphos\\AppData\\Roaming\\npm\\claude.cmd",
+        "executable": "claude",
         "args": [
           "--print",
           "--append-system-prompt",

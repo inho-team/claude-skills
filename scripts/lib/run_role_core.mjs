@@ -88,6 +88,34 @@ function executeInvocation(command, prompt, cwd, timeoutMs) {
   });
 }
 
+function installationHint(provider, executable) {
+  const commandName = executable || provider;
+  const hints = {
+    claude: `Install or expose Claude CLI on PATH, then verify with \`${commandName} --help\`.`,
+    codex: `Install or expose Codex CLI on PATH, then verify with \`${commandName} --help\`.`,
+    gemini: `Install or expose Gemini CLI on PATH, then verify with \`${commandName} --help\`.`,
+    gpt: `Install or expose the OpenAI CLI on PATH, then verify with \`${commandName} --help\`.`,
+  };
+  return hints[provider] || `Install or expose \`${commandName}\` on PATH, then verify it runs from the terminal.`;
+}
+
+function formatExecutionError({ provider, command, result }) {
+  if (!result?.error) return null;
+
+  const executable = command?.executable || provider;
+  const installMessage = installationHint(provider, executable);
+
+  if (result.error.code === 'ENOENT') {
+    return `Executable not found: ${executable}. ${installMessage}`;
+  }
+
+  if (result.error.code === 'ETIMEDOUT') {
+    return `Execution timed out for ${executable}. Increase timeout_ms or verify the CLI can complete in batch mode.`;
+  }
+
+  return `${result.error.message} ${installMessage}`;
+}
+
 function resolveConfiguredInvocation({ provider, config, runnerConfig, cwd, outputFile, defaultInvocation }) {
   const override = runnerConfig.command || config.providers?.[provider]?.command;
   if (override) {
@@ -223,7 +251,11 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
       execution.stdout_path = stdoutPath;
       execution.stderr_path = stderrPath;
       if (result.error) {
-        execution.error = result.error.message;
+        execution.error = formatExecutionError({
+          provider: runnerConfig.provider,
+          command,
+          result,
+        });
       }
     }
   }

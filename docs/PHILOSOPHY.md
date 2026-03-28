@@ -1,0 +1,80 @@
+# QE Philosophy
+
+## Why QE Exists
+
+QE Framework is built around a simple idea:
+
+- work without a plan becomes guessing
+- a spec without verification becomes optimism
+- verification without supervision becomes self-grading
+
+The framework exists to force explicit handoffs between these stages.
+
+## The PSE Loop
+
+QE uses the Plan -> Spec -> Execute loop as the default path:
+
+```text
+/Qplan -> /Qgs -> /Qatomic-run
+```
+
+That is followed by the quality gate:
+
+```text
+/Qcode-run-task
+```
+
+Together, the canonical flow is:
+
+```text
+/Qplan -> /Qgs -> /Qatomic-run -> /Qcode-run-task
+```
+
+## Design Principles
+
+- Separation of responsibility: planning, implementation, review, and final judgment should not collapse into one step.
+- Minimal interruption: ask the user only when the decision is genuinely high value.
+- Evidence over confidence: reports, artifacts, and verification outputs matter more than fluent prose.
+- Reproducibility: state should be written into `.qe/` artifacts rather than left implicit in session context.
+- Backward compatibility: existing Claude-only flows should continue to work unless the user opts into multi-model setup.
+
+## Role Model
+
+QE treats these as distinct responsibilities:
+
+- `planner`: defines spec, scope, and acceptance criteria
+- `implementer`: changes code or other project artifacts
+- `reviewer`: evaluates quality and regressions independently
+- `supervisor`: makes the final pass/fail/remediation decision
+
+In `single-model`, Claude may own every role.
+In `hybrid` or `multi-model`, these roles can be split across different runners.
+
+## Why `/Qatomic-run` Exists
+
+`/Qatomic-run` is not just “parallel execution”.
+It is the default implementer-stage entry point in the canonical QE workflow.
+
+- In `single-model`, it uses the legacy Haiku swarm path.
+- In `hybrid` or `multi-model`, it should prefer the configured implementer runner.
+
+That makes `/Qatomic-run` the bridge between the original Claude-only system and the newer role-based orchestration model.
+
+## Why Multi-Model Exists
+
+Multi-model support exists to reduce a specific failure mode:
+
+- the same model planning the work
+- implementing the work
+- reviewing its own implementation
+- approving its own output
+
+QE avoids that by making roles explicit and by persisting outputs as handoff artifacts.
+
+## Practical Philosophy
+
+QE is not trying to make every workflow more complicated.
+It is trying to make complex work more explicit.
+
+If the project is small and Claude-only is enough, use `single-model`.
+If the team or workflow benefits from role separation, use `hybrid` or `multi-model`.

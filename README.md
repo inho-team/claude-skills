@@ -128,7 +128,7 @@ See [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md) for the detailed role
 
 ## Current Release
 
-- Version: `3.0.12`
+- Version: `3.0.13`
 - Highlights:
   - role-based runner mapping
   - PATH-based Codex/Gemini execution

@@ -1,6 +1,6 @@
 {
   "name": "qe-framework",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "description": "QE Framework v2.14.0 — High-Performance AI Engineering with GSD-Native PSE Loop (Plan-Spec-Execute) and Haiku Swarm.",
   "author": { "name": "inho-team" },
   "skills": "./skills/",

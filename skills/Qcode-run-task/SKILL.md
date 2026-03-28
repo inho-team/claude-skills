@@ -109,6 +109,30 @@ node scripts/run_role.mjs --role supervisor --config .qe/ai-team/config/team-con
 4. Inspect that JSON result with the same checks.
 5. Report clearly to the user which reviewer and supervisor runners actually executed.
 
+Quota / subscription fallback:
+- If reviewer or supervisor execution returns `background_status: "blocked_quota"` or an `execution_error` containing quota / rate-limit / billing / subscription language, do not silently fall back to Claude-only review.
+- Read `fallback_candidates` and `override_examples` from the JSON result.
+- Use `AskUserQuestion` before retrying. Present candidates in returned order and treat `recommended: true` entries as the default-safe options.
+- Ask separately per failed role:
+  - reviewer failure: `The reviewer runner is temporarily unavailable. Reassign reviewer for this run only?`
+  - supervisor failure: `The supervisor runner is temporarily unavailable. Reassign supervisor for this run only?`
+- Required `AskUserQuestion` options:
+  - first recommended fallback runner
+  - second recommended fallback runner if present
+  - `Stop and inspect`
+- If the user selects a fallback, rerun only the failed role with a temporary override:
+
+```powershell
+node scripts/run_role.mjs --role reviewer --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/implementation-report.md --artifact .qe/ai-team/artifacts/task-bundle.json --artifact .qe/ai-team/artifacts/role-spec.md --execute --role-override reviewer=<selected_runner>
+```
+
+```powershell
+node scripts/run_role.mjs --role supervisor --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/review-report.md --artifact .qe/ai-team/artifacts/implementation-report.md --artifact .qe/ai-team/artifacts/task-bundle.json --artifact .qe/ai-team/artifacts/role-spec.md --execute --role-override supervisor=<selected_runner>
+```
+
+- Make it explicit that the override applies to this run only and does not rewrite `team-config.json`.
+- If the user refuses or no acceptable fallback exists, stop and report that the external reviewer/supervisor gate was not completed.
+
 Fallback rule:
 - The legacy `Eqa-orchestrator` delegation remains valid for single-model mode.
 - In multi-model/hybrid mode, internal Claude-only delegation is a fallback for runner execution failure, not the default path.

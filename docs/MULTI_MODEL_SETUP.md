@@ -146,6 +146,26 @@ When a planner pass is already approved, avoid re-planning on every retry.
 
 Each workflow now snapshots the current canonical artifacts into `.qe/ai-team/workflows/<workflow-id>/artifacts/`. Reviewer and supervisor re-runs read those workflow-local snapshots, which prevents later canonical artifact changes from silently changing the evidence set for an in-flight workflow.
 
+## Quota Fallback
+If a provider is temporarily blocked by quota, rate limits, or subscription limits, the workflow runner now returns:
+- `background_status: "blocked_quota"` for background execution
+- `fallback_candidates` ordered by suitability
+- `override_examples` with ready-to-run `--role-override` flags
+
+The intended interactive flow in `/Qatomic-run` and `/Qcode-run-task` is:
+1. Detect the blocked role
+2. Ask the user via `AskUserQuestion` whether to borrow another runner for this run only
+3. Retry only the failed role with `--role-override`
+
+Manual examples:
+
+- Retry implementer with a temporary fallback:
+  `node scripts/run_team_workflow.mjs --config .qe/ai-team/config/team-config.json --from-role implementer --execute --role-override implementer=claude_implementer`
+- Retry reviewer with a temporary fallback:
+  `node scripts/run_team_workflow.mjs --config .qe/ai-team/config/team-config.json --from-role reviewer --execute --role-override reviewer=claude_supervisor`
+
+`--role-override` does not rewrite `team-config.json`; it only affects the current run.
+
 If older canonical artifacts already contain boilerplate from prior runs, normalize them once with:
 
 `node scripts/normalize_ai_team_artifacts.mjs`

@@ -81,6 +81,27 @@ node scripts/run_role.mjs --role implementer --config .qe/ai-team/config/team-co
 5. Report to the user which runner actually executed.
 6. Only after the external runner completes should `/Qcode-run-task` begin.
 
+Quota / subscription fallback:
+- If the JSON result reports `background_status: "blocked_quota"` or `execution_error` contains quota / rate-limit / billing / subscription language, stop the normal flow and use `AskUserQuestion`.
+- Read `fallback_candidates` and `override_examples` from the JSON result before asking anything.
+- Present candidates in returned order. Treat `recommended: true` candidates as the preferred options and mention `compatibility`:
+  - `direct`: already suitable for the same role
+  - `unassigned`: not bound to another role, safe to borrow for this run
+  - `cross_role`: bound to another role, only use if the user explicitly chooses it
+- Ask: `The implementer runner is temporarily unavailable. Reassign implementer for this run only?`
+- Required `AskUserQuestion` options:
+  - first recommended fallback runner
+  - second recommended fallback runner if present
+  - `Stop and inspect`
+- If the user chooses a fallback, rerun the same command with exactly one extra flag:
+
+```powershell
+node scripts/run_role.mjs --role implementer --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/role-spec.md --artifact .qe/ai-team/artifacts/task-bundle.json --execute --role-override implementer=<selected_runner>
+```
+
+- State clearly that the override is temporary for the current run only.
+- If the user declines, halt and report that no external implementer completed.
+
 If the command fails, surface the failure explicitly:
 - `Configured implementer runner did not execute.`
 - show the provider/model that were intended

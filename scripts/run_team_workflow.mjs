@@ -396,6 +396,38 @@ function fallbackRunnersForRole(config, role, failedRunnerName) {
     }));
 }
 
+function rankedFallbackRunnersForRole(config, role, failedRunnerName) {
+  const roleProvider = config.runners?.[failedRunnerName]?.provider;
+  const runnerBoundRoles = new Map();
+  for (const [boundRole, definition] of Object.entries(config.roles || {})) {
+    const runner = definition?.runner;
+    if (!runner) continue;
+    if (!runnerBoundRoles.has(runner)) runnerBoundRoles.set(runner, []);
+    runnerBoundRoles.get(runner).push(boundRole);
+  }
+
+  return fallbackRunnersForRole(config, role, failedRunnerName)
+    .map((candidate) => {
+      const boundRoles = runnerBoundRoles.get(candidate.runner) || [];
+      const compatibility = boundRoles.includes(role)
+        ? 'direct'
+        : boundRoles.length === 0
+          ? 'unassigned'
+          : 'cross_role';
+      const priority = compatibility === 'direct' ? 0 : compatibility === 'unassigned' ? 1 : 2;
+      return {
+        ...candidate,
+        bound_roles: boundRoles,
+        compatibility,
+        recommended: compatibility !== 'cross_role',
+        priority,
+      };
+    })
+    .sort((left, right) =>
+      left.priority - right.priority ||
+      left.display_name.localeCompare(right.display_name));
+}
+
 function quotaLikeError(text) {
   if (!text) return false;
   const normalized = String(text).toLowerCase();
@@ -495,7 +527,7 @@ function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifa
           parsed.execution_attempted = true;
           parsed.execution_error = backgroundState.error || null;
           if (backgroundState.status === 'blocked_quota') {
-            parsed.fallback_candidates = fallbackRunnersForRole(config, role, parsed.runner);
+            parsed.fallback_candidates = rankedFallbackRunnersForRole(config, role, parsed.runner);
             parsed.override_examples = buildOverrideExamples(role, parsed.fallback_candidates);
           }
           break;
@@ -505,7 +537,7 @@ function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifa
     } else {
       parsed = runRoleCommand(args, cwd);
       if (parsed?.execution_error && quotaLikeError(parsed.execution_error)) {
-        parsed.fallback_candidates = fallbackRunnersForRole(config, role, parsed.runner);
+        parsed.fallback_candidates = rankedFallbackRunnersForRole(config, role, parsed.runner);
         parsed.override_examples = buildOverrideExamples(role, parsed.fallback_candidates);
       }
     }

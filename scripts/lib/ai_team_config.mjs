@@ -2,10 +2,13 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 export const REQUIRED_ROLES = ['planner', 'implementer', 'reviewer', 'supervisor'];
 export const WORKFLOW_MODES = ['single-model', 'multi-model', 'hybrid'];
-const DEFAULT_SCHEMA_PATH = 'core/schemas/team-config.schema.json';
+const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
+const PLUGIN_ROOT = resolve(MODULE_DIR, '..', '..');
+const DEFAULT_SCHEMA_PATH = resolve(PLUGIN_ROOT, 'core', 'schemas', 'team-config.schema.json');
 
 const schemaCache = new Map();
 
@@ -14,6 +17,9 @@ export function getAiTeamConfigPath(cwd, fileArg = '.qe/ai-team/config/team-conf
 }
 
 export function getTeamConfigSchemaPath(cwd, schemaArg = DEFAULT_SCHEMA_PATH) {
+  if (/^[A-Za-z]:[\\/]|^\\\\|^\//.test(schemaArg)) {
+    return schemaArg;
+  }
   return resolve(cwd, schemaArg);
 }
 

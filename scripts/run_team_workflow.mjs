@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'fs';
+import { spawnSync } from 'child_process';
 import { dirname, join, resolve } from 'path';
 import { randomUUID } from 'crypto';
+import { fileURLToPath } from 'url';
 import { ensureDirectory, loadAiTeamConfig, validateAiTeamConfig, writeJsonFile } from './lib/ai_team_config.mjs';
 import { cleanRoleArtifactOutput, extractPlannerArtifacts } from './lib/artifact_text_normalizer.mjs';
 import { runRoleCommand } from './lib/run_role_core.mjs';
 
 const ROLE_ORDER = ['planner', 'implementer', 'reviewer', 'supervisor'];
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
 function parseArgs(argv) {
   const args = {
@@ -18,6 +21,8 @@ function parseArgs(argv) {
     continueOnError: false,
     fromRole: 'planner',
     reuseApprovedPlan: false,
+    background: false,
+    pollIntervalMs: 2000,
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -33,6 +38,8 @@ function parseArgs(argv) {
     else if (arg === '--dry-run') args.dryRun = true;
     else if (arg === '--continue-on-error') args.continueOnError = true;
     else if (arg === '--reuse-approved-plan') args.reuseApprovedPlan = true;
+    else if (arg === '--background') args.background = true;
+    else if (arg === '--poll-interval-ms') args.pollIntervalMs = Number(argv[++i]);
     else if (arg === '--help') args.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -55,9 +62,25 @@ function usage() {
     '  --reuse-approved-plan      Skip planner when role-spec.md + task-bundle.json already exist',
     '  --timeout-ms <ms>          Timeout forwarded to each role run',
     '  --execute                  Attempt provider CLI execution for each role',
+    '  --background               Run each role through detached background workers and poll status',
+    '  --poll-interval-ms <ms>    Poll interval for background worker status (default 2000)',
     '  --dry-run                  Prepare role packets without execution',
     '  --continue-on-error        Continue to later roles after a failed role',
   ].join('\n'));
+}
+
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function isProcessAlive(pid) {
+  if (!pid || !Number.isInteger(pid)) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function defaultPlannerInput(cwd) {
@@ -351,7 +374,22 @@ function writeFailureArtifact({ role, parsed, workflowArtifactPaths }) {
   return target;
 }
 
-function runRole({ cwd, workflowDir, role, configPath, inputFile, artifacts, execute, dryRun, timeoutMs }) {
+function fallbackRunnersForRole(config, role, failedRunnerName) {
+  const roleProvider = config.runners?.[failedRunnerName]?.provider;
+  // Prefer runners from a different provider when the current provider is quota-blocked.
+  // quota 차단 시 같은 provider 재시도보다 다른 provider 후보를 우선 제안한다.
+  return Object.entries(config.runners || {})
+    .filter(([name]) => name !== failedRunnerName)
+    .filter(([, runner]) => runner?.provider !== roleProvider)
+    .map(([name, runner]) => ({
+      runner: name,
+      provider: runner.provider,
+      model: runner.model,
+      display_name: runner.display_name || name,
+    }));
+}
+
+function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifacts, execute, dryRun, timeoutMs, background, pollIntervalMs }) {
   const runId = `${basenameSafe(workflowDir)}-${role}`;
   const args = {
     role,
@@ -362,12 +400,79 @@ function runRole({ cwd, workflowDir, role, configPath, inputFile, artifacts, exe
     execute,
     dryRun,
     timeoutMs,
+    background,
   };
 
   let parsed = null;
   let error = null;
   try {
-    parsed = runRoleCommand(args, cwd);
+    if (background) {
+      const scriptPath = resolve(SCRIPT_DIR, 'run_role.mjs');
+      const command = [
+        process.execPath,
+        scriptPath,
+        '--role', role,
+        '--run-id', runId,
+        '--config', configPath,
+        '--input', inputFile,
+        '--background',
+      ];
+      if (Number.isFinite(timeoutMs)) command.push('--timeout-ms', String(timeoutMs));
+      for (const artifact of artifacts) {
+        command.push('--artifact', artifact);
+      }
+
+      const result = spawnSync(command[0], command.slice(1), {
+        cwd,
+        encoding: 'utf8',
+        windowsHide: true,
+      });
+      if (result.status !== 0) {
+        throw new Error(result.error?.message || result.stderr || result.stdout || `Background launcher exited with code ${result.status}`);
+      }
+      parsed = JSON.parse(result.stdout);
+
+      const backgroundPath = join(dirname(parsed.prompt_path), 'background.json');
+      const pollStartedAt = Date.now();
+      while (true) {
+        if (!existsSync(backgroundPath)) {
+          throw new Error(`Missing background status file: ${backgroundPath}`);
+        }
+        const backgroundState = JSON.parse(readFileSync(backgroundPath, 'utf8'));
+        if (
+          (backgroundState.status === 'starting' || backgroundState.status === 'running') &&
+          backgroundState.pid &&
+          !isProcessAlive(backgroundState.pid)
+        ) {
+          backgroundState.status = 'failed';
+          backgroundState.error = backgroundState.error || 'Background worker exited before reporting final status.';
+          writeJsonFile(backgroundPath, backgroundState);
+        }
+        if (
+          backgroundState.status === 'starting' &&
+          Date.now() - pollStartedAt > Math.max(pollIntervalMs * 5, 5000)
+        ) {
+          backgroundState.status = 'failed';
+          backgroundState.error = backgroundState.error || 'Background worker did not transition out of starting state.';
+          writeJsonFile(backgroundPath, backgroundState);
+        }
+        // Poll the detached worker's file-based state machine instead of blocking
+        // the main process on provider stdout/stderr.
+        // provider 로그 스트리밍 대신 상태 파일을 polling 해 상위 흐름을 제어한다.
+        if (backgroundState.status === 'succeeded' || backgroundState.status === 'failed' || backgroundState.status === 'blocked_quota') {
+          parsed.background = backgroundState;
+          parsed.execution_attempted = true;
+          parsed.execution_error = backgroundState.error || null;
+          if (backgroundState.status === 'blocked_quota') {
+            parsed.fallback_candidates = fallbackRunnersForRole(config, role, parsed.runner);
+          }
+          break;
+        }
+        sleep(pollIntervalMs);
+      }
+    } else {
+      parsed = runRoleCommand(args, cwd);
+    }
   } catch (err) {
     error = err.message;
   }
@@ -436,9 +541,12 @@ for (const role of rolesToRun) {
     configPath,
     inputFile: roleInputPath,
     artifacts: roleArtifacts,
+    config,
     execute: args.execute,
     dryRun: args.dryRun,
     timeoutMs: args.timeoutMs,
+    background: args.background,
+    pollIntervalMs: args.pollIntervalMs,
   });
 
   const step = {
@@ -449,6 +557,7 @@ for (const role of rolesToRun) {
     error: result.error,
     parsed: result.parsed,
     stderr_preview: result.stderr.slice(0, 1000),
+    fallback_candidates: result.parsed?.fallback_candidates || [],
   };
   steps.push(step);
 
@@ -516,5 +625,7 @@ console.log(JSON.stringify({
     run_ledger_path: step.parsed?.run_ledger_path || null,
     output_path: step.parsed?.output_path || null,
     execution_error: step.parsed?.execution_error || step.error,
+    background_status: step.parsed?.background?.status || null,
+    fallback_candidates: step.fallback_candidates,
   })),
 }, null, 2));

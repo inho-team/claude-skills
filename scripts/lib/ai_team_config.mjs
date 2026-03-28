@@ -6,6 +6,9 @@ import { fileURLToPath } from 'url';
 
 export const REQUIRED_ROLES = ['planner', 'implementer', 'reviewer', 'supervisor'];
 export const WORKFLOW_MODES = ['single-model', 'multi-model', 'hybrid'];
+// Resolve the default schema from the plugin bundle itself so project-local
+// execution still validates against the shipped contract.
+// 프로젝트 cwd가 아니라 플러그인 번들 기준으로 스키마를 찾는다.
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = resolve(MODULE_DIR, '..', '..');
 const DEFAULT_SCHEMA_PATH = resolve(PLUGIN_ROOT, 'core', 'schemas', 'team-config.schema.json');
@@ -17,6 +20,8 @@ export function getAiTeamConfigPath(cwd, fileArg = '.qe/ai-team/config/team-conf
 }
 
 export function getTeamConfigSchemaPath(cwd, schemaArg = DEFAULT_SCHEMA_PATH) {
+  // Keep explicit absolute paths untouched; only relative overrides are cwd-based.
+  // 절대경로는 그대로 쓰고, 상대경로 override만 cwd 기준으로 해석한다.
   if (/^[A-Za-z]:[\\/]|^\\\\|^\//.test(schemaArg)) {
     return schemaArg;
   }

@@ -14,7 +14,7 @@ import {
 import { getProviderAdapter, listSupportedProviders } from './provider_adapters.mjs';
 
 export function parseRunRoleArgs(argv) {
-  const args = { artifacts: [], dryRun: false, execute: false };
+  const args = { artifacts: [], dryRun: false, execute: false, background: false, worker: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--role') args.role = argv[++i];
@@ -25,9 +25,12 @@ export function parseRunRoleArgs(argv) {
     else if (arg === '--timeout-ms') args.timeoutMs = Number(argv[++i]);
     else if (arg === '--dry-run') args.dryRun = true;
     else if (arg === '--execute') args.execute = true;
+    else if (arg === '--background') args.background = true;
+    else if (arg === '--worker') args.worker = true;
     else if (arg === '--help') args.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
+  if (args.background) args.execute = true;
   return args;
 }
 
@@ -44,7 +47,115 @@ export function runRoleUsage() {
     '  --timeout-ms <ms>     Execution timeout for provider CLI',
     '  --dry-run             Do not attempt execution; emit the prompt bundle + ledger only',
     '  --execute             Attempt provider CLI execution',
+    '  --background          Launch provider CLI in a detached worker and return immediately',
   ].join('\n');
+}
+
+export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
+  const args = Array.isArray(rawArgs) ? parseRunRoleArgs(rawArgs) : rawArgs;
+
+  if (args.help || !args.role) {
+    return {
+      help: true,
+      message: runRoleUsage(),
+    };
+  }
+
+  const { path: configPath, config } = loadAiTeamConfig(cwd, args.config);
+  const errors = validateAiTeamConfig(config);
+  if (errors.length > 0) {
+    throw new Error(`Invalid AI team config: ${configPath}\n- ${errors.join('\n- ')}`);
+  }
+
+  const workflowMode = getWorkflowMode(config);
+  if (workflowMode === 'single-model') {
+    return {
+      ok: false,
+      help: false,
+      workflow_mode: workflowMode,
+      config_path: configPath,
+      message: 'AI team config mode is single-model; run_role_core dispatch is inactive.',
+    };
+  }
+
+  const roleConfig = config.roles?.[args.role];
+  if (!roleConfig) {
+    throw new Error(`Unknown role: ${args.role}`);
+  }
+
+  const runnerName = roleConfig.runner;
+  const runnerConfig = config.runners?.[runnerName];
+  if (!runnerConfig) {
+    throw new Error(`Role ${args.role} references missing runner: ${runnerName}`);
+  }
+
+  const adapter = getProviderAdapter(runnerConfig.provider);
+  const inputText = loadInputText(cwd, args.input);
+  const artifacts = resolveArtifacts(cwd, args.artifacts);
+  const runId = args.runId || randomUUID().slice(0, 8);
+  const runDir = join(cwd, '.qe', 'ai-team', 'runs', runId);
+  ensureDirectory(runDir);
+
+  const invocation = adapter({
+    role: args.role,
+    runnerName,
+    roleConfig,
+    runnerConfig,
+    inputText,
+    artifacts,
+  });
+
+  const promptPath = join(runDir, `${args.role}-prompt.md`);
+  writeFileSync(promptPath, `${invocation.prompt}\n`, 'utf8');
+
+  const ledgerPath = join(runDir, 'run.json');
+  const outputPath = join(runDir, `${args.role}-output.md`);
+  const configuredTimeoutMs = args.timeoutMs ?? runnerConfig.timeout_ms ?? config.providers?.[runnerConfig.provider]?.timeout_ms ?? 120000;
+  const execution = {
+    requested: args.execute,
+    attempted: false,
+    // Background workers should wait for provider exit rather than an arbitrary timeout.
+    // 백그라운드 워커는 임의 타임아웃 대신 provider 종료 신호를 기다린다.
+    timeout_ms: args.worker ? 0 : configuredTimeoutMs,
+    command: null,
+    exit_code: null,
+    stdout_path: null,
+    stderr_path: null,
+    error: null,
+  };
+
+  const command = args.execute
+    ? resolveConfiguredInvocation({
+        provider: runnerConfig.provider,
+        config,
+        runnerConfig,
+        cwd,
+        outputFile: outputPath,
+        defaultInvocation: invocation,
+      })
+    : null;
+
+  return {
+    ok: true,
+    args,
+    cwd,
+    configPath,
+    config,
+    workflowMode,
+    roleConfig,
+    runnerName,
+    runnerConfig,
+    inputText,
+    artifacts,
+    runId,
+    runDir,
+    invocation,
+    promptPath,
+    ledgerPath,
+    outputPath,
+    execution,
+    command,
+  };
 }
 
 function loadInputText(cwd, inputPath) {
@@ -151,89 +262,35 @@ function resolveConfiguredInvocation({ provider, config, runnerConfig, cwd, outp
 }
 
 export function runRoleCommand(rawArgs, cwd = process.cwd()) {
-  const args = Array.isArray(rawArgs) ? parseRunRoleArgs(rawArgs) : rawArgs;
-
-  if (args.help || !args.role) {
-    return {
-      ok: false,
-      help: true,
-      message: runRoleUsage(),
-    };
+  const prepared = prepareRoleRun(rawArgs, cwd);
+  if (prepared.help || prepared.ok === false) {
+    return prepared;
   }
 
-  const { path: configPath, config } = loadAiTeamConfig(cwd, args.config);
-  const errors = validateAiTeamConfig(config);
-  if (errors.length > 0) {
-    throw new Error(`Invalid AI team config: ${configPath}\n- ${errors.join('\n- ')}`);
-  }
-
-  const workflowMode = getWorkflowMode(config);
-  if (workflowMode === 'single-model') {
-    return {
-      ok: false,
-      help: false,
-      workflow_mode: workflowMode,
-      config_path: configPath,
-      message: 'AI team config mode is single-model; run_role_core dispatch is inactive.',
-    };
-  }
-
-  const roleConfig = config.roles?.[args.role];
-  if (!roleConfig) {
-    throw new Error(`Unknown role: ${args.role}`);
-  }
-
-  const runnerName = roleConfig.runner;
-  const runnerConfig = config.runners?.[runnerName];
-  if (!runnerConfig) {
-    throw new Error(`Role ${args.role} references missing runner: ${runnerName}`);
-  }
-
-  const adapter = getProviderAdapter(runnerConfig.provider);
-  const inputText = loadInputText(cwd, args.input);
-  const artifacts = resolveArtifacts(cwd, args.artifacts);
-  const runId = args.runId || randomUUID().slice(0, 8);
-  const runDir = join(cwd, '.qe', 'ai-team', 'runs', runId);
-  ensureDirectory(runDir);
-
-  const invocation = adapter({
-    role: args.role,
-    runnerName,
+  const {
+    args,
+    configPath,
     roleConfig,
+    runnerName,
     runnerConfig,
-    inputText,
+    workflowMode,
+    runDir,
+    promptPath,
+    ledgerPath,
+    outputPath,
+    invocation,
     artifacts,
-  });
-
-  const promptPath = join(runDir, `${args.role}-prompt.md`);
-  writeFileSync(promptPath, `${invocation.prompt}\n`, 'utf8');
-
-  const ledgerPath = join(runDir, 'run.json');
-  const outputPath = join(runDir, `${args.role}-output.md`);
-  const execution = {
-    requested: args.execute,
-    attempted: false,
-    timeout_ms: args.timeoutMs ?? runnerConfig.timeout_ms ?? config.providers?.[runnerConfig.provider]?.timeout_ms ?? 120000,
-    command: null,
-    exit_code: null,
-    stdout_path: null,
-    stderr_path: null,
-    error: null,
-  };
+    runId,
+    execution,
+    command,
+  } = prepared;
 
   if (args.execute) {
-    const command = resolveConfiguredInvocation({
-      provider: runnerConfig.provider,
-      config,
-      runnerConfig,
-      cwd,
-      outputFile: outputPath,
-      defaultInvocation: invocation,
-    });
-
     if (!command) {
       execution.error = `No executable command is configured for runner ${runnerName} (${runnerConfig.provider}).`;
     } else {
+      // Foreground execution is still synchronous; background mode is handled by scripts/run_role.mjs.
+      // 포그라운드 실행은 여기서 동기 처리하고, 백그라운드 제어는 run_role.mjs가 맡는다.
       execution.attempted = true;
       execution.command = command;
       const result = executeInvocation(command, invocation.prompt, cwd, execution.timeout_ms);

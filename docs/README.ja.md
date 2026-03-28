@@ -1,4 +1,4 @@
-# QE Framework ドキュメント案内
+﻿# QE Framework ドキュメント案内
 
 QE Framework は Claude Code 向けのスペック駆動タスク実行フレームワークです。
 

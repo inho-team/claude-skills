@@ -1,4 +1,4 @@
-# QE Framework 文档导航
+﻿# QE Framework 文档导航
 
 QE Framework 是面向 Claude Code 的规范驱动任务执行框架。
 

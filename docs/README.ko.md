@@ -1,4 +1,4 @@
-# QE Framework 문서 안내
+﻿# QE Framework 문서 안내
 
 QE Framework는 Claude Code용 스펙 기반 작업 프레임워크입니다.
 

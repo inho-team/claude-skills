@@ -28,6 +28,7 @@ Use it to:
 - Documentation map: [docs/DOCUMENTATION_MAP.md](docs/DOCUMENTATION_MAP.md)
 - Multi-model setup: [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md)
 - System overview: [docs/SYSTEM_OVERVIEW.md](docs/SYSTEM_OVERVIEW.md)
+- Terminal encoding notes: [docs/TERMINAL_ENCODING.md](docs/TERMINAL_ENCODING.md)
 - Korean: [docs/README.ko.md](docs/README.ko.md)
 - Japanese: [docs/README.ja.md](docs/README.ja.md)
 - Chinese: [docs/README.zh.md](docs/README.zh.md)
@@ -128,7 +129,7 @@ See [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md) for the detailed role
 
 ## Current Release
 
-- Version: `3.0.13`
+- Version: `3.0.14`
 - Highlights:
   - role-based runner mapping
   - PATH-based Codex/Gemini execution

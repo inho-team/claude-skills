@@ -133,6 +133,7 @@ function buildCliInvocation({ executable, args = [], prompt }) {
 }
 
 function resolveWindowsCmd(baseName) {
+  if (process.platform !== 'win32') return null;
   const appData = process.env.APPDATA;
   if (!appData) return null;
   const cmdPath = `${appData}\\npm\\${baseName}.cmd`;

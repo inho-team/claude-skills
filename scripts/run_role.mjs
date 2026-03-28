@@ -24,6 +24,9 @@ function buildWorkerArgs(args, runId) {
   for (const artifact of args.artifacts || []) {
     nextArgs.push('--artifact', artifact);
   }
+  for (const [role, runner] of Object.entries(args.roleOverrides || {})) {
+    nextArgs.push('--role-override', `${role}=${runner}`);
+  }
 
   return nextArgs;
 }
@@ -226,6 +229,7 @@ function runWorker(args) {
   let fatalReason = null;
   let blockReason = null;
   let outputCaptured = '';
+  let stderrCaptured = '';
 
   const onChunk = (kind, chunk) => {
     const text = chunk.toString();
@@ -233,6 +237,7 @@ function runWorker(args) {
       outputCaptured += text;
       stdoutStream.write(text);
     } else {
+      stderrCaptured += text;
       stderrStream.write(text);
     }
 
@@ -242,11 +247,19 @@ function runWorker(args) {
       last_output_at: new Date().toISOString(),
     });
 
+    if (!blockReason) {
+      blockReason = detectBlockReason(text);
+      if (blockReason) {
+        updateBackgroundStatus(backgroundPath, {
+          block_reason: blockReason,
+        });
+      }
+    }
+
     if (!fatalReason && isFatalChunk(text)) {
       // Stop early on known-fatal provider output to avoid indefinite waits.
       // 알려진 치명 출력이 보이면 즉시 중단해 무한 대기를 막는다.
       fatalReason = text.trim().slice(0, 500);
-      blockReason = detectBlockReason(text);
       updateBackgroundStatus(backgroundPath, {
         status: blockReason || 'failed',
         fatal_reason: fatalReason,
@@ -274,6 +287,9 @@ function runWorker(args) {
       execution.exit_code = code;
       if (fatalReason && !execution.error) {
         execution.error = `Fatal runner output detected: ${fatalReason}`;
+      } else if (blockReason && !execution.error) {
+        const stderrText = stderrCaptured.trim();
+        execution.error = stderrText || 'Provider blocked due to quota or subscription limits.';
       } else if (signal && !execution.error) {
         execution.error = `Runner terminated by signal: ${signal}`;
       } else if (code !== 0 && !execution.error) {

@@ -23,6 +23,7 @@ function parseArgs(argv) {
     reuseApprovedPlan: false,
     background: false,
     pollIntervalMs: 2000,
+    roleOverrides: {},
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -40,6 +41,11 @@ function parseArgs(argv) {
     else if (arg === '--reuse-approved-plan') args.reuseApprovedPlan = true;
     else if (arg === '--background') args.background = true;
     else if (arg === '--poll-interval-ms') args.pollIntervalMs = Number(argv[++i]);
+    else if (arg === '--role-override') {
+      const [role, runner] = String(argv[++i] || '').split('=');
+      if (!role || !runner) throw new Error('Expected --role-override <role>=<runner>');
+      args.roleOverrides[role] = runner;
+    }
     else if (arg === '--help') args.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -64,6 +70,7 @@ function usage() {
     '  --execute                  Attempt provider CLI execution for each role',
     '  --background               Run each role through detached background workers and poll status',
     '  --poll-interval-ms <ms>    Poll interval for background worker status (default 2000)',
+    '  --role-override k=v        Temporarily map a role to another runner for this workflow run',
     '  --dry-run                  Prepare role packets without execution',
     '  --continue-on-error        Continue to later roles after a failed role',
   ].join('\n'));
@@ -389,7 +396,27 @@ function fallbackRunnersForRole(config, role, failedRunnerName) {
     }));
 }
 
-function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifacts, execute, dryRun, timeoutMs, background, pollIntervalMs }) {
+function quotaLikeError(text) {
+  if (!text) return false;
+  const normalized = String(text).toLowerCase();
+  return [
+    'quota',
+    'rate limit',
+    'billing',
+    'subscription',
+    'usage limit',
+    'insufficient credits',
+    'payment required',
+    'too many requests',
+    'temporarily unavailable',
+  ].some((pattern) => normalized.includes(pattern));
+}
+
+function buildOverrideExamples(role, fallbackCandidates) {
+  return (fallbackCandidates || []).map((candidate) => `--role-override ${role}=${candidate.runner}`);
+}
+
+function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifacts, execute, dryRun, timeoutMs, background, pollIntervalMs, roleOverrides }) {
   const runId = `${basenameSafe(workflowDir)}-${role}`;
   const args = {
     role,
@@ -401,6 +428,7 @@ function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifa
     dryRun,
     timeoutMs,
     background,
+    roleOverrides,
   };
 
   let parsed = null;
@@ -420,6 +448,9 @@ function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifa
       if (Number.isFinite(timeoutMs)) command.push('--timeout-ms', String(timeoutMs));
       for (const artifact of artifacts) {
         command.push('--artifact', artifact);
+      }
+      for (const [overrideRole, runner] of Object.entries(roleOverrides || {})) {
+        command.push('--role-override', `${overrideRole}=${runner}`);
       }
 
       const result = spawnSync(command[0], command.slice(1), {
@@ -465,6 +496,7 @@ function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifa
           parsed.execution_error = backgroundState.error || null;
           if (backgroundState.status === 'blocked_quota') {
             parsed.fallback_candidates = fallbackRunnersForRole(config, role, parsed.runner);
+            parsed.override_examples = buildOverrideExamples(role, parsed.fallback_candidates);
           }
           break;
         }
@@ -472,6 +504,10 @@ function runRole({ cwd, workflowDir, role, configPath, config, inputFile, artifa
       }
     } else {
       parsed = runRoleCommand(args, cwd);
+      if (parsed?.execution_error && quotaLikeError(parsed.execution_error)) {
+        parsed.fallback_candidates = fallbackRunnersForRole(config, role, parsed.runner);
+        parsed.override_examples = buildOverrideExamples(role, parsed.fallback_candidates);
+      }
     }
   } catch (err) {
     error = err.message;
@@ -547,6 +583,7 @@ for (const role of rolesToRun) {
     timeoutMs: args.timeoutMs,
     background: args.background,
     pollIntervalMs: args.pollIntervalMs,
+    roleOverrides: args.roleOverrides,
   });
 
   const step = {
@@ -558,6 +595,7 @@ for (const role of rolesToRun) {
     parsed: result.parsed,
     stderr_preview: result.stderr.slice(0, 1000),
     fallback_candidates: result.parsed?.fallback_candidates || [],
+    override_examples: result.parsed?.override_examples || [],
   };
   steps.push(step);
 
@@ -627,5 +665,6 @@ console.log(JSON.stringify({
     execution_error: step.parsed?.execution_error || step.error,
     background_status: step.parsed?.background?.status || null,
     fallback_candidates: step.fallback_candidates,
+    override_examples: step.override_examples,
   })),
 }, null, 2));

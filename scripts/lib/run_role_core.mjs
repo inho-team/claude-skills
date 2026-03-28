@@ -14,7 +14,7 @@ import {
 import { getProviderAdapter, listSupportedProviders } from './provider_adapters.mjs';
 
 export function parseRunRoleArgs(argv) {
-  const args = { artifacts: [], dryRun: false, execute: false, background: false, worker: false };
+  const args = { artifacts: [], dryRun: false, execute: false, background: false, worker: false, roleOverrides: {} };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--role') args.role = argv[++i];
@@ -27,6 +27,11 @@ export function parseRunRoleArgs(argv) {
     else if (arg === '--execute') args.execute = true;
     else if (arg === '--background') args.background = true;
     else if (arg === '--worker') args.worker = true;
+    else if (arg === '--role-override') {
+      const [role, runner] = String(argv[++i] || '').split('=');
+      if (!role || !runner) throw new Error('Expected --role-override <role>=<runner>');
+      args.roleOverrides[role] = runner;
+    }
     else if (arg === '--help') args.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -48,6 +53,7 @@ export function runRoleUsage() {
     '  --dry-run             Do not attempt execution; emit the prompt bundle + ledger only',
     '  --execute             Attempt provider CLI execution',
     '  --background          Launch provider CLI in a detached worker and return immediately',
+    '  --role-override k=v   Temporarily map a role to another runner for this execution',
   ].join('\n');
 }
 
@@ -83,7 +89,7 @@ export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
     throw new Error(`Unknown role: ${args.role}`);
   }
 
-  const runnerName = roleConfig.runner;
+  const runnerName = args.roleOverrides?.[args.role] || roleConfig.runner;
   const runnerConfig = config.runners?.[runnerName];
   if (!runnerConfig) {
     throw new Error(`Role ${args.role} references missing runner: ${runnerName}`);
@@ -143,6 +149,7 @@ export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
     config,
     workflowMode,
     roleConfig,
+    roleOverrides: args.roleOverrides,
     runnerName,
     runnerConfig,
     inputText,
@@ -313,6 +320,10 @@ export function runRoleCommand(rawArgs, cwd = process.cwd()) {
           command,
           result,
         });
+      } else if (result.status !== 0) {
+        const stderrText = (result.stderr || '').trim();
+        const stdoutText = (result.stdout || '').trim();
+        execution.error = stderrText || stdoutText || `Runner exited with code ${result.status}`;
       }
     }
   }

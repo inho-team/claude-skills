@@ -1,7 +1,7 @@
 {
   "name": "qe-framework",
-  "version": "3.0.16",
-  "description": "QE Framework v3.0.16 — Spec-driven Claude workflow with role orchestration, secure secret handling, shared MCP sync, and verification loops.",
+  "version": "3.0.17",
+  "description": "QE Framework v3.0.17 — Spec-driven Claude workflow with role orchestration, model-aware Qinit setup, shared MCP sync, and verification loops.",
   "author": { "name": "inho-team" },
   "skills": "./skills/",
   "hooks": {

@@ -129,9 +129,19 @@ Recommended presets for `/Qinit`:
 
 See [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md) for the detailed role matrix.
 
+`/Qinit` should collect both:
+- provider per role
+- model per runner
+
+Recommended model defaults:
+- Claude planner/reviewer: `sonnet`
+- Claude supervisor: `opus`
+- Codex implementer: `gpt-5-codex`
+- Gemini reviewer: `gemini-2.5-pro`
+
 ## Current Release
 
-- Version: `3.0.16`
+- Version: `3.0.17`
 - Highlights:
   - role-based runner mapping
   - PATH-based Codex/Gemini execution

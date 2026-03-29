@@ -141,6 +141,9 @@ Before seeding the config, explain the setup in user-facing language and then as
 - When the word `runner` appears, explain it immediately: `runner (the saved AI execution setup used for a role)`.
 - Multiple roles may reuse the same runner.
 - The same provider may appear in multiple runners, such as `claude_planner`, `claude_reviewer`, and `claude_supervisor`.
+- Provider choice alone is not enough. You must also collect or confirm the concrete model for each runner.
+- Explain `model` in plain language the first time it appears: `model (the specific engine used by that AI runner, such as Claude Sonnet, Claude Opus, gpt-5-codex, or gemini-2.5-pro)`.
+- Do not silently keep template defaults if the user wants a different model.
 
 Recommended starting choices to offer:
 - `Claude + Codex + Gemini`
@@ -149,6 +152,7 @@ Recommended starting choices to offer:
 
 Even when the user chooses a quick preset, ask one confirmation question in plain language:
 - `I will assign planning, implementation, review, and final verification using this setup. Do you want to keep this mapping or change any role?`
+- Then ask whether they want to keep the recommended models or change any model before writing the config.
 
 If the user wants to change any role, switch immediately to role-by-role questions.
 
@@ -176,23 +180,67 @@ For each role, collect:
 - argument template
 - timeout
 
+Recommended model prompts by provider:
+- Claude:
+  - offer `haiku`, `sonnet`, `opus`, then `custom`
+  - explain briefly: `haiku = fastest/cheapest`, `sonnet = balanced default`, `opus = strongest reasoning`
+- Codex:
+  - offer `gpt-5-codex`, then `custom`
+- Gemini:
+  - offer `gemini-2.5-pro`, then `custom`
+
+If a preset is chosen, propose recommended provider+model pairs together, not provider only.
+
+Preset defaults:
+- `Claude only`
+  - planner = Claude `sonnet`
+  - implementer = Claude `sonnet`
+  - reviewer = Claude `sonnet`
+  - supervisor = Claude `opus`
+- `Claude + Codex`
+  - planner = Claude `sonnet`
+  - implementer = Codex `gpt-5-codex`
+  - reviewer = Claude `sonnet`
+  - supervisor = Claude `opus`
+- `Claude + Gemini`
+  - planner = Claude `sonnet`
+  - implementer = Claude `sonnet`
+  - reviewer = Gemini `gemini-2.5-pro`
+  - supervisor = Claude `opus`
+- `Claude + Codex + Gemini`
+  - planner = Claude `sonnet`
+  - implementer = Codex `gpt-5-codex`
+  - reviewer = Gemini `gemini-2.5-pro`
+  - supervisor = Claude `opus`
+
 Then build `roles.{role}.runner` plus the matching `runners.{runnerName}` entries.
 
 Recommended question flow:
 1. `Do you want to use one AI for the whole project, or split roles across multiple AIs (multi-model)?`
 2. If split roles is selected: `Do you want a quick preset, or do you want to choose the AI for each role one by one?`
-3. If choosing one by one, ask in this order:
+3. If a quick preset is selected:
+   - show the full role -> runner -> provider -> model summary
+   - ask `Do you want to keep these models, or change any role/model before saving?`
+4. If choosing one by one, ask in this order:
    - `Which AI should handle planning (planner)?`
    - `Which AI should handle implementation (implementer)?`
    - `Which AI should handle review (reviewer)?`
    - `Which AI should handle the final decision (supervisor)?`
-   - After each answer, ask the runner details needed to build a valid config if they are not already implied by an existing runner.
-4. After collecting answers, show a short summary such as:
+   - After each provider answer, ask `Which model should this role use?`
+   - After each model answer, ask the runner details needed to build a valid config if they are not already implied by an existing runner.
+5. After collecting answers, show a short summary such as:
    - `planner -> claude_planner`
    - `implementer -> codex_implementer`
    - `reviewer -> gemini_reviewer`
    - `supervisor -> claude_supervisor`
-5. Ask for explicit confirmation before writing `.qe/ai-team/config/team-config.json`.
+   and also show:
+   - `claude_planner -> provider claude / model sonnet`
+   - `codex_implementer -> provider codex / model gpt-5-codex`
+   - `gemini_reviewer -> provider gemini / model gemini-2.5-pro`
+   - `claude_supervisor -> provider claude / model opus`
+6. Ask for explicit confirmation before writing `.qe/ai-team/config/team-config.json`.
+
+Do not write the config if any selected runner is missing a `model`.
 
 1. **Create directories**
    ```text

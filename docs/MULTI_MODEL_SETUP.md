@@ -86,6 +86,33 @@ Example presets:
 - `Custom`
 
 `/Qinit` should ask for role-to-runner mapping, not just provider names.
+`/Qinit` should also ask for the model used by each runner before writing `team-config.json`.
+
+## Model Selection
+
+Provider assignment and model assignment are separate decisions.
+
+- Provider answers: which CLI/runtime should execute the role?
+- Model answers: which concrete model should that runner use?
+
+Recommended defaults:
+
+| Provider | Recommended models to offer in `/Qinit` | Default recommendation |
+|----------|-----------------------------------------|------------------------|
+| Claude | `haiku`, `sonnet`, `opus`, `custom` | `sonnet` for planner/reviewer, `opus` for supervisor |
+| Codex | `gpt-5-codex`, `custom` | `gpt-5-codex` |
+| Gemini | `gemini-2.5-pro`, `custom` | `gemini-2.5-pro` |
+
+Preset summary examples:
+
+| Preset | planner | implementer | reviewer | supervisor |
+|--------|---------|-------------|----------|------------|
+| Claude only | Claude `sonnet` | Claude `sonnet` | Claude `sonnet` | Claude `opus` |
+| Claude + Codex | Claude `sonnet` | Codex `gpt-5-codex` | Claude `sonnet` | Claude `opus` |
+| Claude + Gemini | Claude `sonnet` | Claude `sonnet` | Gemini `gemini-2.5-pro` | Claude `opus` |
+| Claude + Codex + Gemini | Claude `sonnet` | Codex `gpt-5-codex` | Gemini `gemini-2.5-pro` | Claude `opus` |
+
+The saved config must include the chosen `model` in every `runners.{name}` entry.
 
 ## Role Mappings
 Primary PSE chain with role ownership:

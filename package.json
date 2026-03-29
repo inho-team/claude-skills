@@ -1,10 +1,12 @@
 {
   "name": "@inho-team/qe-framework",
-  "version": "3.0.14",
+  "version": "3.0.16",
   "description": "Spec-driven task execution framework for Claude Code — SVS (Spec-Verify-Supervise) loop with 139 skills and 21 agents",
   "scripts": {
     "postinstall": "node install.js",
     "preuninstall": "node uninstall.js",
+    "qe:mcp": "node scripts/qe_mcp.mjs",
+    "qe:secret": "node scripts/qe_secret.mjs",
     "validate:ai-team": "node scripts/validate_ai_team_config.mjs",
     "normalize:ai-team-artifacts": "node scripts/normalize_ai_team_artifacts.mjs",
     "run:role": "node scripts/run_role.mjs",

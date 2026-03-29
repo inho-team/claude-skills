@@ -141,11 +141,26 @@ This does not rewrite `team-config.json`.
 /Qcompact
 /Qresume
 /Qhelp
+/Qsecret
+/Qmcp-sync
 ```
 
-## 9. When To Read Which Doc
+## 9. Secret Management
+
+Use `Qsecret` when you want QE to manage an API key or token without storing plaintext in the project.
+
+Capabilities:
+- metadata-only registries in `.qe/secrets/registry.json` or `~/.qe/secrets/registry.json`
+- OS-backed secret storage
+- one-run env injection into child processes
+
+See [SECRETS.md](SECRETS.md) for commands and backend behavior.
+
+## 10. When To Read Which Doc
 
 - Philosophy and design intent: [PHILOSOPHY.md](PHILOSOPHY.md)
 - Detailed role routing and config: [MULTI_MODEL_SETUP.md](MULTI_MODEL_SETUP.md)
+- Shared MCP registry and client sync: [MCP_GLOBAL_SETUP.md](MCP_GLOBAL_SETUP.md)
+- Secret storage and injection: [SECRETS.md](SECRETS.md)
 - System components and hook architecture: [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md)
 - Full doc index: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md)

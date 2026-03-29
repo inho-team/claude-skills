@@ -34,6 +34,8 @@
 | `/Qutopia` | When you want to enable fully autonomous execution mode. | Switches framework to ultra-mode (auto-approvals, auto-remediation). |
 | `/Qplan` | When a multi-phase project roadmap or high-level strategic planning is needed. | Manages PROJECT.md, ROADMAP.md and phases within .qe/planning/. |
 | `/Qinit` | When starting a new project or initializing the QE framework. | Sets up directory structure, conventions, and core configuration. |
+| `/Qmcp-sync` | When MCP settings should be shared across Claude, Codex, and Gemini. | Keeps one QE-managed MCP registry and syncs clients from it. |
+| `/Qsecret` | When API keys or tokens must be stored or used safely. | Keeps plaintext secrets out of the repo while supporting secure env injection. |
 | `/Qupdate` | When the QE framework or its components need updating. | Syncs latest framework logic and templates. |
 | `/Qversion` | When you need to check the current framework version. | Displays version info and recent changelog. |
 | `/Qarchive` | When a task is completed and needs to be archived. | Moves files to archive and cleans up temporary state. |

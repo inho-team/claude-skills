@@ -16,6 +16,8 @@ Use this file to find the right document quickly.
 
 - General usage guide: [USAGE_GUIDE.md](USAGE_GUIDE.md)
 - Multi-model setup: [MULTI_MODEL_SETUP.md](MULTI_MODEL_SETUP.md)
+- Global MCP setup: [MCP_GLOBAL_SETUP.md](MCP_GLOBAL_SETUP.md)
+- Secret management: [SECRETS.md](SECRETS.md)
 - Multi-model user guide: [USER_GUIDE_MULTI_MODEL.md](USER_GUIDE_MULTI_MODEL.md)
 
 ## Release / Change Context

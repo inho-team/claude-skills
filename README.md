@@ -27,6 +27,8 @@ Use it to:
 - Detailed usage guide: [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)
 - Documentation map: [docs/DOCUMENTATION_MAP.md](docs/DOCUMENTATION_MAP.md)
 - Multi-model setup: [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md)
+- Global MCP setup: [docs/MCP_GLOBAL_SETUP.md](docs/MCP_GLOBAL_SETUP.md)
+- Secret management: [docs/SECRETS.md](docs/SECRETS.md)
 - System overview: [docs/SYSTEM_OVERVIEW.md](docs/SYSTEM_OVERVIEW.md)
 - Terminal encoding notes: [docs/TERMINAL_ENCODING.md](docs/TERMINAL_ENCODING.md)
 - Korean: [docs/README.ko.md](docs/README.ko.md)
@@ -129,13 +131,15 @@ See [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md) for the detailed role
 
 ## Current Release
 
-- Version: `3.0.14`
+- Version: `3.0.16`
 - Highlights:
   - role-based runner mapping
   - PATH-based Codex/Gemini execution
   - background runner supervision
   - quota-blocked fallback candidates with temporary `--role-override`
   - `AskUserQuestion` guidance for one-run reassignment in `/Qatomic-run` and `/Qcode-run-task`
+  - OS-backed secret metadata and secure child-process injection via `Qsecret`
+  - global MCP registry and QE MCP server sync for Claude, Codex, and Gemini
 
 ## Notes
 

@@ -18,6 +18,7 @@ function buildFollowCommand(logPath) {
 function buildWorkerArgs(args, runId) {
   const nextArgs = [SCRIPT_PATH, '--role', args.role, '--run-id', runId, '--execute', '--worker'];
 
+  if (args.cwd) nextArgs.push('--cwd', args.cwd);
   if (args.input) nextArgs.push('--input', args.input);
   if (args.config) nextArgs.push('--config', args.config);
   if (Number.isFinite(args.timeoutMs)) nextArgs.push('--timeout-ms', String(args.timeoutMs));

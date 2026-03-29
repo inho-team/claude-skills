@@ -2,7 +2,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { spawnSync } from 'child_process';
-import { join, resolve } from 'path';
+import { basename, join, resolve } from 'path';
 import { randomUUID } from 'crypto';
 import {
   ensureDirectory,
@@ -18,6 +18,7 @@ export function parseRunRoleArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--role') args.role = argv[++i];
+    else if (arg === '--cwd') args.cwd = argv[++i];
     else if (arg === '--input') args.input = argv[++i];
     else if (arg === '--artifact') args.artifacts.push(argv[++i]);
     else if (arg === '--config') args.config = argv[++i];
@@ -45,6 +46,7 @@ export function runRoleUsage() {
     '  node scripts/run_role.mjs --role <planner|implementer|reviewer|supervisor> [options]',
     '',
     'Options:',
+    '  --cwd <path>         Force the project working directory',
     '  --input <path>        Path to a text/markdown/json input file',
     '  --artifact <path>     Additional artifact path to include (repeatable)',
     '  --config <path>       Override config path',
@@ -59,6 +61,7 @@ export function runRoleUsage() {
 
 export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
   const args = Array.isArray(rawArgs) ? parseRunRoleArgs(rawArgs) : rawArgs;
+  const resolvedCwd = determineRunCwd(args, cwd);
 
   if (args.help || !args.role) {
     return {
@@ -67,7 +70,7 @@ export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
     };
   }
 
-  const { path: configPath, config } = loadAiTeamConfig(cwd, args.config);
+  const { path: configPath, config } = loadAiTeamConfig(resolvedCwd, args.config);
   const errors = validateAiTeamConfig(config);
   if (errors.length > 0) {
     throw new Error(`Invalid AI team config: ${configPath}\n- ${errors.join('\n- ')}`);
@@ -96,10 +99,10 @@ export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
   }
 
   const adapter = getProviderAdapter(runnerConfig.provider);
-  const inputText = loadInputText(cwd, args.input);
-  const artifacts = resolveArtifacts(cwd, args.artifacts);
+  const inputText = loadInputText(resolvedCwd, args.input);
+  const artifacts = resolveArtifacts(resolvedCwd, args.artifacts);
   const runId = args.runId || randomUUID().slice(0, 8);
-  const runDir = join(cwd, '.qe', 'ai-team', 'runs', runId);
+  const runDir = join(resolvedCwd, '.qe', 'ai-team', 'runs', runId);
   ensureDirectory(runDir);
 
   const invocation = adapter({
@@ -135,7 +138,7 @@ export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
         provider: runnerConfig.provider,
         config,
         runnerConfig,
-        cwd,
+        cwd: resolvedCwd,
         outputFile: outputPath,
         defaultInvocation: invocation,
       })
@@ -144,7 +147,7 @@ export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
   return {
     ok: true,
     args,
-    cwd,
+    cwd: resolvedCwd,
     configPath,
     config,
     workflowMode,
@@ -178,6 +181,26 @@ function resolveArtifacts(cwd, artifacts) {
   return artifacts.map(path => resolve(cwd, path));
 }
 
+function determineRunCwd(args, fallbackCwd) {
+  if (args.cwd) {
+    return resolve(fallbackCwd, args.cwd);
+  }
+
+  if (!args.config) {
+    return fallbackCwd;
+  }
+
+  const resolvedConfigPath = resolve(fallbackCwd, args.config);
+  if (basename(resolvedConfigPath) !== 'team-config.json') {
+    return fallbackCwd;
+  }
+
+  // If the command is launched from the plugin cache, infer the project root from
+  // the config location so provider CLIs still run in the user workspace.
+  // 플러그인 캐시에서 실행되더라도 config 위치를 기준으로 프로젝트 루트를 추론한다.
+  return resolve(resolvedConfigPath, '..', '..', '..', '..');
+}
+
 function interpolateArgs(args, values) {
   return args.map(arg => arg
     .replaceAll('{cwd}', values.cwd)
@@ -202,6 +225,7 @@ function executeInvocation(command, prompt, cwd, timeoutMs) {
     input: prompt,
     encoding: 'utf8',
     timeout: timeoutMs,
+    maxBuffer: 64 * 1024 * 1024,
     windowsHide: true,
   });
 }
@@ -229,6 +253,10 @@ function formatExecutionError({ provider, command, result }) {
 
   if (result.error.code === 'ETIMEDOUT') {
     return `Execution timed out for ${executable}. Increase timeout_ms or verify the CLI can complete in batch mode.`;
+  }
+
+  if (result.error.code === 'ENOBUFS') {
+    return `Execution output exceeded the foreground buffer for ${executable}. Re-run with --background or reduce CLI verbosity.`;
   }
 
   return `${result.error.message} ${installMessage}`;

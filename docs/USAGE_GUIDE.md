@@ -36,7 +36,7 @@ $Qinit
 ```
 
 This creates:
-- `CLAUDE.md`
+- default project instruction file (`CLAUDE.md`)
 - `.qe/`
 - project analysis files
 - optional `.qe/ai-team/` scaffolding when the user opts into role-based orchestration
@@ -141,9 +141,9 @@ Current runtime behavior:
 | Claude + Gemini | `hybrid` | reviewer = Gemini, others = Claude |
 | Claude + Codex + Gemini | `multi-model` | planner/supervisor = Claude, implementer = Codex, reviewer = Gemini |
 
-## 6. Multi-Model Files
+## 6. Role-Orchestration Files
 
-When `hybrid` or `multi-model` is enabled, QE uses:
+When `hybrid`, `multi-model`, or `tiered-model` is enabled, QE uses:
 
 - `.qe/ai-team/config/team-config.json`
 - `.qe/ai-team/artifacts/role-spec.md`

@@ -8,7 +8,7 @@ QE Framework turns vague work into an explicit workflow:
 /Qplan -> /Qgs -> /Qatomic-run -> /Qcode-run-task
 ```
 
-It supports both:
+It supports:
 - `single-model`: Claude-centric legacy flow
 - `multi-model` / `hybrid`: role-based orchestration across Claude, Codex, Gemini, or other runner-backed CLIs
 - `tiered-model`: one-provider tiering such as Claude Opus / Sonnet / Haiku or Codex GPT-5.4 / GPT-5-Codex / GPT-5-Codex-Mini by difficulty
@@ -47,7 +47,7 @@ Recommended role split:
 - `supervisor`
 
 In `single-model`, Claude can own all roles.
-In `hybrid` or `multi-model`, those roles can be mapped to different runners in `.qe/ai-team/config/team-config.json`.
+In `hybrid`, `multi-model`, or `tiered-model`, those roles can be mapped to different runners or tiers in `.qe/ai-team/config/team-config.json`.
 
 ## Installation
 
@@ -173,7 +173,7 @@ Recommended model defaults:
 ## Notes
 
 - After install or update, restart Claude Code and any active Codex session.
-- `team-config.json` only matters when using `hybrid` or `multi-model`.
+- `team-config.json` matters whenever role routing is enabled: `hybrid`, `multi-model`, or `tiered-model`.
 - `--role-override` affects the current run only. It does not rewrite saved config.
 
 ## License

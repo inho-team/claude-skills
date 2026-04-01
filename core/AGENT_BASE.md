@@ -8,12 +8,12 @@ Common behavioral patterns shared across all agents. Agent-specific behaviors ar
 - Follow existing code style, naming conventions, and project patterns consistently
 - Report progress briefly upon completing each step
 - Report errors immediately with context and a proposed response plan
-- Follow constraints and decisions specified in CLAUDE.md
+- Follow constraints and decisions specified in the active project instruction file (`CLAUDE.md`, `AGENTS.md`, or equivalent QE-managed instructions)
 
 ## Will Not
 - Expand scope beyond the assigned task or role boundary
 - Make arbitrary decisions on matters requiring user judgment — report and wait for instructions
-- Modify CLAUDE.md directly (propose changes through the appropriate skill/workflow)
+- Modify the project instruction file directly without going through the appropriate skill/workflow
 - Introduce security vulnerabilities (OWASP Top 10)
 - Include sensitive information (credentials, API keys, personal data) in outputs
 

@@ -218,17 +218,25 @@ export function readStdinJson() {
 }
 
 /**
- * Get CLAUDE.md path
+ * Get default project instruction file path
  */
 export function getClaudePath(cwd) {
   return join(cwd, 'CLAUDE.md');
 }
 
 /**
- * Parse CLAUDE.md task table into objects
+ * Get task registry path, preferring `.qe/TASK_LOG.md` over legacy `CLAUDE.md`
  */
-export function parseClaudeTaskTable(cwd) {
-  const filePath = getClaudePath(cwd);
+export function getTaskRegistryPath(cwd) {
+  const taskLogPath = join(cwd, '.qe', 'TASK_LOG.md');
+  if (existsSync(taskLogPath)) return taskLogPath;
+  return getClaudePath(cwd);
+}
+
+/**
+ * Parse a markdown task table into objects
+ */
+export function parseTaskTable(filePath) {
   if (!existsSync(filePath)) return [];
 
   try {
@@ -244,13 +252,12 @@ export function parseClaudeTaskTable(cwd) {
       }
       if (inTable && line.includes('|') && !line.includes('---')) {
         const parts = line.split('|').map(p => p.trim()).filter(p => p !== '');
-        // Standard format: | Status | UUID | Name | ...
         if (parts.length >= 2) {
           tasks.push({
             status: parts[0],
             uuid: parts[1],
             name: parts[2] || '',
-            line: line
+            line
           });
         }
       } else if (inTable && line.trim() === '') {
@@ -264,10 +271,16 @@ export function parseClaudeTaskTable(cwd) {
 }
 
 /**
- * Update task status in CLAUDE.md
+ * Parse the active task registry into objects
  */
-export function updateClaudeStatus(cwd, uuid, newStatus) {
-  const filePath = getClaudePath(cwd);
+export function parseClaudeTaskTable(cwd) {
+  return parseTaskTable(getTaskRegistryPath(cwd));
+}
+
+/**
+ * Update task status in a markdown task registry table
+ */
+export function updateTaskStatus(filePath, uuid, newStatus) {
   if (!existsSync(filePath)) return false;
 
   try {
@@ -279,8 +292,7 @@ export function updateClaudeStatus(cwd, uuid, newStatus) {
       if (line.includes(`| ${uuid} |`) || line.includes(` ${uuid} `)) {
         const parts = line.split('|');
         if (parts.length >= 3) {
-          // Find which column is status (usually 1 or 2)
-          if (parts[1].trim().length <= 3) { // Status icon column
+          if (parts[1].trim().length <= 3) {
             parts[1] = ` ${newStatus} `;
           } else if (parts[2].trim().length <= 3) {
             parts[2] = ` ${newStatus} `;
@@ -299,6 +311,13 @@ export function updateClaudeStatus(cwd, uuid, newStatus) {
   } catch {
     return false;
   }
+}
+
+/**
+ * Update task status in the active task registry
+ */
+export function updateClaudeStatus(cwd, uuid, newStatus) {
+  return updateTaskStatus(getTaskRegistryPath(cwd), uuid, newStatus);
 }
 
 /**

@@ -56,7 +56,7 @@ After execution is complete (by /Qatomic-run + /Qcode-run-task), review the resu
 
 ## Multi-Model Role Mode
 
-If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qplan` remains the planner entry point.
+If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qplan` remains the planner entry point.
 
 Additional responsibilities in that mode:
 - Read the role mapping before planning
@@ -65,7 +65,7 @@ Additional responsibilities in that mode:
 - Treat external provider choice as configuration, not as a change to the planning method
 
 ### Planner Artifacts (role-owned outputs)
-Only when multi-model or hybrid mode is active, write the following after Step 3 (phase activation) without altering the legacy `.qe/planning/*` outputs:
+Only when role-separated or tiered orchestration is active, write the following after Step 3 (phase activation) without altering the legacy `.qe/planning/*` outputs:
 
 | Artifact | Path | Content Requirements |
 |----------|------|----------------------|
@@ -77,7 +77,7 @@ Rules:
 - Overwrite planner-owned artifacts only when the planner intentionally revises the scope; otherwise append new waves.
 - Keep `.qe/planning/` as the architectural source of truth and mirror, not replace, its content in the planner artifacts so implementers/reviewers can work offline from `.qe/ai-team/artifacts/`.
 
-Planner-stage source of truth in multi-model mode:
+Planner-stage source of truth in role-separated/tiered mode:
 - `.qe/planning/PROJECT.md`
 - `.qe/planning/ROADMAP.md`
 - `.qe/planning/REQUIREMENTS.md`

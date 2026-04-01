@@ -1,8 +1,8 @@
-# User Guide: Multi-Model QE Workflow
+# User Guide: Role-Separated QE Workflow
 
 ## What This Is
 
-QE Framework lets you keep a simple command workflow while assigning different AI systems to different roles.
+QE Framework lets you keep a simple command workflow while assigning different runners or model tiers to different roles.
 
 Most users only need:
 
@@ -94,7 +94,7 @@ Advanced users can inspect:
 .qe/ai-team/config/team-config.json
 ```
 
-This file controls role-to-runner mapping and runner execution details.
+This file controls role-to-runner mapping, runner execution details, and tiered-model routing policies.
 
 ## Where Results Go
 
@@ -122,3 +122,8 @@ Think of QE like this:
 - `/Qplan` prepares the work
 - `/Qatomic-run` executes the work
 - `/Qcode-run-task` checks whether the work is actually done
+
+This can be done through:
+
+- `hybrid` or `multi-model` for provider-level role separation
+- `tiered-model` for one-provider high/medium/low model routing

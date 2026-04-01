@@ -41,7 +41,7 @@ All skills and agents refer to this classification to determine whether a reques
 | **Professional communication** | "professional email", "team message", "meeting agenda", "communication guide" | Qprofessional-communication |
 | **YouTube transcript** | "YouTube subtitles", "video captions", "transcribe video", "extract subtitles" | Qyoutube-transcript-api |
 | **Lesson learned** | "what can we learn", "key takeaway", "look back at this code", "code review insight" | Qlesson-learned |
-| **Refactor instructions** | "refactor CLAUDE.md", "split AGENTS.md", "organize instructions", "instruction bloat" | Mrefactor-agent-md |
+| **Refactor instructions** | "refactor CLAUDE.md", "split AGENTS.md", "organize instruction files", "instruction bloat" | Mrefactor-agent-md |
 | **Find skills** | "find a skill", "search skills.sh", "install skill", "skill marketplace" | Qfind-skills |
 | **Create skill** | "create a skill", "new skill", "modify skill", "skill performance", "benchmark skill" | Mcreate-skill |
 | **Create command** | "create slash command", "make a command", "reusable workflow", "automate process" | Qcommand-creator |

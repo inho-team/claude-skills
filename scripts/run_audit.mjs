@@ -87,7 +87,7 @@ for (const file of skillFiles) {
     invocation_trigger: frontmatter.invocation_trigger || null,
     recommendedModel: frontmatter.recommendedModel || null,
     hasContextMemo: body.includes('ContextMemo') || body.includes('Minimal I/O Rule'),
-    hasClaudeMd: body.includes('CLAUDE.md')
+    hasInstructionArtifact: body.includes('CLAUDE.md') || body.includes('AGENTS.md') || body.includes('instruction file')
   });
 }
 
@@ -117,7 +117,7 @@ for (const file of agentFiles) {
     expectedTier,
     isAligned,
     hasContextMemo: body.includes('ContextMemo') || body.includes('Minimal I/O Rule'),
-    hasClaudeMd: body.includes('CLAUDE.md')
+    hasInstructionArtifact: body.includes('CLAUDE.md') || body.includes('AGENTS.md') || body.includes('instruction file')
   });
 }
 
@@ -127,17 +127,17 @@ fs.writeFileSync('audit_report.json', JSON.stringify(auditResults, null, 2));
 let mdReport = '# Framework Metadata Audit Report\n\n';
 
 mdReport += '## Skills Audit Summary\n\n';
-mdReport += '| Skill | Invocation Trigger | Recommended Model | ContextMemo | CLAUDE.md |\n';
-mdReport += '|-------|--------------------|-------------------|-------------|-----------|\n';
+mdReport += '| Skill | Invocation Trigger | Recommended Model | ContextMemo | Instruction Artifact |\n';
+mdReport += '|-------|--------------------|-------------------|-------------|----------------------|\n';
 auditResults.skills.forEach(s => {
-  mdReport += `| ${s.path.replace('skills/', '')} | ${s.invocation_trigger ? '✅' : '❌'} | ${s.recommendedModel || '❌'} | ${s.hasContextMemo ? '✅' : '❌'} | ${s.hasClaudeMd ? '✅' : '❌'} |\n`;
+  mdReport += `| ${s.path.replace('skills/', '')} | ${s.invocation_trigger ? '✅' : '❌'} | ${s.recommendedModel || '❌'} | ${s.hasContextMemo ? '✅' : '❌'} | ${s.hasInstructionArtifact ? '✅' : '❌'} |\n`;
 });
 
 mdReport += '\n## Agents Audit Summary\n\n';
-mdReport += '| Agent | Model | Expected Tier | Aligned? | ContextMemo | CLAUDE.md |\n';
-mdReport += '|-------|-------|---------------|----------|-------------|-----------|\n';
+mdReport += '| Agent | Model | Expected Tier | Aligned? | ContextMemo | Instruction Artifact |\n';
+mdReport += '|-------|-------|---------------|----------|-------------|----------------------|\n';
 auditResults.agents.forEach(a => {
-  mdReport += `| ${a.name} | ${a.recommendedModel || '❌'} | ${a.expectedTier} | ${a.isAligned ? '✅' : '❌'} | ${a.hasContextMemo ? '✅' : '❌'} | ${a.hasClaudeMd ? '✅' : '❌'} |\n`;
+  mdReport += `| ${a.name} | ${a.recommendedModel || '❌'} | ${a.expectedTier} | ${a.isAligned ? '✅' : '❌'} | ${a.hasContextMemo ? '✅' : '❌'} | ${a.hasInstructionArtifact ? '✅' : '❌'} |\n`;
 });
 
 fs.writeFileSync('audit_report.md', mdReport);

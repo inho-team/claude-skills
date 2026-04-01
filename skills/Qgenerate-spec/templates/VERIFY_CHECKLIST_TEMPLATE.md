@@ -14,4 +14,4 @@
 {{verifyNotes}}
 
 ---
-> 모든 항목 체크 시 완료. CLAUDE.md 작업 목록을 ✅로 변경하세요.
+> 모든 항목 체크 시 완료. 작업 상태는 `.qe/TASK_LOG.md`와 관련 task artifact에 반영하세요.

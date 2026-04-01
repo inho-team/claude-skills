@@ -125,47 +125,49 @@ Example:
 ```json
 {
   "version": 1,
-  "mode": "multi-model",
+  "mode": "tiered-model",
   "roles": {
     "planner": {
-      "runner": "claude_planner",
+      "runner": "claude_high",
       "responsibility": "Create and refine executable specs"
     },
     "implementer": {
-      "runner": "codex_implementer",
+      "runner": "claude_medium",
       "responsibility": "Implement approved checklist items"
     },
     "reviewer": {
-      "runner": "gemini_reviewer",
+      "runner": "claude_medium",
       "responsibility": "Perform independent review and regression analysis"
     },
     "supervisor": {
-      "runner": "claude_supervisor",
+      "runner": "claude_high",
       "responsibility": "Approve, reject, or request remediation"
     }
   },
   "runners": {
-    "claude_planner": {
+    "claude_high": {
+      "provider": "claude",
+      "model": "opus"
+    },
+    "claude_medium": {
       "provider": "claude",
       "model": "sonnet"
     },
-    "codex_implementer": {
-      "provider": "codex",
-      "model": "gpt-5-codex"
-    },
-    "gemini_reviewer": {
-      "provider": "gemini",
-      "model": "gemini-2.5-pro"
-    },
-    "claude_supervisor": {
+    "claude_low": {
       "provider": "claude",
-      "model": "opus"
+      "model": "haiku"
     }
   },
   "policies": {
     "max_remediation_rounds": 2,
     "reviewer_can_edit": false,
-    "implementer_can_modify_spec": false
+    "implementer_can_modify_spec": false,
+    "enforce_specific_remediation": true,
+    "default_runner_by_complexity": {
+      "low": "claude_low",
+      "medium": "claude_medium",
+      "high": "claude_high"
+    }
   }
 }
 ```
@@ -249,7 +251,7 @@ Secondary path:
 `/Qrun-task` remains valid for non-atomic or fallback execution, but it is not the canonical `Qplan` path.
 
 In single-model mode, Claude may own all roles.
-In multi-model mode, roles are distributed by config.
+In `hybrid`, `multi-model`, and `tiered-model`, roles are distributed by config.
 
 The same provider may be used multiple times through distinct runner names.
 
@@ -274,6 +276,9 @@ Enabled when `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-m
 
 ### Mode 3: hybrid
 Use Claude for planning and supervision while delegating implementation or review externally.
+
+### Mode 4: tiered-model
+Use stronger models for planning and supervision, standard models for implementation and review, and cheaper models for low-complexity execution.
 
 ## Minimal First-Pass Implementation
 

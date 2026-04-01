@@ -65,7 +65,7 @@ Step 5: Report results
 
 ## Multi-Model Role Mode
 
-If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qcode-run-task` is where the reviewer and supervisor roles are enforced.
+If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qcode-run-task` is where the reviewer and supervisor roles are enforced.
 
 In that mode, `/Qcode-run-task` must prefer the configured external reviewer and supervisor runners over the legacy internal Claude-only quality loop.
 - Read `.qe/ai-team/config/team-config.json` before starting any review.
@@ -87,7 +87,7 @@ Scope guardrails:
 - Verify that changed files in the implementation report stay within planner-defined ownership from `task-bundle.json`.
 - Escalate (request planner input) if scope drift is detected.
 
-Required execution path in multi-model/hybrid mode:
+Required execution path in role-separated/tiered mode:
 
 1. Run the reviewer runner:
 
@@ -135,10 +135,10 @@ node scripts/run_role.mjs --role supervisor --config .qe/ai-team/config/team-con
 
 Fallback rule:
 - The legacy `Eqa-orchestrator` delegation remains valid for single-model mode.
-- In multi-model/hybrid mode, internal Claude-only delegation is a fallback for runner execution failure, not the default path.
+- In role-separated or tiered mode, internal Claude-only delegation is a fallback for runner execution failure, not the default path.
 - If fallback is used, state that the configured external runner did not execute.
 
-These requirements apply only when the config mode is multi-model/hybrid; in single-model mode, legacy behavior remains unchanged.
+These requirements apply only when the config mode is not `single-model`; in single-model mode, legacy behavior remains unchanged.
 
 **Opt-in manual mode:** If the user explicitly requests step-by-step control, or if Eqa-orchestrator fails, fall back to the manual execution procedure below.
 

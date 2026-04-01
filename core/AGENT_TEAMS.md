@@ -9,7 +9,7 @@ Agent Teams spawns **separate Claude Code instances** as teammates, each with it
 | Aspect | Subagents (Agent tool) | Agent Teams |
 |--------|----------------------|-------------|
 | **Spawning** | `Agent()` tool call within session | Natural language request; separate Claude instance |
-| **Context** | Inherits caller's context + spawn prompt | Independent context window; loads CLAUDE.md fresh |
+| **Context** | Inherits caller's context + spawn prompt | Independent context window; reloads the active project instruction artifact fresh |
 | **Communication** | Returns result to caller only | Peer-to-peer messaging, broadcast, shared task list |
 | **Coordination** | Caller manages all work | Self-coordination via shared task list |
 | **File editing** | Sequential within one session | Parallel across instances (must partition files) |

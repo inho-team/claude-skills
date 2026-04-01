@@ -42,7 +42,7 @@ After all atomic items are done, automatically trigger `/Qcode-run-task` to ensu
 
 ## Multi-Model Role Mode
 
-If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model` or `hybrid`, `/Qatomic-run` is the default implementer stage in the `Qplan` chain.
+If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qatomic-run` is the default implementer stage in the `Qplan` chain.
 
 In that mode, `/Qatomic-run` must prefer the configured external implementer runner over the legacy Haiku swarm path.
 - Read `.qe/ai-team/config/team-config.json` before spawning any teammate.
@@ -52,7 +52,7 @@ In that mode, `/Qatomic-run` must prefer the configured external implementer run
   - `Provider: {provider}`
   - `Model: {model}`
 - If the runner points to an external CLI such as Codex or Gemini, do **not** use Haiku teammates for the implementation step.
-- In multi-model/hybrid mode, the Haiku swarm path becomes a fallback only for single-model setups or when the configured implementer runner is explicitly Claude-based and the user chooses the legacy path.
+- In role-separated or tiered mode, the Haiku swarm path becomes a fallback only for single-model setups or when the configured implementer runner is explicitly Claude-based and the user chooses the legacy path.
 
 Implementer invariants in that mode:
 - **Read-only spec**: Consume `.qe/ai-team/artifacts/role-spec.md` + `task-bundle.json` and the TASK_REQUEST pair, but never rewrite planner-owned documents unless the planner explicitly requests changes.
@@ -64,7 +64,7 @@ Implementer invariants in that mode:
   - Date/time stamp + implementer identity
 - **No silent spec rewrites**: Any requirement shifts must bounce back to planner; otherwise proceed with tactical decisions only.
 
-Required execution path in multi-model/hybrid mode:
+Required execution path in role-separated/tiered mode:
 
 1. Validate that `.qe/ai-team/config/team-config.json` exists.
 2. Run the external implementer runner with the project-local command below:

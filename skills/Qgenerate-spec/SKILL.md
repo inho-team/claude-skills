@@ -30,7 +30,7 @@ You are a specialist document writer acting as a **sub-component of the `/Qplan`
 
 ## Multi-Model Role Mode
 
-If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model` or `hybrid`, `/Qgenerate-spec` must also act as the planner-stage artifact generator.
+If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qgenerate-spec` must also act as the planner-stage artifact generator.
 
 ### Artifact emission order
 1. Generate the standard documents (CLAUDE.md, TASK_REQUEST, VERIFY_CHECKLIST) first.
@@ -47,6 +47,7 @@ If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model` 
 - Derive `owner` from the `roles` mapping in `team-config.json` (e.g., `implementer.provider`).
 - Keep planner artifacts in sync with whatever you just wrote to `.qe/tasks/` so reviewers never see conflicting instructions.
 - Never let implementer/reviewer instructions bleed into these files; they must remain planner voice only.
+- Include `complexity` and `delegation_guidance` when the active mode is `tiered-model`, so implementer routing has explicit evidence.
 
 ## Workflow
 
@@ -163,7 +164,7 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - **Dependency Mapping**: If an item depends on another, mark it: `- [ ] {desc} <!-- depends_on: [UUID/Item#] -->`.
 - **Haiku-Ready**: Ensure items are small enough to be implemented without Sonnet-level reasoning.
 - **Output files**: Always append `→ output: {file-path}` for direct accountability.
-- **Role ownership**: In multi-model mode, identify the expected implementer-owned files or modules so the reviewer can later judge boundary violations.
+- **Role ownership**: In role-separated or tiered orchestration, identify the expected implementer-owned files or modules so the reviewer can later judge boundary violations.
 
 ### VERIFY_CHECKLIST
 - Each criterion answerable as yes/no

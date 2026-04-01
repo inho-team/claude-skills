@@ -292,7 +292,7 @@ export function getWorkflowMode(config, fallback = 'single-model') {
 
 export function isMultiModelMode(config) {
   const mode = getWorkflowMode(config);
-  return mode === 'multi-model' || mode === 'hybrid';
+  return mode === 'multi-model' || mode === 'hybrid' || mode === 'tiered-model';
 }
 
 export function detectWorkflowMode(cwd, fileArg = '.qe/ai-team/config/team-config.json') {

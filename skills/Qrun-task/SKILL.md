@@ -33,11 +33,11 @@ Execute tasks based on spec documents. This is a **secondary execution engine** 
 
 ## Multi-Model Role Mode
 
-If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model` or `hybrid`, `/Qrun-task` must enforce role boundaries in addition to the standard SVS loop. Always read the config before execution; if `mode` resolves to `single-model` or the file is missing, skip the rest of this section to preserve backward-compatible behavior.
+If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qrun-task` must enforce role boundaries in addition to the standard SVS loop. Always read the config before execution; if `mode` resolves to `single-model` or the file is missing, skip the rest of this section to preserve backward-compatible behavior.
 
 `/Qrun-task` is still the secondary execution path in the QE ecosystem. Prefer `/Qatomic-run` when following the primary `Qplan -> Qgs -> Qatomic-run -> Qcode-run-task` chain.
 
-### Required behavior in multi-model mode
+### Required behavior in role-separated/tiered mode
 1. Read role configuration before execution (capture planner/implementer/reviewer/supervisor provider assignments for later logging)
 2. Treat `role-spec.md` and `task-bundle.json` as planner-owned artifacts (do not edit them; treat scope as immutable unless planner reopens)
 3. During implementation, require an `implementation-report.md` artifact with changed files, checklist status, commands run, and unresolved risks
@@ -70,7 +70,7 @@ Pass the selected model as the `model` parameter when spawning `Etask-executor`.
 ---
 ## Step 1: Document Discovery
 
-1. **Use State Utility**: Call `parseClaudeTaskTable(cwd)` from `lib/state.mjs` to get the list of tasks from `CLAUDE.md`.
+1. **Use State Utility**: Call `parseClaudeTaskTable(cwd)` from `hooks/scripts/lib/state.mjs`. It now prefers `.qe/TASK_LOG.md` and falls back to the legacy `CLAUDE.md` task table.
 2. Glob `.qe/tasks/{pending,in-progress,on-hold}/*.md` for TASK_REQUEST files
 3. Backward compat: check project root if `.qe/tasks/` missing
 4. Multiple tasks → ask which to run. UUID argument → select directly
@@ -85,7 +85,7 @@ Read TASK_REQUEST + VERIFY_CHECKLIST, show summary:
 
 Otherwise, use `AskUserQuestion` for approval. On approve:
 - Move files to `in-progress/`
-- **Update Status**: Call `updateClaudeStatus(cwd, uuid, "🔶")`.
+- **Update Status**: Call `updateClaudeStatus(cwd, uuid, "🔶")`. This updates the active task registry, preferring `.qe/TASK_LOG.md`.
 
 ## Step 3: Execute
 
@@ -137,7 +137,7 @@ Track `supervision_iteration` counter in `.qe/state/session-stats.json` to persi
 3. If grade is PARTIAL → apply suggested improvements, re-verify
 4. If grade is FAIL → save REMEDIATION_REQUEST, re-execute failed items via Etask-executor
 
-When multi-model mode is active:
+When role-separated orchestration is active:
 - include `review-report.md` and `implementation-report.md` in the supervision packet
 - require the supervisor to explicitly check whether role boundaries were respected
 - write the final verdict to `.qe/ai-team/artifacts/verification-report.md`
@@ -154,7 +154,7 @@ Skip agent triggers if no trigger files exist.
 
 1. Mark all items `[x]` in TASK_REQUEST and VERIFY_CHECKLIST
 2. Move files to `completed/`
-3. **Update Status**: Call `updateClaudeStatus(cwd, uuid, "✅")`.
+3. **Update Status**: Call `updateClaudeStatus(cwd, uuid, "✅")`. This updates the active task registry, preferring `.qe/TASK_LOG.md`.
 4. `type: code` → call `Ecode-doc-writer`; `type: docs` → call `Edoc-generator`
 5. Auto-run `/Qarchive` in background
 6. Clean up `.qe/agent-results/` (delete result files older than current task)
@@ -164,7 +164,7 @@ Report: UUID, items completed, verification passed, changed files.
 ### Next Task Prompt
 
 After completion, check for remaining tasks:
-1. Read CLAUDE.md task table — find tasks with status `진행 전` or `🔲`
+1. Read the project task registry first (`.qe/TASK_LOG.md` or equivalent active task tracker); use the legacy `CLAUDE.md` task table only as backward compatibility fallback
 2. Also check `.qe/tasks/pending/` for queued TASK_REQUEST files
 3. If next tasks exist, use `AskUserQuestion` to prompt:
    - List upcoming tasks (UUID + name)
@@ -182,7 +182,7 @@ After completion, check for remaining tasks:
 | On hold | Move to `on-hold/`, set ⏸️ |
 | Resume | Move to `in-progress/`, continue from last unchecked item |
 | Etask-executor crash | Offer Resume/Retry/Abort |
-| No CLAUDE.md | Proceed without context, notify user |
+| No project instruction file or legacy task table | Proceed without context, notify user |
 
 ## Multiple UUID Execution
 
@@ -235,4 +235,4 @@ Reference `skills/coding-experts/` for language/framework best practices. Catalo
 - Only executes existing spec documents
 - Use `/Qgenerate-spec` to create specs
 - Do not modify spec content (except checking off items)
-- In multi-model mode, do not allow implementer-stage execution to mutate planner-owned artifacts except for explicitly approved planner revisions
+- In role-separated or tiered orchestration, do not allow implementer-stage execution to mutate planner-owned artifacts except for explicitly approved planner revisions

@@ -5,7 +5,7 @@
 
 ## Pre-Check (Required Before Every Skill Execution)
 
-If no `CLAUDE.md` exists at the project root, the QE framework (Query Executor) is not initialized.
+If no initialized project instruction artifact exists at the project root (for example `CLAUDE.md`, `AGENTS.md`, or the expected QE instruction file), the QE framework is not initialized.
 - **Halt the currently invoked skill** and instruct the user to run `/Qinit` first.
 - Qinit itself skips this check.
 
@@ -95,7 +95,7 @@ Quality loops (Eqa-orchestrator), remediation iterations, and inter-task progres
 - **All git commits via Qcommit**: Never run raw `git commit` or `git push` commands directly. Always use the `/Qcommit` skill for all commit and push operations.
 - **Protect sensitive information**: Never expose PATs, passwords, or API keys in logs, responses, or files.
 - **Prevent OWASP Top 10**: Guard against SQL Injection, XSS, missing authentication, and other basic vulnerabilities.
-- **Confirm file modification permissions**: Ask the user for permission before creating, modifying, or deleting any file.
+- **Confirm only high-impact file operations**: Ask the user for permission before destructive, irreversible, or unusually broad file operations. Routine in-scope edits should proceed with minimal interruption.
 - **Utopia mode check**: Before calling AskUserQuestion, check `.qe/state/utopia-state.json`. If `enabled: true`, skip confirmations and auto-select the first (recommended) option. For complex requests (3+ steps, multi-file, new features), automatically route through `Qgenerate-spec → Qrun-task → verify` pipeline. Simple requests (1-2 step single-file edits) execute directly. Utopia mode does NOT skip destructive git operations or file deletions outside `.qe/`.
 - **Pre-execution Gate**: In Utopia/ultrawork/ultraqa modes, before autonomous execution of complex tasks, check if the prompt has concrete anchor signals (file paths, function names, issue numbers, etc.). If the prompt is vague (no anchors + ≤15 words), redirect to Qgenerate-spec normal flow for proper scoping. Users can bypass with `force:` or `!` prefix. See the "Pre-execution Gate" section in Qgenerate-spec SKILL.md for details.
 
@@ -104,7 +104,7 @@ Quality loops (Eqa-orchestrator), remediation iterations, and inter-task progres
 ## Task Principles
 
 - **Check `.qe/analysis/` first**: Before exploring project structure, tech stack, entry points, or architecture via Glob/Grep/Read, read `.qe/analysis/` files first. This saves tokens and improves context efficiency.
-- **Separate planning from execution**: Present a plan before making changes and proceed only after approval.
+- **Separate planning from execution when it adds value**: For large, risky, or ambiguous work, clarify the plan first. For straightforward in-scope work, proceed directly and keep the loop moving.
 - **Validate per task unit**: Verify results after each step (build, test, diagnostics).
 - **Delegate scope**: Delegate work that falls outside the requested scope to the appropriate agent or skill.
 - **Fresh verification**: Confirm actual command output before declaring "done."
@@ -123,7 +123,7 @@ Quality loops (Eqa-orchestrator), remediation iterations, and inter-task progres
 
 Priority (high to low):
 1. **Safety** — Always confirm destructive or irreversible actions
-2. **Explicit user instructions** — CLAUDE.md rules and direct directives
+2. **Explicit user instructions** — project instruction files and direct directives
 3. **Auto-detection** — Context-based inference (last resort)
 
 Decision rules:

@@ -31,9 +31,13 @@ const messages = [];
 // --- ALWAYS TIER ---
 // These items are injected every session start regardless of context_loaded state.
 
-// Check 1: CLAUDE.md existence (Qinit check)
-const claudeMdPath = join(cwd, 'CLAUDE.md');
-if (!existsSync(claudeMdPath)) {
+// Check 1: project instruction artifact existence (Qinit check)
+const instructionCandidates = [
+  join(cwd, 'CLAUDE.md'),
+  join(cwd, 'AGENTS.md')
+];
+const hasInstructionArtifact = instructionCandidates.some(filePath => existsSync(filePath));
+if (!hasInstructionArtifact) {
   messages.push('QE framework not initialized. Run `/Qinit` first.');
 }
 

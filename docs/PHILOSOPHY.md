@@ -36,7 +36,7 @@ Together, the canonical flow is:
 - Minimal interruption: ask the user only when the decision is genuinely high value.
 - Evidence over confidence: reports, artifacts, and verification outputs matter more than fluent prose.
 - Reproducibility: state should be written into `.qe/` artifacts rather than left implicit in session context.
-- Backward compatibility: existing Claude-only flows should continue to work unless the user opts into multi-model setup.
+- Backward compatibility: existing single-model flows should continue to work unless the user opts into role-separated or tiered orchestration.
 
 ## Role Model
 
@@ -47,8 +47,8 @@ QE treats these as distinct responsibilities:
 - `reviewer`: evaluates quality and regressions independently
 - `supervisor`: makes the final pass/fail/remediation decision
 
-In `single-model`, Claude may own every role.
-In `hybrid` or `multi-model`, these roles can be split across different runners.
+In `single-model`, one runner may own every role.
+In `hybrid`, `multi-model`, or `tiered-model`, these roles can be split across different runners or model tiers.
 
 ## Why `/Qatomic-run` Exists
 
@@ -56,7 +56,7 @@ In `hybrid` or `multi-model`, these roles can be split across different runners.
 It is the default implementer-stage entry point in the canonical QE workflow.
 
 - In `single-model`, it uses the legacy Haiku swarm path.
-- In `hybrid` or `multi-model`, it should prefer the configured implementer runner.
+- In `hybrid`, `multi-model`, or `tiered-model`, it should prefer the configured implementer runner.
 
 That makes `/Qatomic-run` the bridge between the original Claude-only system and the newer role-based orchestration model.
 
@@ -76,5 +76,6 @@ QE avoids that by making roles explicit and by persisting outputs as handoff art
 QE is not trying to make every workflow more complicated.
 It is trying to make complex work more explicit.
 
-If the project is small and Claude-only is enough, use `single-model`.
-If the team or workflow benefits from role separation, use `hybrid` or `multi-model`.
+If the project is small and one runner is enough, use `single-model`.
+If the workflow benefits from stronger judgment with lower execution cost, use `tiered-model`.
+If the workflow benefits from provider-level role separation, use `hybrid` or `multi-model`.

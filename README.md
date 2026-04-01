@@ -160,7 +160,7 @@ Recommended model defaults:
 
 ## Current Release
 
-- Version: `3.0.18`
+- Version: `3.0.19`
 - Highlights:
   - role-based runner mapping
   - PATH-based Codex/Gemini execution

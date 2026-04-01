@@ -43,7 +43,7 @@ QE now standardizes role handoff through:
 
 ### Plugin Delivery
 
-The framework now works through Claude plugin installation and update flow, while still using external AI CLIs for non-Claude runners.
+The framework now works through a dual-target installation flow: Claude plugin delivery for Claude Code plus Codex skill/agent installation for Codex, while still using external AI CLIs for role runners.
 
 ## Why It Matters
 
@@ -60,5 +60,5 @@ Validation covered:
 - config validation
 - runner-based workflow dry-runs
 - provider CLI invocation
-- plugin installation and plugin update path
+- Claude/Codex installation and update path
 - end-to-end workflow execution with role artifacts

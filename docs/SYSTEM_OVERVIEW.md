@@ -1,6 +1,6 @@
 # QE Framework System Overview
 
-QE Framework is a role-driven execution system for Claude Code. It keeps the user-facing workflow simple while allowing different AI systems to handle different roles behind the scenes.
+QE Framework is a role-driven execution system for Claude Code and Codex. It keeps the user-facing workflow simple while allowing different AI systems to handle different roles behind the scenes.
 
 ## User Workflow
 
@@ -97,7 +97,11 @@ These scripts support:
 
 ## Installation Model
 
-QE Framework is installed as a Claude plugin, while Gemini and Codex are invoked as external CLIs when assigned to runners.
+QE Framework is installed as:
+
+- a Claude plugin target for Claude Code
+- a Codex skill/agent target for Codex
+- external CLI runners when Codex or Gemini are assigned to workflow roles
 
 Typical install flow:
 

@@ -122,6 +122,15 @@ function readTextIfExists(path) {
   return readFileSync(path, 'utf8');
 }
 
+function readJsonIfExists(path) {
+  if (!path || !existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
 function renderDocumentSection(label, path, content) {
   if (!path || !content) return [];
   return [
@@ -191,6 +200,59 @@ function clearWorkflowArtifacts(workflowArtifactPaths, clearArtifacts) {
     const emptyContent = key === 'taskBundle' ? '{\n  "tasks": []\n}\n' : '';
     writeFileSync(target, emptyContent, 'utf8');
   }
+}
+
+function complexityRank(value) {
+  return { low: 0, medium: 1, high: 2 }[String(value || '').toLowerCase()] ?? null;
+}
+
+function normalizeComplexity(value) {
+  const normalized = String(value || '').toLowerCase();
+  return ['low', 'medium', 'high'].includes(normalized) ? normalized : null;
+}
+
+function inferImplementerComplexity(taskBundlePath) {
+  const taskBundle = readJsonIfExists(taskBundlePath);
+  const tasks = Array.isArray(taskBundle?.tasks) ? taskBundle.tasks : [];
+  if (tasks.length === 0) return null;
+
+  const implementerTasks = tasks.filter((task) => {
+    const owner = String(task?.owner || '').toLowerCase();
+    return owner === '' || owner === 'implementer';
+  });
+
+  if (implementerTasks.length === 0) return null;
+
+  let selected = null;
+  for (const task of implementerTasks) {
+    const complexity = normalizeComplexity(task?.complexity);
+    if (!complexity) continue;
+    if (!selected || complexityRank(complexity) > complexityRank(selected)) {
+      selected = complexity;
+    }
+  }
+
+  return selected;
+}
+
+function autoRoleOverridesForStep({ config, role, workflowArtifactPaths }) {
+  const overrides = {};
+  if (config.mode !== 'tiered-model') return { overrides, inferred_complexity: null };
+  if (role !== 'implementer') return { overrides, inferred_complexity: null };
+
+  const complexity = inferImplementerComplexity(workflowArtifactPaths.taskBundle);
+  if (!complexity) return { overrides, inferred_complexity: null };
+
+  const mappedRunner = config.policies?.default_runner_by_complexity?.[complexity];
+  if (!mappedRunner || !config.runners?.[mappedRunner]) {
+    return { overrides, inferred_complexity: complexity };
+  }
+
+  overrides[role] = mappedRunner;
+  return {
+    overrides,
+    inferred_complexity: complexity,
+  };
 }
 
 function validatedStartRole(requestedRole, reuseApprovedPlan, cwd) {
@@ -591,6 +653,11 @@ const steps = [];
 let halted = false;
 
 for (const role of rolesToRun) {
+  const autoRouting = autoRoleOverridesForStep({
+    config,
+    role,
+    workflowArtifactPaths,
+  });
   const roleArtifacts = defaultArtifactsForRole(cwd, role, sharedArtifacts, workflowArtifactPaths);
   const roleInputContent = makeRoleInput({
     role,
@@ -615,7 +682,10 @@ for (const role of rolesToRun) {
     timeoutMs: args.timeoutMs,
     background: args.background,
     pollIntervalMs: args.pollIntervalMs,
-    roleOverrides: args.roleOverrides,
+    roleOverrides: {
+      ...(args.roleOverrides || {}),
+      ...(autoRouting.overrides || {}),
+    },
   });
 
   const step = {
@@ -628,6 +698,8 @@ for (const role of rolesToRun) {
     stderr_preview: result.stderr.slice(0, 1000),
     fallback_candidates: result.parsed?.fallback_candidates || [],
     override_examples: result.parsed?.override_examples || [],
+    inferred_complexity: autoRouting.inferred_complexity,
+    auto_role_overrides: autoRouting.overrides,
   };
   steps.push(step);
 
@@ -696,6 +768,8 @@ console.log(JSON.stringify({
     output_path: step.parsed?.output_path || null,
     execution_error: step.parsed?.execution_error || step.error,
     background_status: step.parsed?.background?.status || null,
+    inferred_complexity: step.inferred_complexity || null,
+    auto_role_overrides: step.auto_role_overrides || {},
     fallback_candidates: step.fallback_candidates,
     override_examples: step.override_examples,
   })),

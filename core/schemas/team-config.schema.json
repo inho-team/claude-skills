@@ -22,7 +22,8 @@
       "enum": [
         "single-model",
         "multi-model",
-        "hybrid"
+        "hybrid",
+        "tiered-model"
       ],
       "description": "Workflow orchestration mode."
     },
@@ -184,6 +185,30 @@
           "type": "boolean",
           "default": true,
           "description": "Require review + supervision gate before marking work complete. Defaults to true."
+        },
+        "enforce_specific_remediation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Require reviewer and supervisor outputs to include concrete remediation steps with file targets and verification instructions."
+        },
+        "default_runner_by_complexity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "low": {
+              "type": "string",
+              "description": "Preferred runner for trivial or mechanical work."
+            },
+            "medium": {
+              "type": "string",
+              "description": "Preferred runner for normal implementation and review work."
+            },
+            "high": {
+              "type": "string",
+              "description": "Preferred runner for planning, hard debugging, and final judgment."
+            }
+          },
+          "description": "Optional complexity-to-runner mapping used by tiered-model setups."
         }
       }
     }

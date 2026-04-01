@@ -4,8 +4,9 @@
 
 ## Overview
 - Multi-model orchestration separates planning, implementation, review, and supervision so no single model plans and grades its own work.
+- Tiered-model orchestration uses one provider with multiple model strengths, so difficult planning and judgment stay on the high tier while routine work stays on cheaper tiers.
 - The new workflow relies on config + artifacts under `.qe/ai-team/` to pass context between roles and named runner instances.
-- Backward compatibility is preserved: nothing changes until `team-config.json` exists with `mode` set to `multi-model` or `hybrid`.
+- Backward compatibility is preserved: nothing changes until `team-config.json` exists with `mode` set to `multi-model`, `hybrid`, or `tiered-model`.
 
 ## Modes
 | Mode | When Active | Behavior |
@@ -13,6 +14,7 @@
 | `single-model` | Default, no config or explicit single mode | Legacy Claude-centric path. Planner, implementer, reviewer, supervisor can all be the same provider. No extra artifacts required. |
 | `multi-model` | `.qe/ai-team/config/team-config.json` with `mode: "multi-model"` | Strict role handoffs. Planner writes `role-spec.md` + `task-bundle.json`, implementer writes `implementation-report.md`, reviewer writes `review-report.md`, supervisor writes `verification-report.md`. |
 | `hybrid` | Config present with `mode: "hybrid"` | Planner + supervisor may stay on Claude while implementation/review run elsewhere. Same artifacts and gates as multi-model. |
+| `tiered-model` | Config present with `mode: "tiered-model"` | One provider uses model tiers by difficulty. Typical setups: Claude uses Opus/Sonnet/Haiku and Codex uses GPT-5.4/GPT-5-Codex/GPT-5-Codex-Mini. |
 
 ## Configuration
 1. Run `/Qinit` and opt into **Multi-Model Orchestration**. It creates:
@@ -25,7 +27,7 @@
 2. Validate configs with `node scripts/validate_ai_team_config.mjs .qe/ai-team/config/team-config.json`. Pass `--schema core/schemas/team-config.schema.json` (or another path) when testing schema changes.
 3. Edit the template to match your runner assignments. Fields enforced by `core/schemas/team-config.schema.json`:
    - `version`: must be `1`.
-   - `mode`: `single-model`, `multi-model`, or `hybrid`.
+   - `mode`: `single-model`, `multi-model`, `hybrid`, or `tiered-model`.
    - `roles`: planner, implementer, reviewer, supervisor definitions (`runner` + `responsibility` required per role).
    - `runners`: named execution instances. Each runner defines `provider`, `model`, and optional `command`/`timeout_ms`.
    - `policies`: `max_remediation_rounds`, `reviewer_can_edit`, `implementer_can_modify_spec`, plus optional `require_review_before_complete`.
@@ -34,36 +36,41 @@
 ```jsonc
 {
   "version": 1,                              // schema version, locked at 1
-  "mode": "multi-model",                     // flips orchestration features on
+  "mode": "tiered-model",                    // one-provider tiering by difficulty
   "roles": {
     "planner": {
-      "runner": "claude_planner",
+      "runner": "claude_high",
       "responsibility": "Create and refine executable specs"
     },
     "implementer": {
-      "runner": "codex_implementer",
+      "runner": "claude_medium",
       "responsibility": "Implement approved task items"
     },
     "reviewer": {
-      "runner": "gemini_reviewer",
-      "responsibility": "Independently review implementation quality and regressions"
+      "runner": "claude_medium",
+      "responsibility": "Review implementation quality and provide remediation instructions"
     },
     "supervisor": {
-      "runner": "claude_supervisor",
+      "runner": "claude_high",
       "responsibility": "Approve, reject, or request remediation"
     }
   },
   "runners": {
-    "claude_planner": { "provider": "claude", "model": "sonnet" },
-    "codex_implementer": { "provider": "codex", "model": "gpt-5-codex" },
-    "gemini_reviewer": { "provider": "gemini", "model": "gemini-2.5-pro" },
-    "claude_supervisor": { "provider": "claude", "model": "opus" }
+    "claude_low": { "provider": "claude", "model": "haiku" },
+    "claude_medium": { "provider": "claude", "model": "sonnet" },
+    "claude_high": { "provider": "claude", "model": "opus" }
   },
   "policies": {
     "max_remediation_rounds": 2,
     "reviewer_can_edit": false,
     "implementer_can_modify_spec": false,
-    "require_review_before_complete": true
+    "require_review_before_complete": true,
+    "enforce_specific_remediation": true,
+    "default_runner_by_complexity": {
+      "low": "claude_low",
+      "medium": "claude_medium",
+      "high": "claude_high"
+    }
   }
 }
 ```
@@ -81,6 +88,8 @@ This matters when you want:
 - multiple Codex or Gemini runner variants in the same project
 
 Example presets:
+- `Tiered Claude`
+- `Tiered Codex`
 - `Claude + Codex + Gemini`
 - `All Claude`
 - `Custom`
@@ -99,14 +108,16 @@ Recommended defaults:
 
 | Provider | Recommended models to offer in `/Qinit` | Default recommendation |
 |----------|-----------------------------------------|------------------------|
-| Claude | `haiku`, `sonnet`, `opus`, `custom` | `sonnet` for planner/reviewer, `opus` for supervisor |
-| Codex | `gpt-5-codex`, `custom` | `gpt-5-codex` |
+| Claude | `haiku`, `sonnet`, `opus`, `custom` | `opus` high-tier, `sonnet` medium-tier, `haiku` low-tier |
+| Codex | `gpt-5-codex-mini`, `gpt-5-codex`, `gpt-5.4`, `custom` | `gpt-5.4` high-tier, `gpt-5-codex` medium-tier, `gpt-5-codex-mini` low-tier |
 | Gemini | `gemini-2.5-pro`, `custom` | `gemini-2.5-pro` |
 
 Preset summary examples:
 
 | Preset | planner | implementer | reviewer | supervisor |
 |--------|---------|-------------|----------|------------|
+| Tiered Claude | Claude `opus` | Claude `sonnet` | Claude `sonnet` | Claude `opus` |
+| Tiered Codex | Codex `gpt-5.4` | Codex `gpt-5-codex` | Codex `gpt-5-codex` | Codex `gpt-5.4` |
 | Claude only | Claude `sonnet` | Claude `sonnet` | Claude `sonnet` | Claude `opus` |
 | Claude + Codex | Claude `sonnet` | Codex `gpt-5-codex` | Claude `sonnet` | Claude `opus` |
 | Claude + Gemini | Claude `sonnet` | Claude `sonnet` | Gemini `gemini-2.5-pro` | Claude `opus` |
@@ -159,6 +170,31 @@ flowchart LR
 7. **Iterate**: Planner reopens scope by editing planner artifacts; implementer/reviewer never overwrite planner-owned files without that signal.
 
 Following these steps activates the minimal orchestration layer described in `core/MULTI_MODEL_ORCHESTRATION.md` while keeping legacy workflows intact for single-model projects.
+
+## Specific Remediation Contract
+
+When `policies.enforce_specific_remediation` is `true`, reviewer and supervisor outputs must not stop at a generic failure verdict.
+
+They must include:
+
+- what is wrong
+- which file or artifact must change
+- what concrete change is required
+- how the next pass should verify completion
+
+This is the recommended setup for tiered-model flows, because the high-tier model should act as a precise judge and director, not just a blocker.
+
+## Automatic Tier Routing
+
+In the current runtime, automatic complexity routing is applied to the `implementer` step first.
+
+- QE reads `task-bundle.json`
+- finds implementer-owned tasks
+- picks the highest declared `complexity` among those tasks
+- maps that complexity through `policies.default_runner_by_complexity`
+- temporarily overrides the implementer runner for that workflow step
+
+This keeps reviewer and supervisor stable as the higher-level validation layers while allowing implementation cost to scale with task difficulty.
 
 ## Workflow Resume
 When a planner pass is already approved, avoid re-planning on every retry.

@@ -1,6 +1,6 @@
 ﻿# QE Framework 문서 안내
 
-QE Framework는 Claude Code용 스펙 기반 작업 프레임워크입니다.
+QE Framework는 Claude Code와 Codex를 함께 지원하는 스펙 기반 작업 프레임워크입니다.
 
 기본 흐름:
 
@@ -28,29 +28,45 @@ QE Framework는 Claude Code용 스펙 기반 작업 프레임워크입니다.
   - 일부 역할만 외부 runner 사용
 - `multi-model`
   - planner / implementer / reviewer / supervisor를 역할별로 명시적으로 분리
+- `tiered-model`
+  - 같은 provider 안에서 난이도에 따라 상·중·하 모델을 나눠 사용
 
 ## 구독 조합별 권장 방향
 
 | 사용 가능 도구 | 권장 모드 | 권장 기본 매핑 |
 |----------------|-----------|----------------|
 | Claude만 | `single-model` | Claude가 전 역할 담당 |
+| Claude tiered | `tiered-model` | planner/supervisor = Opus, implementer/reviewer = Sonnet, 단순 작업 보조 = Haiku |
+| Codex tiered | `tiered-model` | planner/supervisor = GPT-5.4, implementer/reviewer = GPT-5-Codex, 단순 작업 보조 = GPT-5-Codex-Mini |
 | Claude + Codex | `hybrid` | implementer = Codex, 나머지 = Claude |
 | Claude + Gemini | `hybrid` | reviewer = Gemini, 나머지 = Claude |
 | Claude + Codex + Gemini | `multi-model` | planner/supervisor = Claude, implementer = Codex, reviewer = Gemini |
 
 ## 빠른 시작
 
-1. 플러그인 설치
+1. 설치
 
 ```bash
 claude plugin marketplace add inho-team/qe-framework
 claude plugin install qe-framework@inho-team-qe-framework
 ```
 
+설치 후 Codex 타깃도 함께 구성됩니다.
+
+- `~/.codex/skills`에 QE skill 복사
+- `~/.codex/agents`에 QE agent 복사
+- `~/.codex/config.toml`에 QE agent 설정 블록 추가
+
 2. 프로젝트 초기화
 
 ```text
 /Qinit
+```
+
+Codex에서는 다음처럼 skill 이름으로 호출할 수 있습니다.
+
+```text
+$Qinit
 ```
 
 3. 작업 흐름 시작

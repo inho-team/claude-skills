@@ -125,8 +125,8 @@ Sets the character budget for slash command tool descriptions so all skills fit 
 ```
 Created with `mkdir -p`.
 
-#### Multi-Model Orchestration Scaffolding (Opt-in)
-Only run this block when the user explicitly wants **multiple AIs assigned by role** (`multi-model`) or a **mixed setup where only some roles use another AI** (`hybrid`). Confirm via `AskUserQuestion` (yes/no) before touching `.qe/ai-team/`.
+#### Tiered Orchestration Scaffolding (Opt-in)
+Only run this block when the user explicitly wants **tiered model orchestration** (`tiered-model`), **multiple AIs assigned by role** (`multi-model`), or a **mixed setup where only some roles use another AI** (`hybrid`). Confirm via `AskUserQuestion` (yes/no) before touching `.qe/ai-team/`.
 
 This block is mandatory once the user opts in.
 - Do not silently copy the default template and continue.
@@ -136,7 +136,7 @@ This block is mandatory once the user opts in.
 - If the user chooses a preset, you **must** still show the resulting role-to-runner mapping and get confirmation before writing the config.
 
 Before seeding the config, explain the setup in user-facing language and then ask how the user wants to assign AIs to roles.
-- First use plain language such as: "Do you want to use one AI for everything, or split work by role (for example: planning with Claude, implementation with Codex, review with Gemini)?"
+- First use plain language such as: "Do you want to use one AI for everything, use Claude tiering by difficulty (Opus/Sonnet/Haiku), or split work by role across multiple AIs?"
 - Do not ask only for provider names with no explanation.
 - When the word `runner` appears, explain it immediately: `runner (the saved AI execution setup used for a role)`.
 - Multiple roles may reuse the same runner.
@@ -146,6 +146,8 @@ Before seeding the config, explain the setup in user-facing language and then as
 - Do not silently keep template defaults if the user wants a different model.
 
 Recommended starting choices to offer:
+- `Tiered Claude (Opus + Sonnet + Haiku)`
+- `Tiered Codex (GPT-5.4 + GPT-5-Codex + GPT-5-Codex-Mini)`
 - `Claude + Codex + Gemini`
 - `All Claude`
 - `Custom`
@@ -185,13 +187,26 @@ Recommended model prompts by provider:
   - offer `haiku`, `sonnet`, `opus`, then `custom`
   - explain briefly: `haiku = fastest/cheapest`, `sonnet = balanced default`, `opus = strongest reasoning`
 - Codex:
-  - offer `gpt-5-codex`, then `custom`
+  - offer `gpt-5-codex-mini`, `gpt-5-codex`, `gpt-5.4`, then `custom`
+  - explain briefly: `gpt-5-codex-mini = cheapest/fastest`, `gpt-5-codex = balanced coding default`, `gpt-5.4 = strongest reasoning`
 - Gemini:
   - offer `gemini-2.5-pro`, then `custom`
 
 If a preset is chosen, propose recommended provider+model pairs together, not provider only.
 
 Preset defaults:
+- `Tiered Claude`
+  - planner = Claude `opus`
+  - implementer = Claude `sonnet`
+  - reviewer = Claude `sonnet`
+  - supervisor = Claude `opus`
+  - low-complexity helper runner = Claude `haiku`
+- `Tiered Codex`
+  - planner = Codex `gpt-5.4`
+  - implementer = Codex `gpt-5-codex`
+  - reviewer = Codex `gpt-5-codex`
+  - supervisor = Codex `gpt-5.4`
+  - low-complexity helper runner = Codex `gpt-5-codex-mini`
 - `Claude only`
   - planner = Claude `sonnet`
   - implementer = Claude `sonnet`
@@ -216,7 +231,7 @@ Preset defaults:
 Then build `roles.{role}.runner` plus the matching `runners.{runnerName}` entries.
 
 Recommended question flow:
-1. `Do you want to use one AI for the whole project, or split roles across multiple AIs (multi-model)?`
+1. `Do you want to use one AI for the whole project, use Claude tiering by difficulty, or split roles across multiple AIs?`
 2. If split roles is selected: `Do you want a quick preset, or do you want to choose the AI for each role one by one?`
 3. If a quick preset is selected:
    - show the full role -> runner -> provider -> model summary

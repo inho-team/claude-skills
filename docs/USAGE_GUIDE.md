@@ -15,12 +15,24 @@ Update later with:
 claude plugin update qe-framework@inho-team-qe-framework
 ```
 
+The same install also configures the Codex target:
+
+- copies QE skills to `~/.codex/skills`
+- copies QE agents to `~/.codex/agents`
+- updates `~/.codex/config.toml` with QE-managed agent entries
+
 ## 2. Initialize a Project
 
 Inside a Claude session:
 
 ```text
 /Qinit
+```
+
+Inside a Codex session:
+
+```text
+$Qinit
 ```
 
 This creates:
@@ -55,6 +67,7 @@ Generates task specs from the active plan.
 
 - `single-model`: Claude/Haiku atomic swarm path
 - `hybrid` / `multi-model`: configured implementer runner path
+- `tiered-model`: high-tier planning/judgment with cheaper lower-tier execution
 
 Use `/Qrun-task` instead when the work is not meaningfully atomic.
 
@@ -94,11 +107,36 @@ Example:
 - reviewer = Gemini
 - supervisor = Claude
 
+### `tiered-model`
+
+Use this when you want to reduce total token cost without losing strong planning and validation.
+
+Typical Claude setup:
+- planner = Opus
+- implementer = Sonnet
+- reviewer = Sonnet
+- supervisor = Opus
+- low-complexity helper runner = Haiku
+
+Typical Codex setup:
+- planner = GPT-5.4
+- implementer = GPT-5-Codex
+- reviewer = GPT-5-Codex
+- supervisor = GPT-5.4
+- low-complexity helper runner = GPT-5-Codex-Mini
+
+Current runtime behavior:
+- planner and supervisor stay on the configured higher-tier runners
+- reviewer stays on the configured review runner
+- implementer can be auto-routed by `task-bundle.json` complexity in `tiered-model`
+
 ## 5. Recommended Subscription Presets
 
 | Available tools | Suggested mode | Suggested default mapping |
 |-----------------|----------------|---------------------------|
 | Claude only | `single-model` | Claude owns all roles |
+| Tiered Claude | `tiered-model` | planner/supervisor = Opus, implementer/reviewer = Sonnet, low-tier helper = Haiku |
+| Tiered Codex | `tiered-model` | planner/supervisor = GPT-5.4, implementer/reviewer = GPT-5-Codex, low-tier helper = GPT-5-Codex-Mini |
 | Claude + Codex | `hybrid` | implementer = Codex, others = Claude |
 | Claude + Gemini | `hybrid` | reviewer = Gemini, others = Claude |
 | Claude + Codex + Gemini | `multi-model` | planner/supervisor = Claude, implementer = Codex, reviewer = Gemini |

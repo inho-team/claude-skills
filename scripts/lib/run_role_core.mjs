@@ -112,6 +112,7 @@ export function prepareRoleRun(rawArgs, cwd = process.cwd()) {
     runnerConfig,
     inputText,
     artifacts,
+    policies: config.policies || {},
   });
 
   const promptPath = join(runDir, `${args.role}-prompt.md`);

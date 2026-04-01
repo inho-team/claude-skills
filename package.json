@@ -1,6 +1,6 @@
 {
   "name": "@inho-team/qe-framework",
-  "version": "3.0.21",
+  "version": "3.0.23",
   "description": "Spec-driven task execution framework for Claude Code and Codex — SVS (Spec-Verify-Supervise) loop with 139 skills and 21 agents",
   "files": [
     ".claude-plugin/",
@@ -18,8 +18,8 @@
     "uninstall.js"
   ],
   "scripts": {
-    "postinstall": "node install.js",
-    "preuninstall": "node uninstall.js",
+    "postinstall": "sh -c 'pkg_dir=$(dirname \"$npm_package_json\"); node \"$pkg_dir/install.js\"'",
+    "preuninstall": "sh -c 'pkg_dir=$(dirname \"$npm_package_json\"); node \"$pkg_dir/uninstall.js\"'",
     "qe:mcp": "node scripts/qe_mcp.mjs",
     "qe:secret": "node scripts/qe_secret.mjs",
     "validate:ai-team": "node scripts/validate_ai_team_config.mjs",

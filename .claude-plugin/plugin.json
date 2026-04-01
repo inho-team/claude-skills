@@ -1,7 +1,7 @@
 {
   "name": "qe-framework",
-  "version": "3.0.21",
-  "description": "QE Framework v3.0.21 — Spec-driven Claude/Codex workflow with tiered orchestration, model-aware Qinit setup, shared MCP sync, and packaging/YAML fixes for Codex installs.",
+  "version": "3.0.23",
+  "description": "QE Framework v3.0.23 — Spec-driven Claude/Codex workflow with tiered orchestration, model-aware Qinit setup, shared MCP sync, and resilient absolute-path postinstall handling.",
   "author": { "name": "inho-team" },
   "skills": "./skills/",
   "hooks": {

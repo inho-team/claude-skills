@@ -77,6 +77,18 @@ claude plugin install qe-framework@inho-team-qe-framework
 claude plugin update qe-framework@inho-team-qe-framework
 ```
 
+Codex-first or npm-based installs should update with:
+
+```bash
+npm update -g @inho-team/qe-framework
+```
+
+If you are running directly from a local QE checkout, update the repo and then reinstall:
+
+```bash
+node install.js
+```
+
 Codex target installation is handled by the package postinstall step as well:
 
 - skills are copied to `~/.codex/skills`
@@ -160,7 +172,7 @@ Recommended model defaults:
 
 ## Current Release
 
-- Version: `3.0.19`
+- Version: `3.0.20`
 - Highlights:
   - role-based runner mapping
   - PATH-based Codex/Gemini execution

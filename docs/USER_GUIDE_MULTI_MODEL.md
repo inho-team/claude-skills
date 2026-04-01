@@ -31,10 +31,22 @@ git config --global url."https://github.com/".insteadOf git@github.com:
 
 ## Update
 
-To update QE Framework:
+Update QE Framework using the path that matches your install:
 
 ```text
 claude plugin update qe-framework@inho-team-qe-framework
+```
+
+Codex-first or npm-based installs:
+
+```text
+npm update -g @inho-team/qe-framework
+```
+
+Repository-local installs:
+
+```text
+node install.js
 ```
 
 ## Basic Usage

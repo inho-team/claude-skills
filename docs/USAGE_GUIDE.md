@@ -15,6 +15,18 @@ Update later with:
 claude plugin update qe-framework@inho-team-qe-framework
 ```
 
+For Codex-first or npm-based installs, update with:
+
+```bash
+npm update -g @inho-team/qe-framework
+```
+
+For a local QE repository checkout, pull the latest code and rerun:
+
+```bash
+node install.js
+```
+
 The same install also configures the Codex target:
 
 - copies QE skills to `~/.codex/skills`

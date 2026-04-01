@@ -22,7 +22,7 @@ WORKFLOW
   /Qgenerate-spec          Create task spec documents
   /Qrun-task [UUID]        Execute tasks with verification
   /Qcommit                 Commit & push (human-style, no AI traces)
-  /Qupdate                 Update plugin to latest version
+  /Qupdate                 Update QE for Claude or Codex
   /Qutopia [on|off]        Toggle fully autonomous mode
 
 DEVELOPMENT

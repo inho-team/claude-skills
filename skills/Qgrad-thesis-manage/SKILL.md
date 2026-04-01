@@ -1,6 +1,6 @@
 ---
 name: Qgrad-thesis-manage
-description: 'Manages thesis progress for master's and doctoral degrees. Supports chapter structure design, progress tracking, advisor meeting preparation, and milestone management. Use for requests like "thesis", "graduation thesis", "thesis progress", or "advisor meeting".'
+description: "Manages thesis progress for master's and doctoral degrees. Supports chapter structure design, progress tracking, advisor meeting preparation, and milestone management. Use for requests like 'thesis', 'graduation thesis', 'thesis progress', or 'advisor meeting'."
 invocation_trigger: When framework initialization, maintenance, or audit is required.
 recommendedModel: haiku
 ---

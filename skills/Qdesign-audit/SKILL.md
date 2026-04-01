@@ -1,10 +1,10 @@
 ---
 name: Qdesign-audit
-description: Audits design consistency across a project by scanning source files for style property outliers. Use for 'design audit', 'style consistency', 'design check', 'font size check', '디자인 감사', '스타일 일관성', '디자인 통일', 'UI consistency'. Distinct from Qweb-design-guidelines (which validates against Vercel's external guidelines) — this skill scans the project's own design system for internal inconsistencies.
+description: "Audits design consistency across a project by scanning source files for style property outliers. Use for 'design audit', 'style consistency', 'design check', 'font size check', '디자인 감사', '스타일 일관성', '디자인 통일', and 'UI consistency'. Distinct from Qweb-design-guidelines, which validates against external guidelines; this skill scans the project's own design system for internal inconsistencies."
 metadata: 
 author: anthropic
 version: 1.0.0
-argument-hint: [--scan | --fix | --visual] [file-or-pattern]
+argument-hint: "[--scan|--fix|--visual] [file-or-pattern]"
 invocation_trigger: When framework initialization, maintenance, or audit is required.
 recommendedModel: haiku
 ---

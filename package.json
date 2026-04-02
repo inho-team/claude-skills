@@ -34,7 +34,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/inho-team/qe-framework.git"
+    "url": "git+https://github.com/inho-team/qe-framework.git"
+  },
+  "homepage": "https://github.com/inho-team/qe-framework#readme",
+  "bugs": {
+    "url": "https://github.com/inho-team/qe-framework/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "type": "module",
   "private": false,

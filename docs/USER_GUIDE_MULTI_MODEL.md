@@ -20,9 +20,9 @@ Install QE from a checked-out release tarball:
 ```text
 git clone https://github.com/inho-team/qe-framework.git
 cd qe-framework
-git checkout v3.0.26
+git checkout v3.0.27
 npm pack --cache /tmp/qe-npm-cache
-npm install -g ./inho-team-qe-framework-3.0.26.tgz
+npm install -g ./inho-team-qe-framework-3.0.27.tgz
 qe-framework-install
 ```
 
@@ -33,7 +33,7 @@ Update QE Framework from the same checkout:
 ```text
 git pull
 npm pack --cache /tmp/qe-npm-cache
-npm install -g ./inho-team-qe-framework-3.0.26.tgz
+npm install -g ./inho-team-qe-framework-3.0.27.tgz
 qe-framework-install
 ```
 

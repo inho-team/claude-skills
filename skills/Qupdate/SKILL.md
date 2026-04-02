@@ -22,7 +22,7 @@ Choose exactly one of the following:
    ```bash
    git pull
    npm pack --cache /tmp/qe-npm-cache
-   npm install -g ./inho-team-qe-framework-3.0.26.tgz
+   npm install -g ./inho-team-qe-framework-3.0.27.tgz
    qe-framework-install
    ```
 

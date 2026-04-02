@@ -51,49 +51,58 @@ In `hybrid`, `multi-model`, or `tiered-model`, those roles can be mapped to diff
 
 ## Installation
 
-Run these commands in your terminal, not inside a Claude session.
+Run these commands in your terminal.
 
-1. Install Claude Code CLI if needed:
+Official install path:
 
-```bash
-claude install
-```
-
-2. Register the marketplace:
+1. Clone the repository and move to the target release:
 
 ```bash
-claude plugin marketplace add inho-team/qe-framework
+git clone https://github.com/inho-team/qe-framework.git
+cd qe-framework
+git checkout v3.0.26
 ```
 
-3. Install the plugin:
+2. Build a local tarball:
 
 ```bash
-claude plugin install qe-framework@inho-team-qe-framework
+npm pack --cache /tmp/qe-npm-cache
 ```
 
-4. Update later with:
+3. Install the tarball globally:
 
 ```bash
-claude plugin update qe-framework@inho-team-qe-framework
+npm install -g ./inho-team-qe-framework-3.0.26.tgz
 ```
 
-Codex-first or npm-based installs should update with:
+4. Sync Claude and Codex assets:
 
 ```bash
-npm update -g @inho-team/qe-framework
+qe-framework-install
 ```
 
-If you are running directly from a local QE checkout, update the repo and then reinstall:
+This installs:
+
+- Claude commands into `~/.claude/commands`
+- Claude agents into `~/.claude/agents`
+- Codex skills into `~/.codex/skills`
+- Codex agents into `~/.codex/agents`
+- a QE-managed block into `~/.codex/config.toml`
+
+Update path:
 
 ```bash
-node install.js
+git pull
+npm pack --cache /tmp/qe-npm-cache
+npm install -g ./inho-team-qe-framework-3.0.26.tgz
+qe-framework-install
 ```
 
-Codex target installation is handled by the package postinstall step as well:
+Uninstall path:
 
-- skills are copied to `~/.codex/skills`
-- agents are copied to `~/.codex/agents`
-- `~/.codex/config.toml` gets a managed QE agent block
+```bash
+qe-framework-uninstall
+```
 
 ## Quick Start
 
@@ -172,7 +181,7 @@ Recommended model defaults:
 
 ## Current Release
 
-- Version: `3.0.26`
+- Version: `3.0.27`
 - Highlights:
   - role-based runner mapping
   - PATH-based Codex/Gemini execution

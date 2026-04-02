@@ -16,31 +16,27 @@ Updates QE Framework to the latest version using the correct path for the curren
 ### Step 1: Detect installation path
 Choose exactly one of the following:
 
-1. **Claude plugin install**
-   Use when QE was installed via Claude marketplace/plugin flow.
+1. **Checked-out release tarball install**
+   This is the preferred path for both Claude and Codex.
 
    ```bash
-   claude plugin update qe-framework@inho-team-qe-framework
+   git pull
+   npm pack --cache /tmp/qe-npm-cache
+   npm install -g ./inho-team-qe-framework-3.0.26.tgz
+   qe-framework-install
    ```
 
-2. **npm global install**
-   Use when QE is being consumed from Codex or terminal via the published npm package.
-
-   ```bash
-   npm update -g @inho-team/qe-framework
-   ```
-
-3. **Repository-local install**
-   Use when the user is working directly from a QE repo checkout and installs via local scripts.
+2. **Repository-local direct install**
+   Use when the user is already in a QE checkout and wants to sync assets without rebuilding the global tarball.
 
    ```bash
    node install.js
    ```
 
 ### Step 2: Preferred selection rule
-- If the current environment clearly uses Claude plugin installation, prefer `claude plugin update ...`.
-- If the current environment is Codex-first or the package was installed globally, prefer `npm update -g @inho-team/qe-framework`.
-- If the current directory is a QE repository checkout with `install.js`, prefer `node install.js` after pulling the latest code.
+- Prefer the checked-out release tarball flow whenever possible.
+- If the user is already inside a QE repository checkout and only needs asset sync, prefer `node install.js`.
+- Do not recommend `npm update -g @inho-team/qe-framework` unless the package is actually published to npm.
 
 ### Step 3: Report result
 Report:

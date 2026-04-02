@@ -15,38 +15,26 @@ Most users only need:
 
 ## Install
 
-Install Claude CLI and the QE plugin:
+Install QE from a checked-out release tarball:
 
 ```text
-claude install
-claude plugin marketplace add inho-team/qe-framework
-claude plugin install qe-framework@inho-team-qe-framework
-```
-
-If GitHub SSH causes clone failures during plugin install, force HTTPS:
-
-```text
-git config --global url."https://github.com/".insteadOf git@github.com:
+git clone https://github.com/inho-team/qe-framework.git
+cd qe-framework
+git checkout v3.0.26
+npm pack --cache /tmp/qe-npm-cache
+npm install -g ./inho-team-qe-framework-3.0.26.tgz
+qe-framework-install
 ```
 
 ## Update
 
-Update QE Framework using the path that matches your install:
+Update QE Framework from the same checkout:
 
 ```text
-claude plugin update qe-framework@inho-team-qe-framework
-```
-
-Codex-first or npm-based installs:
-
-```text
-npm update -g @inho-team/qe-framework
-```
-
-Repository-local installs:
-
-```text
-node install.js
+git pull
+npm pack --cache /tmp/qe-npm-cache
+npm install -g ./inho-team-qe-framework-3.0.26.tgz
+qe-framework-install
 ```
 
 ## Basic Usage

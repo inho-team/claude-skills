@@ -5,29 +5,30 @@
 Run in your terminal:
 
 ```bash
-claude plugin marketplace add inho-team/qe-framework
-claude plugin install qe-framework@inho-team-qe-framework
+git clone https://github.com/inho-team/qe-framework.git
+cd qe-framework
+git checkout v3.0.26
+npm pack --cache /tmp/qe-npm-cache
+npm install -g ./inho-team-qe-framework-3.0.26.tgz
+qe-framework-install
 ```
 
 Update later with:
 
 ```bash
-claude plugin update qe-framework@inho-team-qe-framework
+git pull
+npm pack --cache /tmp/qe-npm-cache
+npm install -g ./inho-team-qe-framework-3.0.26.tgz
+qe-framework-install
 ```
 
-For Codex-first or npm-based installs, update with:
+Uninstall with:
 
 ```bash
-npm update -g @inho-team/qe-framework
+qe-framework-uninstall
 ```
 
-For a local QE repository checkout, pull the latest code and rerun:
-
-```bash
-node install.js
-```
-
-The same install also configures the Codex target:
+The install configures both targets:
 
 - copies QE skills to `~/.codex/skills`
 - copies QE agents to `~/.codex/agents`

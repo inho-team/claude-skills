@@ -1,6 +1,6 @@
 {
   "name": "@inho-team/qe-framework",
-  "version": "3.0.26",
+  "version": "3.0.27",
   "description": "Spec-driven task execution framework for Claude Code and Codex — SVS (Spec-Verify-Supervise) loop with 139 skills and 21 agents",
   "files": [
     ".claude-plugin/",

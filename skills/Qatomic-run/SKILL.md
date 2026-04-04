@@ -65,59 +65,49 @@ Before spawning Haiku teammates, check SIVS engine configuration:
 - Synthesize results and handle merges
 
 ## Handoff
-After all Wave items are complete, read `.qe/planning/ROADMAP.md` to build the Roadmap progress line, then display execution summary and branch by task type.
+After all Wave items are complete, read `.qe/planning/ROADMAP.md` and display execution summary + handoff. Use the standard handoff format from `QE_CONVENTIONS.md` (vertical table, `[x]`/`[>]`/`[ ]` markers, single code block, lines under 60 chars).
 
-### Roadmap Progress Line
-Read all Phases from ROADMAP.md. Mark completed phases `✅`, current/next `👉`, remaining `○`:
+### Execution Summary (always show before handoff)
 ```
-Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
-          {Name1}        {Name2}        {Name3}
-```
-
-### Execution Summary (always show)
-```
-## Execution Complete — {TaskName}
-
-| Item | Value |
-|------|-------|
-| Task Type | {code / docs / analysis} |
-| Waves | {N} |
-| Completed Items | {X}/{Y} |
-| Teammates | {Z} |
+Execution Complete: {TaskName}
+  Type: {code / docs / analysis}
+  Waves: {N}
+  Items: {X}/{Y} completed
+  Teammates: {Z}
 ```
 
 ### When `type: code`
 ```
-[Phase {X}: {PhaseName}] Implementation complete — moving to verification
+Phase {X}: {PhaseName} — Implementation complete
 
-Roadmap:  {phase progress line}
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
-```
-```
-Next command:
+Roadmap
+  [x] Phase 1: {Name1}
+  [>] Phase {X}: {PhaseName}
+  [ ] Phase {X+1}: {NextName}
 
-  /Qcode-run-task {UUID}
+PSE: [x] Plan [x] Spec [x] Execute [>] Verify
+
+Next: /Qcode-run-task {UUID}
 ```
 
 ### When `type: docs` / `type: analysis` / deletion-heavy
 After performing SIVS verification inline (VERIFY_CHECKLIST check + supervision gate):
 ```
-[Phase {X}: {PhaseName}] Complete
+Phase {X}: {PhaseName} — Complete
 
-Roadmap:  {phase progress line}
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ Complete
-```
-If next Phase exists:
-```
-Next command:
+Roadmap
+  [x] Phase 1: {Name1}
+  [>] Phase {X+1}: {NextName}
+  [ ] Phase {X+2}: {FutureName}
 
-  /Qgs Phase {X+1}: {NextPhaseName}
+PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
-  Otherwise: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
+Next: /Qgs Phase {X+1}: {NextPhaseName}
+  or: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```
 When all Phases are complete:
 ```
-🎉 Roadmap complete. Use /Qcommit for final commit.
+All phases done. Finalize with /Qcommit
 ```
 
 ## Will Not

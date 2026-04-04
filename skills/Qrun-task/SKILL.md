@@ -179,40 +179,40 @@ After completion, check for remaining tasks:
 ---
 
 ## Handoff
-After task completion (Step 5), read `.qe/planning/ROADMAP.md` to build the Roadmap progress line, then branch by task type.
+After task completion (Step 5), read `.qe/planning/ROADMAP.md` and display handoff. Use the standard handoff format from `QE_CONVENTIONS.md` (vertical table, `[x]`/`[>]`/`[ ]` markers, single code block, lines under 60 chars).
 
 ### When `type: code`
 ```
-[Phase {X}: {PhaseName}] Implementation complete — moving to verification
+Phase {X}: {PhaseName} — Implementation complete
 
-Roadmap:  {phase progress line}
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  👉 /Qcode-run-task
-```
-```
-Next command:
+Roadmap
+  [x] Phase 1: {Name1}
+  [>] Phase {X}: {PhaseName}
+  [ ] Phase {X+1}: {NextName}
 
-  /Qcode-run-task {UUID}
+PSE: [x] Plan [x] Spec [x] Execute [>] Verify
+
+Next: /Qcode-run-task {UUID}
 ```
 
 ### When `type: docs` / `type: analysis` / deletion-heavy
 After performing SIVS verification inline:
 ```
-[Phase {X}: {PhaseName}] Complete
+Phase {X}: {PhaseName} — Complete
 
-Roadmap:  {phase progress line}
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  ✅ Complete
-```
-If next Phase exists:
-```
-Next command:
+Roadmap
+  [x] Phase 1: {Name1}
+  [>] Phase {X+1}: {NextName}
+  [ ] Phase {X+2}: {FutureName}
 
-  /Qgs Phase {X+1}: {NextPhaseName}
+PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
-  Otherwise: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
+Next: /Qgs Phase {X+1}: {NextPhaseName}
+  or: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```
 When all Phases are complete:
 ```
-🎉 Roadmap complete. Use /Qcommit for final commit.
+All phases done. Finalize with /Qcommit
 ```
 
 ---

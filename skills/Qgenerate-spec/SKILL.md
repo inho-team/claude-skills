@@ -186,17 +186,14 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - On user approval, reflect patterns in future generation
 
 ## Handoff
-After generating spec files (on "Generate Only"), display:
+After generating spec files (on "Generate Only"), display using the standard handoff format from `QE_CONVENTIONS.md`:
 
 ```
-[Phase {X}: {PhaseName}] Spec generation complete — moving to execution phase
+Phase {X}: {PhaseName} — Spec complete
 
-SIVS Chain:  ✅ /Qplan  →  ✅ /Qgenerate-spec  →  👉 /Qatomic-run  →  /Qrun-task
-```
-```
-Next command:
+PSE: [x] Plan [x] Spec [>] Execute [ ] Verify
 
-  /Qatomic-run {UUID}
+Next: /Qatomic-run {UUID}
 ```
 
 Note: "Generate & Execute" and "Generate & Atomic-Run" options auto-chain, so the handoff is only needed for "Generate Only".

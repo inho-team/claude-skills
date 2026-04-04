@@ -84,52 +84,56 @@ Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows 
 
 ### Phase Progress Display
 
-When handing off, read `.qe/planning/ROADMAP.md` to display the full Phase list and completion status:
+When handing off, read `.qe/planning/ROADMAP.md` to display the full Phase list and completion status.
 
-```
-Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
-          Strip&Purify   Codex Bridge   Polish&Release
-```
-
-- `✅` = Complete, `👉` = Next (in progress), `○` = Not started
-- Keep Phase names short (~12 characters max)
+**Format rules for terminal compatibility:**
+- Use a **vertical table** for Roadmap — never rely on horizontal emoji alignment
+- Status markers: `[x]` = complete, `[>]` = current/next, `[ ]` = not started
+- Keep each line under 60 characters to prevent wrapping
+- PSE Chain uses the same `[x]`/`[>]`/`[ ]` markers instead of emoji
+- All output inside a **single code block** (no split blocks)
 
 ### Code Task Example
 ```
-[Phase 2: Codex Bridge] Implementation complete — Moving to verification
+Phase 2: Codex Bridge — Implementation complete
 
-Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
-```
-```
-Next command:
+Roadmap
+  [x] Phase 1: Strip & Purify
+  [>] Phase 2: Codex Bridge
+  [ ] Phase 3: Polish & Release
 
-  /Qcode-run-task a1b2c3d4
+PSE: [x] Plan [x] Spec [x] Execute [>] Verify
+
+Next: /Qcode-run-task a1b2c3d4
 ```
 
 ### Non-code Task Complete Example
 ```
-[Phase 1: Strip & Purify] Complete
+Phase 1: Strip & Purify — Complete
 
-Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ Complete
-```
-```
-Next command:
+Roadmap
+  [x] Phase 1: Strip & Purify
+  [>] Phase 2: Codex Bridge
+  [ ] Phase 3: Polish & Release
 
-  /Qgs Phase 2: Codex Bridge
+PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
-  If not: /Qgenerate-spec Phase 2: Codex Bridge
+Next: /Qgs Phase 2: Codex Bridge
+  or: /Qgenerate-spec Phase 2: Codex Bridge
 ```
 
 ### When entire Roadmap is complete
 ```
-[Phase 3: Polish & Release] Complete — All Phases finished
+Phase 3: Polish & Release — Complete
 
-Roadmap:  ✅ Phase 1  →  ✅ Phase 2  →  ✅ Phase 3
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ Complete
+Roadmap
+  [x] Phase 1: Strip & Purify
+  [x] Phase 2: Codex Bridge
+  [x] Phase 3: Polish & Release
 
-🎉 Entire roadmap complete. Finalize with /Qcommit.
+PSE: [x] Plan [x] Spec [x] Execute [x] Complete
+
+All phases done. Finalize with /Qcommit
 ```
 
 ---

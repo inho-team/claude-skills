@@ -1,6 +1,6 @@
 {
   "name": "@inho-team/qe-framework",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Spec-driven task execution framework for Claude Code — PSE Chain (Plan-Spec-Execute) with SVS quality gate, 139 skills and 21 agents",
   "files": [
     ".claude-plugin/",

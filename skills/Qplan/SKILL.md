@@ -57,11 +57,13 @@ After execution is complete (by /Qatomic-run + /Qcode-run-task), review the resu
 ## Handoff
 After completing planning, you MUST display this structured output. Fill in the `{...}` placeholders from the actual plan.
 
-### Section 1: PSE Chain (always first)
+### Section 1: Roadmap + PSE Chain (always first)
 
 ```
+Roadmap:  👉 Phase 1  →  ○ Phase 2  →  ○ Phase 3
+          {Name1}        {Name2}        {Name3}
+
 PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
-             계획완료      스펙생성      구현실행          검증·리뷰
 ```
 
 ### Section 2: Plan Summary

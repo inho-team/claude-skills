@@ -65,7 +65,14 @@ Before spawning Haiku teammates, check SVS engine configuration:
 - Synthesize results and handle merges
 
 ## Handoff
-After all Wave items are complete, display the execution summary, then branch by task type.
+After all Wave items are complete, read `.qe/planning/ROADMAP.md` to build the Roadmap progress line, then display execution summary and branch by task type.
+
+### Roadmap Progress Line
+Read all Phases from ROADMAP.md. Mark completed phases `✅`, current/next `👉`, remaining `○`:
+```
+Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
+          {Name1}        {Name2}        {Name3}
+```
 
 ### Execution Summary (always show)
 ```
@@ -83,6 +90,7 @@ After all Wave items are complete, display the execution summary, then branch by
 ```
 [Phase {X}: {PhaseName}] 구현 완료 — 검증 단계로 이동
 
+Roadmap:  {phase progress line}
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
 ```
 ```
@@ -96,6 +104,7 @@ SVS 검증을 인라인으로 수행한 뒤(VERIFY_CHECKLIST 확인 + 감독 게
 ```
 [Phase {X}: {PhaseName}] 완료
 
+Roadmap:  {phase progress line}
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
 ```
 다음 Phase가 있으면:
@@ -106,7 +115,10 @@ PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
 
   안 되면: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```
-다음 Phase가 없으면 완료 보고로 종료.
+모든 Phase가 완료되면:
+```
+🎉 로드맵 전체 완료. /Qcommit으로 최종 커밋하세요.
+```
 
 ## Will Not
 - Implement complex architectural changes (handle via standard **Etask-executor**)

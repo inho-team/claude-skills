@@ -174,12 +174,13 @@ After completion, check for remaining tasks:
 ---
 
 ## Handoff
-After task completion (Step 5), branch by task type.
+After task completion (Step 5), read `.qe/planning/ROADMAP.md` to build the Roadmap progress line, then branch by task type.
 
 ### When `type: code`
 ```
 [Phase {X}: {PhaseName}] 구현 완료 — 검증 단계로 이동
 
+Roadmap:  {phase progress line}
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  👉 /Qcode-run-task
 ```
 ```
@@ -193,17 +194,21 @@ SVS 검증을 인라인으로 수행한 뒤:
 ```
 [Phase {X}: {PhaseName}] 완료
 
+Roadmap:  {phase progress line}
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  ✅ 완료
 ```
 다음 Phase가 있으면:
 ```
 다음 명령어:
 
-  /Qgs Phase {X+1}: {PhaseName}
+  /Qgs Phase {X+1}: {NextPhaseName}
 
-  안 되면: /Qgenerate-spec Phase {X+1}: {PhaseName}
+  안 되면: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```
-다음 Phase가 없으면 완료 보고로 종료.
+모든 Phase가 완료되면:
+```
+🎉 로드맵 전체 완료. /Qcommit으로 최종 커밋하세요.
+```
 
 ---
 

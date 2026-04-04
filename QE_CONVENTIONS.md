@@ -74,17 +74,30 @@ PSE Chain (user workflow)
 
 Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows these rules:
 
-1. **Phase 컨텍스트** — `[Phase {X}: {PhaseName}]` 헤더로 현재 위치 표시
+1. **Phase 컨텍스트 + 로드맵 진행률** — 현재 Phase와 전체 진행 상태를 한눈에 표시
 2. **PSE Chain 상태 한 줄** — 현재 완료/진행 상태 표시
 3. **`다음 명령어:` 블록** — 복사하기 쉽도록 코드 블록 안에 단독 배치, **반드시 UUID 또는 Phase 인자 포함**
 4. **설명 금지** — 명령어 뒤에 대안, 부연, 선택지를 붙이지 않음
 5. **Task type 분기** — `type: code`만 `/Qcode-run-task`로 안내. docs/analysis/삭제 작업은 다음 Phase로 안내
 6. **숏컷 폴백** — `/Qgs`가 인식되지 않을 수 있으므로 `안 되면: /Qgenerate-spec ...` 를 항상 병기
 
-**Code 작업 예시:**
+### Phase 진행률 표시
+
+핸드오프 시 `.qe/planning/ROADMAP.md`를 읽어 전체 Phase 목록과 완료 상태를 표시한다:
+
+```
+Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
+          Strip&Purify   Codex Bridge   Polish&Release
+```
+
+- `✅` = 완료, `👉` = 다음(진행 예정), `○` = 미시작
+- Phase 이름은 짧게 축약 (영문 ~12자 이내)
+
+### Code 작업 예시
 ```
 [Phase 2: Codex Bridge] 구현 완료 — 검증 단계로 이동
 
+Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
 ```
 ```
@@ -93,10 +106,11 @@ PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-r
   /Qcode-run-task a1b2c3d4
 ```
 
-**Non-code 완료 예시:**
+### Non-code 완료 예시
 ```
 [Phase 1: Strip & Purify] 완료
 
+Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
 ```
 ```
@@ -105,6 +119,16 @@ PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
   /Qgs Phase 2: Codex Bridge
 
   안 되면: /Qgenerate-spec Phase 2: Codex Bridge
+```
+
+### 전체 로드맵 완료 시
+```
+[Phase 3: Polish & Release] 완료 — 모든 Phase 완료
+
+Roadmap:  ✅ Phase 1  →  ✅ Phase 2  →  ✅ Phase 3
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
+
+🎉 로드맵 전체 완료. /Qcommit으로 최종 커밋하세요.
 ```
 
 ---

@@ -29,6 +29,27 @@ Execute tasks based on spec documents. This is a **secondary execution engine** 
 .qe/tasks/remediation/REMEDIATION_REQUEST_*.md
 ```
 
+## SVS Engine Routing
+
+Before executing task items, check SVS engine configuration:
+
+1. Read `.qe/svs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSvsConfig()`).
+2. Check `verify.engine` value:
+   - **`"claude"` (default)**: Proceed with the standard execution workflow. No changes.
+   - **`"codex"`**: Delegate implementation to Codex via codex-plugin-cc:
+     1. Call `resolveEngine("verify", config)` to check availability.
+     2. If available: invoke `/codex:rescue` with `--write` flag, passing the TASK_REQUEST checklist items as the task description. Codex will modify files directly.
+     3. If NOT available: show warning and fallback to Claude execution.
+3. Check for legacy config: call `detectLegacyConfig()`. If non-null, display migration warning.
+
+**Codex Verify Delegation:**
+- Use `codex:codex-rescue` subagent (via Agent tool) for autonomous execution
+- Pass TASK_REQUEST content as the task prompt
+- Codex operates in `--write` mode (can modify files)
+- After Codex completes, proceed to verification step normally
+
+**Fallback guarantee**: Missing `.qe/svs-config.json` → all stages default to Claude. Zero impact on existing workflows.
+
 ## Delegation Rule
 When checklist has **5+ items**, delegate to `Etask-executor` agent. Main agent tracks progress, state transitions, and verification. After delegation, update timestamps: `- [x] item ✅ (HH:MM)`.
 
@@ -157,6 +178,8 @@ After task completion (Step 5), branch by task type.
 
 ### When `type: code`
 ```
+[Phase {X}: {PhaseName}] 구현 완료 — 검증 단계로 이동
+
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  👉 /Qcode-run-task
 ```
 ```
@@ -168,6 +191,8 @@ PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  👉 /Qcode-run
 ### When `type: docs` / `type: analysis` / deletion-heavy
 SVS 검증을 인라인으로 수행한 뒤:
 ```
+[Phase {X}: {PhaseName}] 완료
+
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  ✅ 완료
 ```
 다음 Phase가 있으면:

@@ -42,6 +42,23 @@ After all atomic items are done, determine the next step based on task type:
 - **Haiku-First**: Always use `haiku` for teammates. If an item requires Sonnet, it's not "Atomic" and should be handled by standard `/Qrt`.
 - **Context Integrity**: Use `ContextMemo` to ensure teammates have current state without redundant I/O.
 
+## SVS Engine Routing
+
+Before spawning Haiku teammates, check SVS engine configuration:
+
+1. Read `.qe/svs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSvsConfig()`).
+2. Check `verify.engine` value:
+   - **`"claude"` (default)**: Proceed with the standard Haiku swarm execution. No changes.
+   - **`"codex"`**: Delegate implementation to Codex via codex-plugin-cc instead of Haiku swarm:
+     1. Call `resolveEngine("verify", config)` to check availability.
+     2. If available: invoke `/codex:rescue` with the full TASK_REQUEST checklist as a single task. Codex handles all items internally (no wave splitting needed).
+     3. If NOT available: show warning and fallback to standard Haiku swarm execution.
+3. Check for legacy config: call `detectLegacyConfig()`. If non-null, display migration warning.
+
+**Note**: When using Codex engine, wave-based parallelism is not used — Codex handles task partitioning internally. The quality loop (`/Qcode-run-task`) still runs after Codex completes.
+
+**Fallback guarantee**: Missing `.qe/svs-config.json` → all stages default to Claude. Zero impact on existing workflows.
+
 ## Will
 - Orchestrate parallel execution via Agent Teams
 - Monitor Haiku teammate performance
@@ -64,26 +81,30 @@ After all Wave items are complete, display the execution summary, then branch by
 
 ### When `type: code`
 ```
+[Phase {X}: {PhaseName}] 구현 완료 — 검증 단계로 이동
+
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
 ```
 ```
 다음 명령어:
 
-  /Qcode-run-task
+  /Qcode-run-task {UUID}
 ```
 
 ### When `type: docs` / `type: analysis` / deletion-heavy
 SVS 검증을 인라인으로 수행한 뒤(VERIFY_CHECKLIST 확인 + 감독 게이트):
 ```
+[Phase {X}: {PhaseName}] 완료
+
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
 ```
 다음 Phase가 있으면:
 ```
 다음 명령어:
 
-  /Qgs Phase {X+1}: {PhaseName}
+  /Qgs Phase {X+1}: {NextPhaseName}
 
-  안 되면: /Qgenerate-spec Phase {X+1}: {PhaseName}
+  안 되면: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```
 다음 Phase가 없으면 완료 보고로 종료.
 

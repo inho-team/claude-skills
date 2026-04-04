@@ -74,29 +74,37 @@ PSE Chain (user workflow)
 
 Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows these rules:
 
-1. **PSE Chain 상태 한 줄** — 현재 완료/진행 상태 표시
-2. **`다음 명령어:` 블록** — 복사하기 쉽도록 코드 블록 안에 단독 배치
-3. **설명 금지** — 명령어 뒤에 대안, 부연, 선택지를 붙이지 않음
-4. **Task type 분기** — `type: code`만 `/Qcode-run-task`로 안내. docs/analysis/삭제 작업은 다음 Phase로 안내
-5. **숏컷 폴백** — `/Qgs`가 인식되지 않을 수 있으므로 `안 되면: /Qgenerate-spec ...` 를 항상 병기
+1. **Phase 컨텍스트** — `[Phase {X}: {PhaseName}]` 헤더로 현재 위치 표시
+2. **PSE Chain 상태 한 줄** — 현재 완료/진행 상태 표시
+3. **`다음 명령어:` 블록** — 복사하기 쉽도록 코드 블록 안에 단독 배치, **반드시 UUID 또는 Phase 인자 포함**
+4. **설명 금지** — 명령어 뒤에 대안, 부연, 선택지를 붙이지 않음
+5. **Task type 분기** — `type: code`만 `/Qcode-run-task`로 안내. docs/analysis/삭제 작업은 다음 Phase로 안내
+6. **숏컷 폴백** — `/Qgs`가 인식되지 않을 수 있으므로 `안 되면: /Qgenerate-spec ...` 를 항상 병기
 
+**Code 작업 예시:**
 ```
+[Phase 2: Codex Bridge] 구현 완료 — 검증 단계로 이동
+
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
 ```
 ```
 다음 명령어:
 
-  /Qcode-run-task
+  /Qcode-run-task a1b2c3d4
 ```
 
-**Non-code 완료 시:**
+**Non-code 완료 예시:**
 ```
+[Phase 1: Strip & Purify] 완료
+
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
 ```
 ```
 다음 명령어:
 
-  /Qgs Phase {X+1}: {PhaseName}
+  /Qgs Phase 2: Codex Bridge
+
+  안 되면: /Qgenerate-spec Phase 2: Codex Bridge
 ```
 
 ---

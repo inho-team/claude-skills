@@ -28,6 +28,30 @@ You are a specialist document writer acting as a **sub-component of the `/Qplan`
 - Multiple tasks get separate TASK_REQUEST / VERIFY_CHECKLIST pairs.
 - Newly generated documents always go in `pending/`.
 
+## SVS Engine Routing
+
+Before executing the spec generation workflow, check if SVS engine configuration exists:
+
+1. Read `.qe/svs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSvsConfig()`).
+2. Check `spec.engine` value:
+   - **`"claude"` (default)**: Proceed with the standard workflow below. No changes.
+   - **`"codex"`**: Delegate spec generation to Codex via codex-plugin-cc:
+     1. Call `resolveEngine("spec", config)` to check availability.
+     2. If codex-plugin-cc is available: invoke `/codex:rescue` with the project context and task description as input. Parse the returned spec into TASK_REQUEST and VERIFY_CHECKLIST format.
+     3. If codex-plugin-cc is NOT available: show warning message and fallback to Claude (standard workflow).
+3. Check for legacy config: call `detectLegacyConfig()`. If non-null, display the migration warning to the user before proceeding.
+
+**Codex Spec Delegation Format:**
+When delegating to Codex, pass the following prompt structure:
+```
+Generate a TASK_REQUEST and VERIFY_CHECKLIST for: {user's task description}
+Project context: {from CLAUDE.md}
+Phase context: {from ROADMAP.md active phase}
+Format: Markdown with checklist items
+```
+
+**Fallback guarantee**: If `.qe/svs-config.json` does not exist, all stages default to Claude. This ensures zero impact on existing Claude-only workflows.
+
 ## Workflow
 
 ### Step 1: Context Acquisition (Mandatory)
@@ -165,6 +189,8 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 After generating spec files (on "Generate Only"), display:
 
 ```
+[Phase {X}: {PhaseName}] 스펙 생성 완료 — 실행 단계로 이동
+
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  👉 /Qatomic-run  →  /Qcode-run-task
 ```
 ```

@@ -1,6 +1,8 @@
 node_modules/
 .DS_Store
 .omc/
+.omx/
+*.tgz
 .idea
 .claude/
 CLAUDE.md

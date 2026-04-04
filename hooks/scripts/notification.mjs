@@ -38,13 +38,17 @@ const chains = [
   { match: 'Epm-planner',        hint: 'Planning document created by Epm-planner. Review and confirm with user.' },
   { match: 'Eprofile-collector',  hint: 'Profile updated by Eprofile-collector. Data saved to .qe/profile/.' },
   { match: 'Eqa-orchestrator',   hint: '[CHAIN] Eqa-orchestrator completed quality loop. Report test/review/fix results to user.' },
+  { match: 'codex-rescue',       hint: '[CODEX] Codex rescue completed. Review Codex output, then proceed to Verify stage (validation).' },
+  { match: 'codex-review',       hint: '[CODEX] Codex review completed. Parse review findings and map to supervision verdict.' },
 ];
 
+let agentChainMatched = false;
 for (const { match, hint } of chains) {
   // Use word boundary match to prevent partial agent name collisions
   const regex = new RegExp(`\\b${match}\\b`);
   if (regex.test(messageStr)) {
     hints.push(hint);
+    agentChainMatched = true;
     break;  // One chain action per notification
   }
 }
@@ -53,20 +57,26 @@ for (const { match, hint } of chains) {
 // When persistent mode is active and the notification contains completion-like
 // patterns (e.g., agent finished, task done), inject a reinforcement message
 // to prevent Claude from wrapping up prematurely.
+//
+// IMPORTANT: Skip reinforcement if an agent chain was matched above.
+// Agent completion is expected "done" — reinforcing "don't stop" here
+// would prevent the caller from processing the agent's results.
 try {
-  const unifiedState = readUnifiedState(cwd);
-  const pm = isPersistentModeActiveFromState(unifiedState);
-  if (pm.active) {
-    const completionPatterns = /\b(complet|finish|done|wrap|final|conclud|summar|handoff|hand off|result|output ready)\b/i;
-    if (completionPatterns.test(messageStr)) {
-      const reinforcement = getPersistentModeMessageFromState(unifiedState);
-      if (reinforcement) {
-        // Increment reinforcement counter in state
-        if (unifiedState.persistentMode) {
-          unifiedState.persistentMode.reinforcements = (unifiedState.persistentMode.reinforcements || 0) + 1;
-          try { writeUnifiedState(cwd, unifiedState); } catch {}
+  if (!agentChainMatched) {
+    const unifiedState = readUnifiedState(cwd);
+    const pm = isPersistentModeActiveFromState(unifiedState);
+    if (pm.active) {
+      const completionPatterns = /\b(complet|finish|done|wrap|final|conclud|summar|handoff|hand off|result|output ready)\b/i;
+      if (completionPatterns.test(messageStr)) {
+        const reinforcement = getPersistentModeMessageFromState(unifiedState);
+        if (reinforcement) {
+          // Increment reinforcement counter in state
+          if (unifiedState.persistentMode) {
+            unifiedState.persistentMode.reinforcements = (unifiedState.persistentMode.reinforcements || 0) + 1;
+            try { writeUnifiedState(cwd, unifiedState); } catch {}
+          }
+          hints.push(reinforcement);
         }
-        hints.push(reinforcement);
       }
     }
   }

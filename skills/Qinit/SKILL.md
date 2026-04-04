@@ -45,6 +45,8 @@ Ask the user for the minimum required information:
 
 ### Step 1.5: SIVS Engine Configuration (Optional)
 
+**Codex Plugin Version Check:** Before presenting engine options, call `getCodexPluginInfo()` from `scripts/lib/codex_bridge.mjs` to check the codex-plugin-cc status. If installed, display the version inline. If an update may be available (installed > 30 days ago), append: "Run `/QCodexUpdate` to check for updates."
+
 After collecting project info, ask the user whether to configure SIVS engine routing using `AskUserQuestion`:
 
 **Question**: "Would you like to configure SIVS engine routing? (Choose Claude or Codex for each Spec/Implement/Verify/Supervise stage)"

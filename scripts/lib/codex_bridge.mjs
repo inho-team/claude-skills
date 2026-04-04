@@ -158,3 +158,37 @@ export function loadSivsConfig() {
 
 // Backward compatibility alias
 export const loadSvsConfig = loadSivsConfig;
+
+/**
+ * Get codex-plugin-cc version info from installed_plugins.json
+ * @returns {{ installed: boolean, version?: string, installPath?: string, installedAt?: string, gitCommitSha?: string } }
+ */
+export function getCodexPluginInfo() {
+  const registryPath = join(homedir(), '.claude', 'plugins', 'installed_plugins.json');
+
+  if (!existsSync(registryPath)) {
+    return { installed: false };
+  }
+
+  try {
+    const content = readFileSync(registryPath, 'utf-8');
+    const registry = JSON.parse(content);
+    const codexEntries = registry?.plugins?.['codex@openai-codex'];
+
+    if (!codexEntries || codexEntries.length === 0) {
+      return { installed: false };
+    }
+
+    // Use the first (most recent) entry
+    const entry = codexEntries[0];
+    return {
+      installed: true,
+      version: entry.version || 'unknown',
+      installPath: entry.installPath || null,
+      installedAt: entry.installedAt || null,
+      gitCommitSha: entry.gitCommitSha || null,
+    };
+  } catch {
+    return { installed: false };
+  }
+}

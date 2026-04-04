@@ -38,6 +38,7 @@
 | `/Qmcp-sync` | When MCP settings should be shared across Claude, Codex, and Gemini. | Keeps one QE-managed MCP registry and syncs clients from it. |
 | `/Qsecret` | When API keys or tokens must be stored or used safely. | Keeps plaintext secrets out of the repo while supporting secure env injection. |
 | `/Qupdate` | When the QE framework or its components need updating. | Chooses the right update path for Claude plugin, Codex/npm, or local repo installs. |
+| `/QCodexUpdate` | When checking or updating the Codex plugin. | Checks codex-plugin-cc version and updates if outdated. |
 | `/Qversion` | When you need to check the current framework version. | Displays version info and recent changelog. |
 | `/Qarchive` | When a task is completed and needs to be archived. | Moves files to archive and cleans up temporary state. |
 | `/Qsummary` | When work summary is needed or the session is concluding. | Generates a high-density report of "What, Why, Next". |

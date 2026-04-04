@@ -236,6 +236,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qmemory` | Manage project memory (conventions, gotchas, decisions with TTL) |
 | `Qprofile` | Analyze user patterns and style |
 | `Qutopia` | Fully autonomous execution mode |
+| `QCodexUpdate` | Check/update codex-plugin-cc plugin |
 | `Mrefactor-agent-md` | Refactor bloated instruction files |
 | `Mqe-audit` | Full framework quality audit and report |
 

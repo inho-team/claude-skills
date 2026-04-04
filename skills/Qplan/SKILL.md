@@ -36,7 +36,16 @@ Before starting planning, verify that the QE framework is set up:
   ```
 - Do NOT proceed with planning. Wait for the user to run `/Qinit` first.
 
-**If both exist**, proceed to Step 1.
+**If both exist**, proceed to Step 0.5.
+
+### Step 0.5: Codex Plugin Version Check (Silent)
+
+If `.qe/sivs-config.json` exists and any stage uses `"codex"`, call `getCodexPluginInfo()` from `scripts/lib/codex_bridge.mjs`:
+- **Not installed**: Show warning: "Codex engine configured but codex-plugin-cc is not installed. Run `/QCodexUpdate` to install, or stages will fallback to Claude."
+- **Installed but stale (>30 days)**: Show hint: "codex-plugin-cc v{version} installed {N} days ago. Run `/QCodexUpdate` to check for updates."
+- **Installed and fresh**: No output, proceed silently.
+
+If no sivs-config.json or all stages are Claude, skip this check entirely.
 
 ## Workflow
 

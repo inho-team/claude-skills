@@ -35,8 +35,8 @@ export function isCodexPluginAvailable() {
 }
 
 /**
- * Get codex command for a given stage
- * @param {string} stage - "spec" | "verify" | "supervise"
+ * Get codex command for a given SIVS stage
+ * @param {string} stage - "spec" | "implement" | "verify" | "supervise"
  * @param {object} options - { model?: string, effort?: string, background?: boolean }
  * @returns {object} { command: string, description: string }
  */
@@ -49,9 +49,13 @@ export function getCodexCommand(stage, options = {}) {
       command = '/codex:rescue';
       description = 'Delegate spec generation to Codex';
       break;
-    case 'verify':
+    case 'implement':
       command = '/codex:rescue --write';
       description = 'Delegate implementation to Codex';
+      break;
+    case 'verify':
+      command = '/codex:rescue --verify';
+      description = 'Delegate verification to Codex';
       break;
     case 'supervise':
       command = '/codex:review';
@@ -76,9 +80,9 @@ export function getCodexCommand(stage, options = {}) {
 }
 
 /**
- * Resolve which engine to use for a given stage
- * @param {string} stage - "spec" | "verify" | "supervise"
- * @param {object} config - parsed svs-config.json object (or empty for defaults)
+ * Resolve which engine to use for a given SIVS stage
+ * @param {string} stage - "spec" | "implement" | "verify" | "supervise"
+ * @param {object} config - parsed sivs-config.json object (or empty for defaults)
  * @returns {object} { engine: string, warning?: string, command?: object }
  */
 export function resolveEngine(stage, config = {}) {
@@ -107,36 +111,50 @@ export function resolveEngine(stage, config = {}) {
 }
 
 /**
- * Detect if legacy v3.x team-config.json exists
+ * Detect if legacy v3.x team-config.json or v4.x svs-config.json exists
  * @returns {string | null} warning message or null if not found
  */
 export function detectLegacyConfig() {
-  const legacyConfigPath = join(process.cwd(), '.qe', 'ai-team', 'config', 'team-config.json');
+  const legacyTeamConfigPath = join(process.cwd(), '.qe', 'ai-team', 'config', 'team-config.json');
+  const legacySvsConfigPath = join(process.cwd(), '.qe', 'svs-config.json');
 
-  if (existsSync(legacyConfigPath)) {
-    return `⚠️ Legacy v3.x team-config.json detected.
-Migration to .qe/svs-config.json is recommended.
-Mapping: planner → spec, implementer → verify, reviewer+supervisor → supervise`;
+  if (existsSync(legacyTeamConfigPath)) {
+    return `\u26a0\ufe0f Legacy v3.x team-config.json detected.
+Migration to .qe/sivs-config.json is recommended.
+Mapping: planner \u2192 spec, implementer \u2192 implement, reviewer \u2192 verify, supervisor \u2192 supervise`;
+  }
+
+  if (existsSync(legacySvsConfigPath)) {
+    return `\u26a0\ufe0f Legacy v4.x svs-config.json detected.
+Migration to .qe/sivs-config.json is recommended.
+The "verify" stage has been split into "implement" (coding) and "verify" (validation).`;
   }
 
   return null;
 }
 
 /**
- * Load .qe/svs-config.json from current working directory
+ * Load .qe/sivs-config.json from current working directory
+ * Falls back to legacy .qe/svs-config.json for backward compatibility
  * @returns {object} parsed config or empty object if file doesn't exist
  */
-export function loadSvsConfig() {
-  const configPath = join(process.cwd(), '.qe', 'svs-config.json');
+export function loadSivsConfig() {
+  const configPath = join(process.cwd(), '.qe', 'sivs-config.json');
+  const legacyPath = join(process.cwd(), '.qe', 'svs-config.json');
 
-  if (!existsSync(configPath)) {
+  const pathToLoad = existsSync(configPath) ? configPath : (existsSync(legacyPath) ? legacyPath : null);
+
+  if (!pathToLoad) {
     return {};
   }
 
   try {
-    const content = readFileSync(configPath, 'utf-8');
+    const content = readFileSync(pathToLoad, 'utf-8');
     return JSON.parse(content);
   } catch {
     return {};
   }
 }
+
+// Backward compatibility alias
+export const loadSvsConfig = loadSivsConfig;

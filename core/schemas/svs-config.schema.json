@@ -1,13 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "SVS Engine Configuration Schema",
-  "description": "JSON Schema for qe-framework v4.0 SVS (Spec-Verify-Supervise) engine configuration",
+  "title": "SIVS Engine Configuration Schema",
+  "description": "JSON Schema for qe-framework v5.x SIVS (Spec-Implement-Verify-Supervise) engine configuration",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "spec": {
       "$ref": "#/definitions/stageConfig",
       "description": "Configuration for the Spec stage"
+    },
+    "implement": {
+      "$ref": "#/definitions/stageConfig",
+      "description": "Configuration for the Implement stage"
     },
     "verify": {
       "$ref": "#/definitions/stageConfig",
@@ -27,7 +31,7 @@
           "type": "string",
           "enum": ["claude", "codex"],
           "default": "claude",
-          "description": "AI engine to handle this SVS stage"
+          "description": "AI engine to handle this SIVS stage"
         },
         "model": {
           "type": "string",

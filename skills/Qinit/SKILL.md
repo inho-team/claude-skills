@@ -43,42 +43,47 @@ Ask the user for the minimum required information:
 - **Project description**: One-line summary
 - **Tech stack**: Primary languages/frameworks (optional)
 
-### Step 1.5: SVS Engine Configuration (Optional)
+### Step 1.5: SIVS Engine Configuration (Optional)
 
-After collecting project info, ask the user whether to configure SVS engine routing using `AskUserQuestion`:
+After collecting project info, ask the user whether to configure SIVS engine routing using `AskUserQuestion`:
 
-**Question**: "Would you like to configure SVS engine routing? (Choose Claude or Codex for each Spec/Verify/Supervise stage)"
+**Question**: "Would you like to configure SIVS engine routing? (Choose Claude or Codex for each Spec/Implement/Verify/Supervise stage)"
 
 **Options**:
 1. **Claude Only (Default)** — All stages handled by Claude. No additional configuration.
 2. **Claude + Codex Hybrid** — Choose engine per stage. Requires codex-plugin-cc.
-3. **Configure Later** — Proceed with initialization only. `.qe/svs-config.json` can be created manually later.
+3. **Configure Later** — Proceed with initialization only. `.qe/sivs-config.json` can be created manually later.
 
-**On "Claude Only"**: Skip — Do not create `.qe/svs-config.json`. All stages automatically use Claude.
+**On "Claude Only"**: Skip — Do not create `.qe/sivs-config.json`. All stages automatically use Claude.
 
 **On "Claude + Codex Hybrid"**:
 1. First check codex-plugin-cc installation status using `isCodexPluginAvailable()` from `scripts/lib/codex_bridge.mjs`.
    - If not installed: Show warning ("codex-plugin-cc is not installed. Install it with `/plugin install codex@openai-codex` then try again.") → Fallback to Claude Only.
    - If installed: Continue.
-2. For each SVS stage, use `AskUserQuestion` to select engine:
+2. For each SIVS stage, use `AskUserQuestion` to select engine:
 
    **Spec Stage**: "Select engine for Spec stage"
    - Claude (Recommended) — Claude generates spec document
    - Codex — Codex generates spec via `/codex:rescue`
 
-   **Verify Stage**: "Select engine for Verify stage"
+   **Implement Stage**: "Select engine for Implement stage"
    - Claude (Recommended) — Claude agent implements changes
    - Codex — Codex implements via `/codex:rescue --write`
+
+   **Verify Stage**: "Select engine for Verify stage"
+   - Claude (Recommended) — Claude validates implementation results
+   - Codex — Codex verifies via `/codex:rescue --verify`
 
    **Supervise Stage**: "Select engine for Supervise stage"
    - Claude (Recommended) — Claude domain supervisor reviews
    - Codex — Codex reviews via `/codex:review`
 
-3. Create `.qe/svs-config.json` based on selections:
+3. Create `.qe/sivs-config.json` based on selections:
    ```json
    {
      "spec": { "engine": "claude" },
-     "verify": { "engine": "codex" },
+     "implement": { "engine": "codex" },
+     "verify": { "engine": "claude" },
      "supervise": { "engine": "claude" }
    }
    ```
@@ -87,7 +92,7 @@ After collecting project info, ask the user whether to configure SVS engine rout
    - **Effort** (Optional): Reasoning effort level (`low` / `medium` / `high` / `xhigh`, default: not set)
 5. Validate generated configuration with `npm run qe:validate`.
 
-**On "Configure Later"**: Skip — Show guidance message: "You can manually create `.qe/svs-config.json` later or re-run `/Qinit`"
+**On "Configure Later"**: Skip — Show guidance message: "You can manually create `.qe/sivs-config.json` later or re-run `/Qinit`"
 
 ### Step 2: Auto-analyze Project
 Delegate the analysis to the `Erefresh-executor` sub-agent. Since Erefresh-executor uses the same analysis logic as Qrefresh, consistency of analysis is guaranteed.

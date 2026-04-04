@@ -16,12 +16,12 @@
 - `core/`: shared schemas, rules, and runtime context definitions
 - `docs/`: user-facing documentation and setup guides
 
-## Key Files (v4.0)
+## Key Files (v5.x)
 
-- `scripts/validate_svs_config.mjs` — SVS config (svs-config.json) validator
+- `scripts/validate_svs_config.mjs` — SIVS config (sivs-config.json) validator
 - `scripts/lib/codex_bridge.mjs` — Optional Codex plugin bridge utility for extended agent support
-- `core/schemas/svs-config.schema.json` — JSON schema for SVS config validation
-- `CLAUDE.md` — Project architecture and constraints (Claude-first, v4.0 decisions)
+- `core/schemas/svs-config.schema.json` — JSON schema for SIVS config validation
+- `CLAUDE.md` — Project architecture and constraints (Claude-first, SIVS decisions)
 
 ## Working Rules
 
@@ -34,7 +34,7 @@
 ## Validation
 
 - Use targeted validation first; this repo does not expose a single default test script in `package.json`
-- For SVS config validation, use `npm run qe:validate` (runs `scripts/validate_svs_config.mjs`)
+- For SIVS config validation, use `npm run qe:validate` (runs `scripts/validate_svs_config.mjs`)
 - Direct script execution available under `scripts/`
 - If a change touches installation flow, review `install.js`, `uninstall.js`, and `scripts/lib/client_installers.mjs`
 

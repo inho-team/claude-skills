@@ -3,7 +3,7 @@
 
 /**
  * Persistent Mode — Prevents Claude from stopping prematurely during active
- * multi-step execution (SVS loops, Wave execution, Qatomic-run, etc.).
+ * multi-step execution (SIVS loops, Wave execution, Qatomic-run, etc.).
  *
  * ## How it works
  *
@@ -17,7 +17,7 @@
  * Skills that run multi-step pipelines (e.g., Qatomic-run, Qrun-task) should:
  *
  *   1. Call `enterPersistentMode(mode, reason)` at the start of execution.
- *      - mode: 'svs-loop' | 'wave-execution' | 'qatomic-run' | 'qrun-task' | string
+ *      - mode: 'sivs-loop' | 'wave-execution' | 'qatomic-run' | 'qrun-task' | string
  *      - reason: human-readable string explaining why stopping is blocked
  *
  *   2. Call `exitPersistentMode()` at their Handoff step, after the full

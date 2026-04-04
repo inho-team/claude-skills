@@ -7,15 +7,16 @@
 
 ---
 
-## SVS Engine Routing
+## SIVS Engine Routing
 
-Each SVS stage can be configured to use Claude (default) or Codex (via codex-plugin-cc):
+Each SIVS stage can be configured to use Claude (default) or Codex (via codex-plugin-cc):
 
 - **Spec**: Claude generates specs natively, or delegates to Codex via `/codex:rescue`
-- **Verify**: Claude executes via agents, or delegates to Codex via `/codex:rescue --write`
+- **Implement**: Claude executes via agents, or delegates to Codex via `/codex:rescue --write`
+- **Verify**: Claude validates results, or delegates to Codex via `/codex:rescue --verify`
 - **Supervise**: Claude runs domain supervisors, or delegates to Codex via `/codex:review`
 
-Configuration: `.qe/svs-config.json` (optional — defaults to Claude for all stages)
+Configuration: `.qe/sivs-config.json` (optional — defaults to Claude for all stages)
 
 This architecture ensures:
 - Claude-only baseline works without any external dependencies
@@ -27,23 +28,24 @@ This architecture ensures:
 
 ## Position in the PSE Chain
 
-The SVS Loop is the **quality gate** that runs inside the Execute and Verify steps of the PSE Chain (`/Qplan → /Qgs → /Qatomic-run → /Qcode-run-task`). The PSE Chain is the user-facing workflow; the SVS Loop is the internal quality mechanism that ensures each task meets its spec.
+The SIVS Loop is the **quality gate** that runs inside the Execute and Verify steps of the PSE Chain (`/Qplan → /Qgs → /Qatomic-run → /Qcode-run-task`). The PSE Chain is the user-facing workflow; the SIVS Loop is the internal quality mechanism that ensures each task meets its spec.
 
 ---
 
 ## The Core Principle
 
 > Work without a spec is guesswork.
-> A spec without verification is hope.
+> A spec without implementation is intent.
+> Implementation without verification is hope.
 > Verification without supervision is confirmation bias.
 
 The QE Framework is built around one repeating loop:
 
 ```
-Spec → Verify → Supervise → (if failed) Remediate → Spec → ...
+Spec → Implement → Verify → Supervise → (if failed) Remediate → Spec → ...
 ```
 
-This loop — the **SVS Loop** — is not optional. It is the quality gate that drives every task to completion.
+This loop — the **SIVS Loop** — is not optional. It is the quality gate that drives every task to completion.
 
 ---
 
@@ -60,32 +62,32 @@ We treat efficiency not as a cost-saving measure, but as a **reliability require
 
 ---
 
-## The SVS Loop
+## The SIVS Loop
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      SVS Loop                           │
-│                                                         │
-│  ┌──────────┐    ┌──────────┐    ┌──────────────────┐  │
-│  │  SPEC    │───▶│  VERIFY  │───▶│   SUPERVISE      │  │
-│  │          │    │          │    │                  │  │
-│  │ Define   │    │ Confirm  │    │ Expert evaluation│  │
-│  │ what &   │    │ it was   │    │ security, test,  │  │
-│  │ how      │    │ done     │    │ design, facts    │  │
-│  └──────────┘    └──────────┘    └────────┬─────────┘  │
-│       ▲                                   │            │
-│       │              PASS                 │            │
-│       │         ┌────────────┐            │            │
-│       │         │  ✅ Done   │◀───────────┤            │
-│       │         └────────────┘            │            │
-│       │                              FAIL │            │
-│       │         ┌────────────────────┐    │            │
-│       └─────────│ REMEDIATION        │◀───┘            │
-│                 │ REQUEST            │                 │
-│                 │ (new spec for      │                 │
-│                 │  failing items)    │                 │
-│                 └────────────────────┘                 │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                          SIVS Loop                                   │
+│                                                                      │
+│  ┌──────────┐  ┌────────────┐  ┌──────────┐  ┌──────────────────┐  │
+│  │  SPEC    │─▶│ IMPLEMENT  │─▶│  VERIFY  │─▶│   SUPERVISE      │  │
+│  │          │  │            │  │          │  │                  │  │
+│  │ Define   │  │ Execute    │  │ Confirm  │  │ Expert evaluation│  │
+│  │ what &   │  │ the actual │  │ it was   │  │ security, test,  │  │
+│  │ how      │  │ coding     │  │ done     │  │ design, facts    │  │
+│  └──────────┘  └────────────┘  └──────────┘  └────────┬─────────┘  │
+│       ▲                                               │            │
+│       │              PASS                             │            │
+│       │         ┌────────────┐                        │            │
+│       │         │  ✅ Done   │◀───────────────────────┤            │
+│       │         └────────────┘                        │            │
+│       │                                          FAIL │            │
+│       │         ┌────────────────────┐                │            │
+│       └─────────│ REMEDIATION        │◀───────────────┘            │
+│                 │ REQUEST            │                             │
+│                 │ (new spec for      │                             │
+│                 │  failing items)    │                             │
+│                 └────────────────────┘                             │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Cross-Phase Regression
@@ -106,7 +108,16 @@ A spec must answer:
 
 Without a spec, the executor has no contract. Without a contract, verification is impossible.
 
-### Stage 2 — Verify
+### Stage 2 — Implement
+
+**Executed by:** `Qrun-task` / `Qatomic-run` (via `Etask-executor` or Haiku Teammates)
+**Purpose:** Execute the actual coding work defined in the spec.
+
+Implementation is the stage where files are created, modified, or deleted according to the TASK_REQUEST checklist. This stage is strictly separated from verification to ensure clean responsibility boundaries:
+- Implementation produces code changes
+- Verification (next stage) confirms those changes are correct
+
+### Stage 3 — Verify
 
 **Document:** `VERIFY_CHECKLIST_{UUID}.md`
 **Generated by:** `Qgenerate-spec` (alongside the spec)
@@ -119,7 +130,7 @@ A verification checklist must:
 
 A checklist that says "code looks good" is not a checklist. It is an opinion.
 
-### Stage 3 — Supervise
+### Stage 4 — Supervise
 
 **Document:** `REMEDIATION_REQUEST_{UUID}_{N}.md` (generated only on FAIL)
 **Executed by:** Supervision agents (security, test, design, fact-checking)
@@ -137,7 +148,7 @@ Supervision domains in this framework:
 | Documentation | Edocs-supervisor | Accuracy, completeness, clarity |
 | Analysis | Eanalysis-supervisor | Validity of findings, source reliability |
 
-### Stage 4 — Remediate (on FAIL)
+### Stage 5 — Remediate (on FAIL)
 
 **Document:** `REMEDIATION_REQUEST_{UUID}_{N}.md`
 **Triggers:** When any supervision domain returns FAIL
@@ -165,17 +176,18 @@ These three documents are the backbone of the framework. Every other component e
 
 ## Where Every Component Fits
 
-| Component | Role in the SVS Loop |
+| Component | Role in the SIVS Loop |
 |-----------|---------------------|
-| `Qgenerate-spec` | Creates TASK_REQUEST + VERIFY_CHECKLIST (Stages 1–2) |
-| `Qrun-task` | Executes the spec, runs the verify checklist (Stages 1–2) |
-| `Etask-executor` | Implements checklist items one by one |
-| `Esupervision-orchestrator` | Coordinates all supervision agents (Stage 3) |
+| `Qgenerate-spec` | Creates TASK_REQUEST + VERIFY_CHECKLIST (Stage 1) |
+| `Qrun-task` | Executes the spec (Stage 2), runs the verify checklist (Stage 3) |
+| `Qatomic-run` | Parallel implementation via Haiku Waves (Stage 2) |
+| `Etask-executor` | Implements checklist items one by one (Stage 2) |
+| `Esupervision-orchestrator` | Coordinates all supervision agents (Stage 4) |
 | `Ecode-quality-supervisor` | Code quality supervision domain |
 | `Edocs-supervisor` | Documentation supervision domain |
 | `Eanalysis-supervisor` | Analysis and fact supervision domain |
 | `Esecurity-officer` | Security supervision domain |
-| `Qcode-run-task` | Test → review → fix loop within Stage 2 |
+| `Qcode-run-task` | Test → review → fix loop within Stage 3 |
 | All hooks | Support the loop: context management, intent routing, state tracking |
 | `Ttune` | Repairs framework components that deviate from this philosophy |
 
@@ -193,22 +205,23 @@ Every skill, agent, and hook in this framework must uphold the following:
 
 4. **Remediation is a new spec, not a patch.** When verification fails, generate a proper REMEDIATION_REQUEST with a proper checklist. Do not apply ad-hoc fixes without a spec.
 
-5. **The loop is the product.** Features, skills, and agents are means to an end. The end is always: spec defined → verified → shipped with confidence.
+5. **The loop is the product.** Features, skills, and agents are means to an end. The end is always: spec defined → implemented → verified → shipped with confidence.
 
 ---
 
 ## Why This Matters
 
-Most AI-assisted work fails at one of three points:
+Most AI-assisted work fails at one of four points:
 - **No spec**: The AI guesses what to do. The user gets something unexpected.
+- **No implementation discipline**: Code changes are mixed with validation, making it unclear what was done vs. what was checked.
 - **No verification**: The AI says it's done. Nobody checks. Bugs ship.
 - **No supervision**: The work passes local checks but fails in the real world.
 
-The SVS Loop closes all three gaps. It is the reason this framework exists.
+The SIVS Loop closes all four gaps. It is the reason this framework exists.
 
 ---
 
-## SVS Loop Test Log
+## SIVS Loop Test Log
 
 | Date | Run | Supervisor | Verdict |
 |------|-----|-----------|---------|

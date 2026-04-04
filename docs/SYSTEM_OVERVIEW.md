@@ -1,6 +1,6 @@
 # QE Framework System Overview
 
-QE Framework is a SVS (Spec-Verify-Supervise) loop system for Claude Code. It provides a complete AI-driven workflow using Claude as the default provider, with optional Codex support via the `codex-plugin-cc` bridge.
+QE Framework is a SIVS (Spec-Implement-Verify-Supervise) loop system for Claude Code. It provides a complete AI-driven workflow using Claude as the default provider, with optional Codex support via the `codex-plugin-cc` bridge.
 
 ## User Workflow
 
@@ -18,9 +18,9 @@ Most users only need these commands:
 - `/Qatomic-run`: execute implementation work
 - `/Qcode-run-task`: run review and final verification
 
-## SVS Loop Architecture
+## SIVS Loop Architecture
 
-QE separates work via the **PSE Chain** (user workflow) and **SVS Loop** (execution model):
+QE separates work via the **PSE Chain** (user workflow) and **SIVS Loop** (execution model):
 
 **PSE Chain** — the user-facing workflow:
 - **Plan** (`/Qplan`): creates roadmap, phases, requirements
@@ -28,40 +28,42 @@ QE separates work via the **PSE Chain** (user workflow) and **SVS Loop** (execut
 - **Execute** (`/Qatomic-run`): implements via Wave execution
 - **Verify** (`/Qcode-run-task`): runs verification and quality loop
 
-**SVS Loop** — the execution engine with 3 stages:
+**SIVS Loop** — the execution engine with 4 stages:
 - **Spec** (S): TASK_REQUEST generation defines the contract
-- **Verify** (V): Implementation validation and test cycles
+- **Implement** (I): Actual coding and file modifications
+- **Verify** (V): Validation against VERIFY_CHECKLIST (no coding — pure confirmation)
 - **Supervise** (S): Quality gates and final review
 
-Each SVS stage can be routed to Claude (default) or Codex (via codex-plugin-cc). The routing is configured in `.qe/svs-config.json`.
+Each SIVS stage can be routed to Claude (default) or Codex (via codex-plugin-cc). The routing is configured in `.qe/sivs-config.json`.
 
 ## Provider Routing
 
 QE Framework defaults to Claude for all stages but supports optional Codex routing via `codex-plugin-cc`.
 
 **Default (Claude-only)**:
-- Spec, Verify, and Supervise stages all use Claude
+- Spec, Implement, Verify, and Supervise stages all use Claude
 - No external dependencies required
 - Complete functionality without installation
 
 **Optional Codex Bridge**:
 - Install `codex-plugin-cc` for Codex integration
-- Route individual SVS stages to Codex via `svs-config.json`
+- Route individual SIVS stages to Codex via `sivs-config.json`
 - Bridge logic in `scripts/lib/codex_bridge.mjs`
 
 ## Artifacts
 
-SVS stages exchange standard artifacts in `.qe/artifacts/`:
+SIVS stages exchange standard artifacts in `.qe/artifacts/`:
 
 - `TASK_REQUEST.md`: Spec stage output; defines implementation contract
 - `VERIFY_CHECKLIST.md`: Verify stage input/output; tracks completion and quality gates
-- `IMPLEMENTATION_REPORT.md`: Verify stage report; documents results and issues
+- `IMPLEMENTATION_REPORT.md`: Implement stage report; documents results and issues
 - `SUPERVISION_REPORT.md`: Supervise stage report; final quality assurance
 
 Ownership is explicit by stage:
 
 - Spec owns TASK_REQUEST
-- Verify owns VERIFY_CHECKLIST and IMPLEMENTATION_REPORT
+- Implement owns code changes and IMPLEMENTATION_REPORT
+- Verify owns VERIFY_CHECKLIST validation
 - Supervise owns SUPERVISION_REPORT
 
 ## Configuration
@@ -69,27 +71,28 @@ Ownership is explicit by stage:
 The main configuration file is:
 
 ```text
-.qe/svs-config.json
+.qe/sivs-config.json
 ```
 
 It defines:
 
-- which provider (Claude or Codex) each SVS stage uses
+- which provider (Claude or Codex) each SIVS stage uses
 - provider options (model, temperature, timeout)
 - quality gate policies and verification rules
 
 ## Runtime
 
-The SVS execution engine is implemented with:
+The SIVS execution engine is implemented with:
 
-- `scripts/lib/svs-engine.mjs`: Core SVS loop orchestration
+- `scripts/lib/svs-engine.mjs`: Core SIVS loop orchestration
 - `scripts/lib/codex_bridge.mjs`: Optional Codex provider bridge (requires codex-plugin-cc)
-- `scripts/validate_svs_config.mjs`: SVS configuration validation
+- `scripts/validate_svs_config.mjs`: SIVS configuration validation
 
 The engine supports:
 
 - Spec stage: generating TASK_REQUEST from requirements
-- Verify stage: executing implementation and validation
+- Implement stage: executing code changes based on TASK_REQUEST
+- Verify stage: validating implementation against VERIFY_CHECKLIST
 - Supervise stage: quality gates and approval
 - Provider routing: Claude (default) or Codex (if available)
 - Resume and checkpoint modes
@@ -109,19 +112,19 @@ claude plugin install qe-framework@inho-team-qe-framework
 **With Codex Support** (optional, requires codex-plugin-cc):
 ```text
 npm install --save-dev codex-plugin-cc
-# svs-config.json can then route stages to codex-plugin-cc
+# sivs-config.json can then route stages to codex-plugin-cc
 ```
 
-QE Framework works completely without Codex; the plugin is optional for teams that want to use Codex for specific SVS stages.
+QE Framework works completely without Codex; the plugin is optional for teams that want to use Codex for specific SIVS stages.
 
-## v4.0 Architecture
+## v5.x Architecture
 
-QE v4.0 focuses on **Claude-first simplicity with optional Codex extensibility**:
+QE v5.x focuses on **Claude-first simplicity with optional Codex extensibility**:
 
-- **Single-provider baseline**: Claude handles all SVS stages by default
+- **Single-provider baseline**: Claude handles all SIVS stages by default
 - **Zero external dependencies**: Works without Codex, Gemini, or other external APIs
 - **Optional bridge**: `codex-plugin-cc` enables Codex routing for teams that want it
-- **Simplified routing**: 3 SVS stages (Spec, Verify, Supervise) vs. 4+ legacy roles
-- **Explicit configuration**: All provider choices in `svs-config.json`, no hidden fallbacks
+- **Clear separation of concerns**: 4 SIVS stages (Spec, Implement, Verify, Supervise) — each with a single responsibility
+- **Explicit configuration**: All provider choices in `sivs-config.json`, no hidden fallbacks
 
 This approach reduces complexity while keeping extensibility for future multi-provider scenarios.

@@ -56,12 +56,12 @@ The 4-step pipeline that drives all work:
 
 `/Qrun-task` is the sequential fallback when tasks can't be parallelized.
 
-### SVS Loop (quality gate)
+### SIVS Loop (quality gate)
 
 Runs inside Execute and Verify steps:
 
 ```
-Spec → Verify → Supervise → (FAIL) Remediate → Spec → ...
+Spec → Implement → Verify → Supervise → (FAIL) Remediate → Spec → ...
 ```
 
 ### Model Tiering

@@ -34,7 +34,7 @@ As Haiku teammates complete their tasks:
 ### Step 4: Post-Execution Gate
 After all atomic items are done, determine the next step based on task type:
 - **`type: code`** → trigger `/Qcode-run-task` for test → review → fix quality loop.
-- **`type: docs` / `type: analysis` / deletion-heavy tasks** → run SVS Loop verification (VERIFY_CHECKLIST check + supervision) directly, skip `/Qcode-run-task`.
+- **`type: docs` / `type: analysis` / deletion-heavy tasks** → run SIVS Loop verification (VERIFY_CHECKLIST check + supervision) directly, skip `/Qcode-run-task`.
 
 ## Execution Rules
 - **Wave**: Group independent items from `TASK_REQUEST` into execution waves. Wave N+1 starts only after Wave N is verified.
@@ -42,22 +42,22 @@ After all atomic items are done, determine the next step based on task type:
 - **Haiku-First**: Always use `haiku` for teammates. If an item requires Sonnet, it's not "Atomic" and should be handled by standard `/Qrt`.
 - **Context Integrity**: Use `ContextMemo` to ensure teammates have current state without redundant I/O.
 
-## SVS Engine Routing
+## SIVS Engine Routing
 
-Before spawning Haiku teammates, check SVS engine configuration:
+Before spawning Haiku teammates, check SIVS engine configuration:
 
-1. Read `.qe/svs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSvsConfig()`).
-2. Check `verify.engine` value:
+1. Read `.qe/sivs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSivsConfig()`).
+2. Check `implement.engine` value:
    - **`"claude"` (default)**: Proceed with the standard Haiku swarm execution. No changes.
    - **`"codex"`**: Delegate implementation to Codex via codex-plugin-cc instead of Haiku swarm:
-     1. Call `resolveEngine("verify", config)` to check availability.
+     1. Call `resolveEngine("implement", config)` to check availability.
      2. If available: invoke `/codex:rescue` with the full TASK_REQUEST checklist as a single task. Codex handles all items internally (no wave splitting needed).
      3. If NOT available: show warning and fallback to standard Haiku swarm execution.
 3. Check for legacy config: call `detectLegacyConfig()`. If non-null, display migration warning.
 
-**Note**: When using Codex engine, wave-based parallelism is not used — Codex handles task partitioning internally. The quality loop (`/Qcode-run-task`) still runs after Codex completes.
+**Note**: When using Codex engine, wave-based parallelism is not used — Codex handles task partitioning internally. The Verify stage (validation) and quality loop (`/Qcode-run-task`) still run after Codex completes.
 
-**Fallback guarantee**: Missing `.qe/svs-config.json` → all stages default to Claude. Zero impact on existing workflows.
+**Fallback guarantee**: Missing `.qe/sivs-config.json` → all stages default to Claude. Zero impact on existing workflows.
 
 ## Will
 - Orchestrate parallel execution via Agent Teams
@@ -100,7 +100,7 @@ Next command:
 ```
 
 ### When `type: docs` / `type: analysis` / deletion-heavy
-After performing SVS verification inline (VERIFY_CHECKLIST check + supervision gate):
+After performing SIVS verification inline (VERIFY_CHECKLIST check + supervision gate):
 ```
 [Phase {X}: {PhaseName}] Complete
 

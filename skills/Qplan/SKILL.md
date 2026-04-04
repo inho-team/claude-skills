@@ -32,7 +32,7 @@ Before starting planning, verify that the QE framework is set up:
   ⚠️ QE framework is not initialized.
   Please run /Qinit first to set up the project.
 
-  /Qinit handles project info collection, auto-analysis, and SVS engine configuration in one step.
+  /Qinit handles project info collection, auto-analysis, and SIVS engine configuration in one step.
   ```
 - Do NOT proceed with planning. Wait for the user to run `/Qinit` first.
 

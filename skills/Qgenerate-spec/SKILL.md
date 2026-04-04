@@ -28,11 +28,11 @@ You are a specialist document writer acting as a **sub-component of the `/Qplan`
 - Multiple tasks get separate TASK_REQUEST / VERIFY_CHECKLIST pairs.
 - Newly generated documents always go in `pending/`.
 
-## SVS Engine Routing
+## SIVS Engine Routing
 
-Before executing the spec generation workflow, check if SVS engine configuration exists:
+Before executing the spec generation workflow, check if SIVS engine configuration exists:
 
-1. Read `.qe/svs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSvsConfig()`).
+1. Read `.qe/sivs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSivsConfig()`).
 2. Check `spec.engine` value:
    - **`"claude"` (default)**: Proceed with the standard workflow below. No changes.
    - **`"codex"`**: Delegate spec generation to Codex via codex-plugin-cc:
@@ -50,7 +50,7 @@ Phase context: {from ROADMAP.md active phase}
 Format: Markdown with checklist items
 ```
 
-**Fallback guarantee**: If `.qe/svs-config.json` does not exist, all stages default to Claude. This ensures zero impact on existing Claude-only workflows.
+**Fallback guarantee**: If `.qe/sivs-config.json` does not exist, all stages default to Claude. This ensures zero impact on existing Claude-only workflows.
 
 ## Workflow
 
@@ -191,7 +191,7 @@ After generating spec files (on "Generate Only"), display:
 ```
 [Phase {X}: {PhaseName}] Spec generation complete — moving to execution phase
 
-SVS Chain:  ✅ /Qplan  →  ✅ /Qgenerate-spec  →  👉 /Qatomic-run  →  /Qrun-task
+SIVS Chain:  ✅ /Qplan  →  ✅ /Qgenerate-spec  →  👉 /Qatomic-run  →  /Qrun-task
 ```
 ```
 Next command:

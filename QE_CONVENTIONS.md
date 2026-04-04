@@ -11,7 +11,7 @@ All skills, agents, and documents in this framework MUST use these standard term
 | Concept | Standard Term | Deprecated | Notes |
 |---------|--------------|------------|-------|
 | User workflow | **PSE Chain** | ~~PSE Loop~~ | The 4-step user-facing workflow |
-| Quality gate | **SVS Loop** | — | Inner quality gate within Execute/Verify steps |
+| Quality gate | **SIVS Loop** | ~~SVS Loop~~ | Inner quality gate within Execute/Verify steps |
 | Parallel execution group | **Wave** | ~~Swarm~~ | Independent items grouped for concurrent execution |
 | Parallel agent | **Teammate** | ~~Subagent~~ (internal only) | Haiku Teammate = Haiku-model agent in a Wave |
 | Spec generation skill | **Qgs** | Qgenerate-spec (internal full name) | User always sees `/Qgs` |
@@ -33,13 +33,13 @@ All skills, agents, and documents in this framework MUST use these standard term
 - **Execute**: Implement checklist items via Wave execution (`/Qatomic-run`)
 - **Verify**: Test → review → fix quality loop (`/Qcode-run-task`)
 
-### SVS Loop (inner quality gate)
+### SIVS Loop (inner quality gate)
 
 ```
-Spec → Verify → Supervise → (FAIL) Remediate → Spec → ...
+Spec → Implement → Verify → Supervise → (FAIL) Remediate → Spec → ...
 ```
 
-The SVS Loop runs **inside** the Execute and Verify steps of the PSE Chain. It is the quality gate that ensures each task meets its spec before completion. See `core/PHILOSOPHY.md` for full specification.
+The SIVS Loop runs **inside** the Execute and Verify steps of the PSE Chain. It is the quality gate that ensures each task meets its spec before completion. See `core/PHILOSOPHY.md` for full specification.
 
 ### Relationship
 
@@ -48,12 +48,13 @@ PSE Chain (user workflow)
 ├── Plan ─────────── /Qplan
 ├── Spec ─────────── /Qgs (Qgenerate-spec)
 ├── Execute ──────── /Qatomic-run or /Qrun-task
-│     └── SVS Loop (quality gate)
+│     └── SIVS Loop (quality gate)
 │           ├── Spec: TASK_REQUEST defines the contract
+│           ├── Implement: Actual coding and file changes
 │           ├── Verify: VERIFY_CHECKLIST confirms completion
 │           └── Supervise: Supervision agents confirm quality
 └── Verify ───────── /Qcode-run-task
-      └── SVS Loop (quality gate, final pass)
+      └── SIVS Loop (quality gate, final pass)
 ```
 
 ---
@@ -169,7 +170,7 @@ To maintain high reasoning quality and low latency, all agents and skills must a
 - **Token Fallback**: If real-time metrics are missing, use `Characters / 4` for estimation.
 
 ### 3. Persistent Mode Protection
-- **Active pipelines are shielded from premature stopping.** When a multi-step pipeline (SVS loop, Wave execution, Qatomic-run) is running, persistent mode blocks the Stop hook and injects reinforcement via the Notification hook. Skills enter persistent mode at execution start and exit at their Handoff step. See `hooks/scripts/lib/persistent-mode.mjs` and `core/CONTEXT_BUDGET.md` for details.
+- **Active pipelines are shielded from premature stopping.** When a multi-step pipeline (SIVS loop, Wave execution, Qatomic-run) is running, persistent mode blocks the Stop hook and injects reinforcement via the Notification hook. Skills enter persistent mode at execution start and exit at their Handoff step. See `hooks/scripts/lib/persistent-mode.mjs` and `core/CONTEXT_BUDGET.md` for details.
 
 ### 4. Optimized Model Tiering
 - **Haiku (LOW)**: Default for pattern matching, structural verification (S1-S5), file I/O, and simple text transforms.

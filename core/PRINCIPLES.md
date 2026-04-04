@@ -165,4 +165,4 @@ Agent invocation should consider model complexity and availability within Claude
 - Agents declare `recommendedModel:` in YAML frontmatter (e.g., `recommendedModel: sonnet`)
 - Skills and callers inspect `recommendedModel` when invoking agents via Claude Code Agent tool
 - Model selection respects rate limits and availability — recommended model is a preference, not a guarantee
-- No enforcement: if a caller invokes an agent with a different model, it is not an error
+- **Delegation Enforcer (hook-enforced):** The `pre-tool-use` hook automatically checks Agent tool calls against the target agent's `recommendedModel`. If no model is specified, the recommended model is auto-injected. If a higher-cost model is specified (e.g., opus for a haiku task), a cost-awareness warning is emitted. Lower-cost overrides are always allowed. Stats are tracked in `unified-state.json` under `delegationStats`.

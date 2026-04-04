@@ -3,7 +3,8 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { readStdinJson, getCwd } from './lib/state.mjs';
+import { readStdinJson, getCwd, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
+import { isPersistentModeActiveFromState, getPersistentModeMessageFromState } from './lib/persistent-mode.mjs';
 
 const data = readStdinJson();
 if (!data) {
@@ -46,6 +47,31 @@ for (const { match, hint } of chains) {
     hints.push(hint);
     break;  // One chain action per notification
   }
+}
+
+// --- Persistent Mode Reinforcement ---
+// When persistent mode is active and the notification contains completion-like
+// patterns (e.g., agent finished, task done), inject a reinforcement message
+// to prevent Claude from wrapping up prematurely.
+try {
+  const unifiedState = readUnifiedState(cwd);
+  const pm = isPersistentModeActiveFromState(unifiedState);
+  if (pm.active) {
+    const completionPatterns = /\b(complet|finish|done|wrap|final|conclud|summar|handoff|hand off|result|output ready)\b/i;
+    if (completionPatterns.test(messageStr)) {
+      const reinforcement = getPersistentModeMessageFromState(unifiedState);
+      if (reinforcement) {
+        // Increment reinforcement counter in state
+        if (unifiedState.persistentMode) {
+          unifiedState.persistentMode.reinforcements = (unifiedState.persistentMode.reinforcements || 0) + 1;
+          try { writeUnifiedState(cwd, unifiedState); } catch {}
+        }
+        hints.push(reinforcement);
+      }
+    }
+  }
+} catch {
+  // Fault tolerance — never let persistent mode crash the notification hook
 }
 
 if (hints.length > 0) {

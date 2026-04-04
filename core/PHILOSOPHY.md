@@ -88,6 +88,10 @@ We treat efficiency not as a cost-saving measure, but as a **reliability require
 └─────────────────────────────────────────────────────────┘
 ```
 
+### Cross-Phase Regression
+
+Before a Phase is marked complete, prior phases' key verification items are re-checked to prevent regression. This ensures that work in Phase N does not silently break guarantees established by Phases 1 through N-1. The regression gate is implemented in `hooks/scripts/lib/regression-gate.mjs` and integrated into the verification flow at Qcode-run-task Step 4.8.
+
 ### Stage 1 — Spec
 
 **Document:** `TASK_REQUEST_{UUID}.md`

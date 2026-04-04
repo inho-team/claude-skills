@@ -82,6 +82,45 @@ The `pre-tool-use` hook **enforces** the Minimal I/O Rule by blocking redundant 
 
 This is not advisory — the hook hard-blocks the tool call. Agents cannot override this behavior.
 
+## Persistent Mode
+
+Active multi-step pipelines (SVS loops, Wave execution, Qatomic-run, Qrun-task) are protected from premature stopping via **Persistent Mode**. When a pipeline enters persistent mode, two hook-level mechanisms prevent context waste:
+
+1. **Stop hook (`stop-handler.mjs`)**: Blocks the stop and forces continuation, identical to the existing mode-state mechanism. The persistent mode state lives in `unified-state.json` under `persistentMode` so it works alongside (not instead of) dedicated mode-state files.
+
+2. **Notification hook (`notification.mjs`)**: When a notification contains completion-like patterns ("completed", "finished", "done") while persistent mode is active, a reinforcement message is injected reminding Claude to continue the pipeline.
+
+### Safety valves
+- **Max reinforcements**: After a configurable number of reinforcements (default: 5 in stop handler, 10 in the module), persistent mode auto-exits to prevent infinite loops.
+- **Staleness expiry**: Persistent mode auto-expires after 30 minutes. Zombie states from crashed sessions are cleaned up automatically.
+
+### State shape
+```json
+{
+  "persistentMode": {
+    "active": true,
+    "mode": "wave-execution",
+    "reason": "Phase 2 — 3/5 items remaining",
+    "startedAt": "2026-04-04T10:00:00.000Z",
+    "reinforcements": 0
+  }
+}
+```
+
+### When to use
+Skills that run multi-step pipelines should call `enterPersistentMode(cwd, mode, reason)` at execution start and `exitPersistentMode(cwd)` at their Handoff step. See `hooks/scripts/lib/persistent-mode.mjs` for the full API.
+
+## Project Memory Budget
+
+Project memory (`.qe/project-memory.json`) is injected at session start via `formatMemoryContext()`. It is capped at **2KB** of formatted text to stay within the Reference allocation tier.
+
+- Entries are priority-sorted: `permanent` > `high` > `normal` > `low`.
+- If total formatted output exceeds 2KB, lower-priority entries are truncated.
+- Expired entries are pruned automatically at session start via `pruneExpired()`.
+- TTL defaults: permanent = no expiry, high = 30 days, normal = 7 days, low = 1 day.
+
+This budget is separate from `.qe/analysis/` summaries. Both fall under the 20% Reference allocation.
+
 ## Anti-Patterns
 
 - Loading entire files when only a function signature is needed

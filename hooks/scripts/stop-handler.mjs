@@ -4,10 +4,11 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
-import { readState, readStdinJson, getCwd } from './lib/state.mjs';
+import { readState, readStdinJson, getCwd, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
 import { captureFailure } from './lib/failure-capture.mjs';
 import { appendRating } from './lib/rating-capture.mjs';
+import { isPersistentModeActiveFromState } from './lib/persistent-mode.mjs';
 
 const data = readStdinJson();
 if (!data) {
@@ -43,6 +44,39 @@ for (const mode of modes) {
       activeMode = null;
     }
     break;
+  }
+}
+
+// --- Persistent Mode Check (unified-state.json) ---
+// Persistent mode is a separate mechanism from the mode-state files above.
+// It protects multi-step pipelines (SVS loops, Wave execution, Qatomic-run)
+// from premature stopping even when no dedicated *-state.json file exists.
+if (!activeMode) {
+  try {
+    const unifiedState = readUnifiedState(cwd);
+    const pm = isPersistentModeActiveFromState(unifiedState);
+    if (pm.active) {
+      // Increment reinforcement counter
+      if (unifiedState.persistentMode) {
+        const reinforcements = (unifiedState.persistentMode.reinforcements || 0) + 1;
+        const maxReinforcements = cfg.max_reinforcements || 5;
+
+        if (reinforcements < maxReinforcements) {
+          unifiedState.persistentMode.reinforcements = reinforcements;
+          try { writeUnifiedState(cwd, unifiedState); } catch {}
+          activeMode = {
+            name: 'persistent-mode',
+            label: `Persistent Mode (${pm.mode}) — ${pm.reason}`
+          };
+        } else {
+          // Max reinforcements reached — auto-exit persistent mode to prevent infinite loops
+          delete unifiedState.persistentMode;
+          try { writeUnifiedState(cwd, unifiedState); } catch {}
+        }
+      }
+    }
+  } catch {
+    // Fault tolerance — never let persistent mode check crash the stop handler
   }
 }
 

@@ -110,6 +110,8 @@ Verify **each** VERIFY_CHECKLIST item with a concrete action — "build passed" 
 
 Report per item: `✅ PASS` or `❌ FAIL (reason)`. All pass → Step 5. Failures → fix and re-verify (max 2 retries, then escalate).
 
+**Cross-Phase Regression:** For `type: code` tasks, also run the Cross-Phase Regression Gate (see Qcode-run-task Step 4.8) to ensure prior phases have not regressed before marking completion.
+
 ### Security Verification (Mandatory for code + security keywords)
 
 When `type: code` AND TASK_REQUEST contains any of: auth, crypto, payment, JWT, password, secret, token, credential, bcrypt:

@@ -9,6 +9,7 @@ import { checkContextPressure } from './context-monitor.mjs';
 import { loadPendingContext } from './lib/context-loader.mjs';
 import { atomicWriteJson, readUnifiedState, writeUnifiedState, getContextMemo, isMemoValid, incrementBlockedReads, getBlockedReads } from './lib/state.mjs';
 import { getTeamContext } from './lib/team-detect.mjs';
+import { checkDelegation, updateDelegationStats } from './lib/delegation-enforcer.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -273,6 +274,20 @@ if (['Write', 'Edit'].includes(toolName)) {
     if (filePath) {
       hints.push(`[AGENT TEAMS] You are teammate "${teamCtx.teammateName}" in team "${teamCtx.teamName}". Verify you own this file before editing: ${filePath}`);
     }
+  }
+}
+
+// --- Delegation Enforcer (Agent tool calls) ---
+if (toolName === 'Agent' || toolName.includes('Agent')) {
+  const toolInput = data.tool_input || data.toolInput || {};
+  try {
+    const result = checkDelegation(cwd, toolInput);
+    if (result.action === 'inject' || result.action === 'warn') {
+      hints.push(result.message);
+    }
+    updateDelegationStats(state, result.action);
+  } catch {
+    // Fault-tolerant: ignore delegation enforcer errors
   }
 }
 

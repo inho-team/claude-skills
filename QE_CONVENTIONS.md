@@ -168,10 +168,20 @@ To maintain high reasoning quality and low latency, all agents and skills must a
 - **Strategic Planning**: Use `.qe/planning/` for project roadmaps and phase-based state management via `/Qplan`.
 - **Token Fallback**: If real-time metrics are missing, use `Characters / 4` for estimation.
 
-### 3. Optimized Model Tiering
+### 3. Persistent Mode Protection
+- **Active pipelines are shielded from premature stopping.** When a multi-step pipeline (SVS loop, Wave execution, Qatomic-run) is running, persistent mode blocks the Stop hook and injects reinforcement via the Notification hook. Skills enter persistent mode at execution start and exit at their Handoff step. See `hooks/scripts/lib/persistent-mode.mjs` and `core/CONTEXT_BUDGET.md` for details.
+
+### 4. Optimized Model Tiering
 - **Haiku (LOW)**: Default for pattern matching, structural verification (S1-S5), file I/O, and simple text transforms.
 - **Sonnet (MEDIUM)**: Default for code implementation, test writing, and complex reasoning.
 - **Skill-First**: Always check `skills/CATALOG.md` before manual labor. Skills are pre-optimized workflows.
+
+### 5. Delegation Enforcer (Enforced)
+- The `pre-tool-use` hook intercepts all Agent tool calls and checks the target agent's `recommendedModel` frontmatter field.
+- **No model specified**: The recommended model is auto-injected into the hook output hint.
+- **Lower model specified** (e.g., haiku for a sonnet task): Allowed silently -- cost saving is intentional.
+- **Higher model specified** (e.g., opus for a haiku task): Allowed with a cost-awareness warning.
+- Delegation stats (`autoInjections`, `warnings`, `overrides`) are tracked in `unified-state.json` under `delegationStats`.
 
 ---
 
@@ -202,6 +212,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qinit` | Initial setup and directory structure |
 | `Qplan` | Strategic roadmap and phase management (.qe/planning/) |
 | `Qrefresh` | Refresh project analysis data |
+| `Qmap-codebase` | Automated brownfield codebase analysis (4 parallel agents) |
 | `Qproject-sync` | Sync project source files with a reference/standard project |
 | `Qcompact` | Save context / session handoff |
 | `Qresume` | Restore saved context |
@@ -217,6 +228,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qfind-skills` | Find/install skills from skills.sh |
 | `Qmcp-setup` | MCP server setup guide |
 | `Qmcp-builder` | Build MCP servers |
+| `Qmemory` | Manage project memory (conventions, gotchas, decisions with TTL) |
 | `Qprofile` | Analyze user patterns and style |
 | `Qutopia` | Fully autonomous execution mode |
 | `Mrefactor-agent-md` | Refactor bloated instruction files |

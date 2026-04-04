@@ -6,6 +6,7 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 import { loadConfig } from './lib/config.mjs';
 import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
+import { pruneExpired, formatMemoryContext } from './lib/project-memory.mjs';
 
 // Read stdin (Claude Code provides JSON with cwd, session_id, etc.)
 let input = '';
@@ -132,6 +133,20 @@ try {
   }
 } catch {
   // Fault tolerance — ignore git detection errors
+}
+
+// --- Project Memory: prune expired and inject active memories ---
+try {
+  const pruned = pruneExpired(cwd);
+  if (pruned > 0) {
+    messages.push(`[Memory] Pruned ${pruned} expired project memor${pruned === 1 ? 'y' : 'ies'}.`);
+  }
+  const memoryCtx = formatMemoryContext(cwd);
+  if (memoryCtx) {
+    messages.push(memoryCtx);
+  }
+} catch {
+  // Fault tolerance — ignore project memory errors
 }
 
 // Cleanup: Remove stale intent-route.json for clean session start

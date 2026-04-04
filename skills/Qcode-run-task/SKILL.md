@@ -125,6 +125,18 @@ Assess based on combined test and review results.
 ### Step 4.6: Regression Gate
 ... (omitted) ...
 
+### Step 4.8: Cross-Phase Regression Gate
+Before declaring the Phase complete, verify prior phases have not regressed:
+1. Read `.qe/planning/ROADMAP.md` to identify completed phases
+2. For each completed phase, re-verify key items from its VERIFY_CHECKLIST (in `.qe/checklists/completed/`)
+3. Focus on: file existence, test suite passes, build success
+4. If regression found, report and block completion until fixed
+5. Implementation: `hooks/scripts/lib/regression-gate.mjs` provides `buildRegressionPlan()`, `checkPriorPhaseTests()`, `formatRegressionReport()`
+
+**Skip conditions:**
+- Phase 1 (no prior phases to regress)
+- Non-code tasks (`type: docs` or `type: analysis`)
+
 ### Step 4.7: Nyquist Audit (Gap Discovery)
 Even if tests pass, perform a **Coverage Gap Audit**:
 1. Review implementation vs. Requirements.

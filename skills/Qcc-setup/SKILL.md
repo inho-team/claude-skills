@@ -15,9 +15,9 @@ Registers shell aliases so users can launch Claude Code with short commands inst
 
 | Alias | Command | Description |
 |-------|---------|-------------|
-| `cc` | `claude` | Claude Code 실행 |
-| `ccc` | `claude --chrome` | Chrome 브라우저 연동 모드 |
-| `ccd` | `claude --dangerously-skip-permissions --chrome` | 권한 스킵 + Chrome 연동 |
+| `cc` | `claude` | Launch Claude Code |
+| `ccc` | `claude --chrome` | Chrome browser integration mode |
+| `ccd` | `claude --dangerously-skip-permissions --chrome` | Skip permissions + Chrome integration |
 
 ## Workflow
 

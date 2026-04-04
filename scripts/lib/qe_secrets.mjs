@@ -367,7 +367,6 @@ export function setSecret({ cwd, name, envName, scope = 'project', backend = 'au
   const existing = existingIndex >= 0 ? registry.secrets[existingIndex] : null;
 
   // Keep values out of project metadata. The registry only tracks where QE should look.
-  // 프로젝트 메타데이터에는 값 자체를 넣지 않고, QE가 어디를 볼지만 남긴다.
   persistSecretValue({
     backend: selectedBackend,
     storageKey,
@@ -505,7 +504,6 @@ export function executeWithSecrets({ cwd, bindings, command, args = [] }) {
   return new Promise((resolvePromise, rejectPromise) => {
     // Avoid going through a shell so quoting stays stable and QE does not leak values
     // through shell expansion or command echo.
-    // shell을 우회해서 인용부호를 안정화하고, shell expansion 과정에서 값이 새지 않게 한다.
     const child = spawn(command, args, {
       cwd,
       env,

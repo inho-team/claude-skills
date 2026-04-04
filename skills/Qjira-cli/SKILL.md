@@ -24,8 +24,8 @@ which jira 2>/dev/null && jira version 2>/dev/null
 
 **If NOT installed:**
 ```
-설치: go install github.com/ankitpokhrel/jira-cli/cmd/jira@latest
-또는: brew install ankitpokhrel/jira-cli/jira-cli
+Install: go install github.com/ankitpokhrel/jira-cli/cmd/jira@latest
+Or: brew install ankitpokhrel/jira-cli/jira-cli
 ```
 
 ---

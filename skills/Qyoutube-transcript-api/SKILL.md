@@ -20,9 +20,9 @@ Before making API calls, verify the API key is configured:
 **If set**: proceed with API calls.
 **If NOT set**:
 ```
-YouTube Transcript API 키가 설정되지 않았습니다.
-1. https://youtubetranscript.dev 에서 API 키 발급
-2. 환경변수 설정: export YOUTUBE_TRANSCRIPT_API_KEY=your-key
+YouTube Transcript API key is not configured.
+1. Get an API key from https://youtubetranscript.dev
+2. Set environment variable: export YOUTUBE_TRANSCRIPT_API_KEY=your-key
 ```
 Do NOT attempt API calls without a valid key.
 

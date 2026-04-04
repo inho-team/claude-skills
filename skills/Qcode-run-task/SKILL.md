@@ -208,10 +208,10 @@ This skill can be called independently as `/Qcode-run-task`, or it can be automa
 
 ## Coding Expert References
 
-품질 검증 시 프로젝트 기술 스택에 맞는 전문가 스킬을 참조한다:
-- `coding-experts/languages/` — 언어별 코딩 표준
-- `coding-experts/quality/` — 테스트/보안/리뷰 가이드라인
-- 전체 목록: `skills/coding-experts/CATALOG.md`
+During quality verification, reference expert skills matching the project's tech stack:
+- `coding-experts/languages/` — Language-specific coding standards
+- `coding-experts/quality/` — Testing/security/review guidelines
+- Full catalog: `skills/coding-experts/CATALOG.md`
 
 ## Role Constraints
 - This skill focuses exclusively on the **test, review, and fix loop**

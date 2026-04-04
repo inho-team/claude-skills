@@ -19,6 +19,7 @@ Use this file to find the right document quickly.
 - Global MCP setup: [MCP_GLOBAL_SETUP.md](MCP_GLOBAL_SETUP.md)
 - Secret management: [SECRETS.md](SECRETS.md)
 - Multi-model user guide: [USER_GUIDE_MULTI_MODEL.md](USER_GUIDE_MULTI_MODEL.md)
+- PaperClip hybrid-stack PRD: [PAPERCLIP_CODEX_QWEN3_14B_PRD.md](PAPERCLIP_CODEX_QWEN3_14B_PRD.md)
 
 ## Release / Change Context
 

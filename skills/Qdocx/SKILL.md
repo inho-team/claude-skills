@@ -89,14 +89,14 @@ const doc = new Document({
     children: [
       new Paragraph({
         heading: HeadingLevel.HEADING_1,
-        children: [new TextRun({ text: "제목", bold: true })]
+        children: [new TextRun({ text: "Title", bold: true })]
       }),
-      new Paragraph({ children: [new TextRun("본문 내용")] }),
+      new Paragraph({ children: [new TextRun("Body content")] }),
       new Table({
         rows: [new TableRow({
           children: [
-            new TableCell({ width: { size: 5000, type: WidthType.DXA }, children: [new Paragraph("셀 1")] }),
-            new TableCell({ width: { size: 5000, type: WidthType.DXA }, children: [new Paragraph("셀 2")] })
+            new TableCell({ width: { size: 5000, type: WidthType.DXA }, children: [new Paragraph("Cell 1")] }),
+            new TableCell({ width: { size: 5000, type: WidthType.DXA }, children: [new Paragraph("Cell 2")] })
           ]
         })]
       })
@@ -157,11 +157,11 @@ Edit legal/business/academic documents with change tracking. **Principle: minima
 ```xml
 <!-- Insertion -->
 <w:ins w:id="1" w:author="Reviewer" w:date="2026-03-15T00:00:00Z">
-  <w:r><w:t>삽입된 텍스트</w:t></w:r>
+  <w:r><w:t>Inserted text</w:t></w:r>
 </w:ins>
 <!-- Deletion -->
 <w:del w:id="2" w:author="Reviewer" w:date="2026-03-15T00:00:00Z">
-  <w:r><w:delText>삭제된 텍스트</w:delText></w:r>
+  <w:r><w:delText>Deleted text</w:delText></w:r>
 </w:del>
 ```
 

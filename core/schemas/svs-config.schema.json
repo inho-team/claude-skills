@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SVS Engine Configuration Schema",
+  "description": "JSON Schema for qe-framework v4.0 SVS (Spec-Verify-Supervise) engine configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "spec": {
+      "$ref": "#/definitions/stageConfig",
+      "description": "Configuration for the Spec stage"
+    },
+    "verify": {
+      "$ref": "#/definitions/stageConfig",
+      "description": "Configuration for the Verify stage"
+    },
+    "supervise": {
+      "$ref": "#/definitions/stageConfig",
+      "description": "Configuration for the Supervise stage"
+    }
+  },
+  "definitions": {
+    "stageConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "type": "string",
+          "enum": ["claude", "codex"],
+          "default": "claude",
+          "description": "AI engine to handle this SVS stage"
+        },
+        "model": {
+          "type": "string",
+          "description": "Optional model override (e.g., 'gpt-5.4-mini' for codex engine)"
+        },
+        "effort": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "xhigh"],
+          "description": "Optional reasoning effort level for codex engine"
+        }
+      }
+    }
+  }
+}

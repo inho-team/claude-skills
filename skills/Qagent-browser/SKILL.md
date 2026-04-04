@@ -21,8 +21,8 @@ npx agent-browser --version 2>/dev/null || echo "NOT INSTALLED"
 **If installed**: proceed with automation.
 **If NOT installed**:
 ```
-agent-browser가 설치되어 있지 않습니다.
-설치: npm install -g agent-browser
+agent-browser is not installed.
+Installation: npm install -g agent-browser
 ```
 Do NOT attempt to run browser commands without the package installed.
 

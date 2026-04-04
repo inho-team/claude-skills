@@ -31,6 +31,33 @@ Expert-level quality supervision orchestrator. Routes tasks to domain-specific a
 - **Docs**: `Edocs-supervisor`
 - **Analysis**: `Eanalysis-supervisor`
 
+## SVS Engine Routing
+
+Before starting supervision, check SVS engine configuration:
+
+1. Read `.qe/svs-config.json` from the project root (via `scripts/lib/codex_bridge.mjs` → `loadSvsConfig()`).
+2. Check `supervise.engine` value:
+   - **`"claude"` (default)**: Proceed with standard domain-specific supervision routing (Ecode-quality-supervisor, Esecurity-officer, etc.). No changes.
+   - **`"codex"`**: Delegate code review to Codex via codex-plugin-cc:
+     1. Call `resolveEngine("supervise", config)` to check availability.
+     2. If available: invoke `/codex:review` for standard review, or `/codex:adversarial-review` for deeper analysis.
+     3. Parse Codex review output and map to supervision verdict:
+        - No issues found → PASS
+        - Minor issues → PARTIAL (with findings)
+        - Critical issues → FAIL (trigger remediation)
+     4. If NOT available: show warning and fallback to Claude supervision.
+
+**Codex Supervision Mapping:**
+| Codex Review Output | Supervision Verdict |
+|---|---|
+| No issues / clean | PASS |
+| Suggestions only | PARTIAL |
+| Critical findings | FAIL → REMEDIATION_REQUEST |
+
+**Hybrid mode**: When `supervise.engine` is `"codex"`, Codex handles the primary review. However, domain-specific checks (security via Esecurity-officer) can still run in parallel as an additional gate if the task type warrants it.
+
+**Fallback guarantee**: Missing `.qe/svs-config.json` → all stages default to Claude. Zero impact on existing workflows.
+
 ## Execution Workflow
 
 ### 1. Scope Discovery

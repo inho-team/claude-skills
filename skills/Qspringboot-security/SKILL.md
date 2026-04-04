@@ -14,8 +14,8 @@ This skill is a **security best practices reference only**. It does NOT auto-mod
 
 | Request | Correct action |
 |---------|---------------|
-| "보안 체크리스트 검토", "security review" | **This skill** — provide checklist and recommendations |
-| "보안 설정 바꿔줘", "CSRF 설정 추가해줘" | **NOT this skill** — use standard code implementation with this skill's recommendations as reference |
+| "Review security checklist", "security review" | **This skill** — provide checklist and recommendations |
+| "Change security configuration", "Add CSRF configuration" | **NOT this skill** — use standard code implementation with this skill's recommendations as reference |
 
 ---
 

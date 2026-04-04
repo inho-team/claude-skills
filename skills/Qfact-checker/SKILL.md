@@ -16,169 +16,169 @@ invocation_trigger: When framework initialization, maintenance, or audit is requ
 recommendedModel: haiku
 ---
 
-# Fact-Checker — 주장 검증 워크플로우
+# Fact-Checker — Claim Verification Workflow
 
-문서, 보고서, 기사에서 사실적 주장을 추출하고 체계적으로 검증한다.
+Extract factual claims from documents, reports, and articles and systematically verify them.
 
-## 검증 프로세스
+## Verification Process
 
 ```
-1. 주장 추출 → 2. 우선순위 분류 → 3. 증거 수집 → 4. 출처 확인 → 5. 판정 → 6. 보고서 작성
+1. Claim extraction → 2. Prioritization → 3. Evidence collection → 4. Source verification → 5. Verdict → 6. Report writing
 ```
 
-## Step 1: 주장 추출
+## Step 1: Claim Extraction
 
-### 검증 대상
+### Verification Targets
 
-| 대상 | 예시 |
-|------|------|
-| 사실적 주장 | "X가 발생했다", "Y는 사실이다" |
-| 통계/수치 | "40% 증가", "100만 명" |
-| 날짜/시간 | "2024년 1월에 시작" |
-| 인용/귀속 | "A가 말했다" |
-| 인과 주장 | "X 때문에 Y가 발생했다" |
+| Target | Example |
+|--------|---------|
+| Factual claims | "X happened", "Y is true" |
+| Statistics/numbers | "40% increase", "1 million people" |
+| Dates/times | "Started in January 2024" |
+| Citations/attribution | "A said..." |
+| Causal claims | "X caused Y to happen" |
 
-### 검증 제외
+### Exclusions from Verification
 
-- 의견: "이 정책은 좋다/나쁘다"
-- 예측: "미래에 X가 될 것이다"
-- 취향: "A보다 B가 낫다"
+- Opinions: "This policy is good/bad"
+- Predictions: "In the future, X will happen"
+- Preferences: "B is better than A"
 
-### 주장 추출 템플릿
+### Claim Extraction Template
 
 ```markdown
-## 주장 로그
+## Claim Log
 
-**문서:** [출처]
-**날짜:** [작성일]
+**Document:** [Source]
+**Date:** [Write date]
 
-### 주장 1
-- **진술:** [정확한 인용 또는 요약]
-- **화자:** [누가 말했는지]
-- **맥락:** [주변 문맥]
-- **유형:** 통계 / 역사적 사실 / 인용 / 인과
-- **우선순위:** 높음 / 중간 / 낮음
-- **상태:** 미검증 / 검증됨 / 거짓 / 검증불가
+### Claim 1
+- **Statement:** [Exact quote or summary]
+- **Speaker:** [Who said it]
+- **Context:** [Surrounding context]
+- **Type:** Statistic / Historical fact / Citation / Causal
+- **Priority:** High / Medium / Low
+- **Status:** Unverified / Verified / False / Unverifiable
 ```
 
-### 우선순위 기준
+### Priority Criteria
 
-| 우선순위 | 기준 |
-|----------|------|
-| **높음** | 문서의 핵심 논지, 쉽게 검증 가능, 오류 시 영향 큼 |
-| **중간** | 보조 근거, 검증에 노력 필요 |
-| **낮음** | 주변 디테일, 통상적으로 수용, 영향 미미 |
+| Priority | Criteria |
+|----------|----------|
+| **High** | Core thesis of document, easily verifiable, high impact if wrong |
+| **Medium** | Supporting evidence, requires effort to verify |
+| **Low** | Peripheral details, commonly accepted, minimal impact |
 
-## Step 2: 증거 수집
+## Step 2: Evidence Collection
 
-### 출처 우선순위
+### Source Priority
 
-| 주장 유형 | 1차 출처 |
-|-----------|----------|
-| 통계 | 원본 연구, 정부 데이터, 조사 방법론 |
-| 인용 | 음성/영상 녹음, 속기록, 직접 확인 |
-| 역사 | 당시 뉴스 보도, 공식 기록 |
-| 과학 | 피어리뷰 논문, 전문가 합의 |
-| 법률 | 법원 문서, 공식 제출 서류 |
-| 재무 | 감사보고서, 공시 자료 |
+| Claim Type | Primary Source |
+|-----------|------------------|
+| Statistics | Original research, government data, methodology |
+| Citations | Audio/video recordings, transcripts, direct verification |
+| History | Contemporary news reports, official records |
+| Science | Peer-reviewed papers, expert consensus |
+| Legal | Court documents, official filings |
+| Financial | Audit reports, regulatory disclosures |
 
-### 증거 강도
+### Evidence Strength
 
-| 증거 유형 | 강도 |
+| Evidence Type | Strength |
 |-----------|------|
-| 공식 문서 (법원 기록, 정부 보고서) | 강함 |
-| 원본 데이터 (직접 분석 가능) | 강함 |
-| 전문가 합의 (독립적 복수 전문가) | 강함 |
-| 실명 출처 (직접 지식 보유) | 중간 |
-| 당시 보도 (동시대 뉴스) | 중간 |
-| 익명 출처 | 약함 |
-| SNS 게시물 | 약함 |
+| Official documents (court records, government reports) | Strong |
+| Original data (directly analyzable) | Strong |
+| Expert consensus (multiple independent experts) | Strong |
+| Named sources (direct knowledge) | Medium |
+| Contemporary reporting (same-era news) | Medium |
+| Anonymous sources | Weak |
+| Social media posts | Weak |
 
-## Step 3: 판정
+## Step 3: Verdict
 
-### 판정 등급
+### Verdict Grades
 
-| 등급 | 기준 |
+| Grade | Criteria |
 |------|------|
-| **사실** | 정확하고 완전함, 중요한 누락 없음 |
-| **대체로 사실** | 정확하나 맥락 보충 또는 사소한 명확화 필요 |
-| **절반 사실** | 부분적 정확, 핵심 맥락 누락 |
-| **대체로 거짓** | 일부 사실 포함하나 전체적으로 오도 |
-| **거짓** | 증거와 모순 |
-| **검증불가** | 충분한 증거 없음 |
+| **True** | Accurate and complete, no important omissions |
+| **Mostly True** | Accurate but needs context or minor clarification |
+| **Half True** | Partially accurate, key context missing |
+| **Mostly False** | Some factual content but overall misleading |
+| **False** | Contradicts evidence |
+| **Unverifiable** | Insufficient evidence |
 
-### 판정 템플릿
+### Verdict Template
 
 ```markdown
-## 판정: [주장 요약]
+## Verdict: [Claim Summary]
 
-**주장:** [정확한 진술]
-**화자:** [누가]
-**판정:** [등급]
+**Claim:** [Exact statement]
+**Speaker:** [Who]
+**Verdict:** [Grade]
 
-### 지지 증거
-- [증거 1 + 출처]
-- [증거 2 + 출처]
+### Supporting Evidence
+- [Evidence 1 + Source]
+- [Evidence 2 + Source]
 
-### 반박 증거
-- [증거 1 + 출처]
+### Contradicting Evidence
+- [Evidence 1 + Source]
 
-### 누락된 맥락
-- [맥락 1]
+### Missing Context
+- [Context 1]
 
-### 판정 근거
-[왜 이 등급인지 설명]
+### Verdict Reasoning
+[Why this grade]
 
-### 신뢰도
-높음 / 중간 / 낮음 + 이유
+### Confidence
+High / Medium / Low + Reason
 ```
 
-## Step 4: 보고서 작성
+## Step 4: Report Writing
 
-### 팩트체크 보고서 형식
+### Fact-Check Report Format
 
 ```markdown
-# 팩트체크 보고서
+# Fact-Check Report
 
-**대상 문서:** [제목/URL]
-**검증일:** [날짜]
-**검증자:** [이름]
+**Target Document:** [Title/URL]
+**Verification Date:** [Date]
+**Verifier:** [Name]
 
-## 요약
-- 총 주장 수: N개
-- 사실: N개 | 대체로 사실: N개 | 거짓: N개 | 검증불가: N개
+## Summary
+- Total claims: N
+- True: N | Mostly true: N | False: N | Unverifiable: N
 
-## 주요 발견
+## Key Findings
 
-### [주장 1] — 판정: [등급]
-- **원문:** "[인용]"
-- **증거:** [근거 요약]
-- **수정 제안:** [필요 시]
+### [Claim 1] — Verdict: [Grade]
+- **Original:** "[Quote]"
+- **Evidence:** [Summary of basis]
+- **Correction suggestion:** [If needed]
 
-### [주장 2] — 판정: [등급]
+### [Claim 2] — Verdict: [Grade]
 ...
 
-## 정정 필요 사항
-| 위치 | 원문 | 수정안 | 사유 |
-|------|------|--------|------|
-| [섹션/줄] | [원문] | [수정] | [근거] |
+## Corrections Needed
+| Location | Original | Correction | Reason |
+|----------|----------|------------|--------|
+| [Section/Line] | [Original] | [Correction] | [Basis] |
 
-## 출처 목록
-1. [출처 1]
-2. [출처 2]
+## Sources
+1. [Source 1]
+2. [Source 2]
 ```
 
-## 실행 규칙
+## Execution Rules
 
 ### MUST DO
-- WebSearch 도구로 주장의 사실 여부를 검증한다
-- 1차 출처(공식 문서, 원본 데이터)를 우선 확인한다
-- 반박 증거도 적극적으로 검색한다
-- 판정에는 반드시 근거를 명시한다
-- 검증 불가한 주장은 "검증불가"로 정직하게 표시한다
+- Use WebSearch tool to verify factual claims
+- Prioritize primary sources (official documents, original data)
+- Actively search for contradicting evidence
+- Always include reasoning in verdicts
+- Honestly mark unverifiable claims as "Unverifiable"
 
 ### MUST NOT DO
-- 증거 없이 "사실"로 판정하지 않는다
-- 의견을 사실적 주장으로 분류하지 않는다
-- 단일 출처만으로 "사실" 판정하지 않는다 (가능하면 복수 출처)
-- 검증 과정을 생략하고 직관으로 판정하지 않는다
+- Do not verdict "True" without evidence
+- Do not classify opinions as factual claims
+- Do not verdict "True" based on single source alone (prefer multiple sources)
+- Do not skip verification and rely on intuition

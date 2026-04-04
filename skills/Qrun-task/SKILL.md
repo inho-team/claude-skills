@@ -168,7 +168,7 @@ After completion, check for remaining tasks:
 2. Also check `.qe/tasks/pending/` for queued TASK_REQUEST files
 3. If next tasks exist, use `AskUserQuestion` to prompt:
    - List upcoming tasks (UUID + name)
-   - Ask: "다음 작업을 실행하려면 `/Qrun-task {UUID}`를 실행해주세요."
+   - Ask: "To execute the next task, run `/Qrun-task {UUID}`."
 4. If no remaining tasks, skip this step
 
 ---
@@ -178,36 +178,36 @@ After task completion (Step 5), read `.qe/planning/ROADMAP.md` to build the Road
 
 ### When `type: code`
 ```
-[Phase {X}: {PhaseName}] 구현 완료 — 검증 단계로 이동
+[Phase {X}: {PhaseName}] Implementation complete — moving to verification
 
 Roadmap:  {phase progress line}
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  👉 /Qcode-run-task
 ```
 ```
-다음 명령어:
+Next command:
 
   /Qcode-run-task {UUID}
 ```
 
 ### When `type: docs` / `type: analysis` / deletion-heavy
-SVS 검증을 인라인으로 수행한 뒤:
+After performing SVS verification inline:
 ```
-[Phase {X}: {PhaseName}] 완료
+[Phase {X}: {PhaseName}] Complete
 
 Roadmap:  {phase progress line}
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  ✅ 완료
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  ✅ Complete
 ```
-다음 Phase가 있으면:
+If next Phase exists:
 ```
-다음 명령어:
+Next command:
 
   /Qgs Phase {X+1}: {NextPhaseName}
 
-  안 되면: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
+  Otherwise: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```
-모든 Phase가 완료되면:
+When all Phases are complete:
 ```
-🎉 로드맵 전체 완료. /Qcommit으로 최종 커밋하세요.
+🎉 Roadmap complete. Use /Qcommit for final commit.
 ```
 
 ---

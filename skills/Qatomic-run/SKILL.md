@@ -76,48 +76,48 @@ Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
 
 ### Execution Summary (always show)
 ```
-## 실행 완료 — {TaskName}
+## Execution Complete — {TaskName}
 
-| 항목 | 값 |
-|------|---|
+| Item | Value |
+|------|-------|
 | Task Type | {code / docs / analysis} |
-| Wave 수 | {N} |
-| 완료 항목 | {X}/{Y} |
-| Teammate 수 | {Z} |
+| Waves | {N} |
+| Completed Items | {X}/{Y} |
+| Teammates | {Z} |
 ```
 
 ### When `type: code`
 ```
-[Phase {X}: {PhaseName}] 구현 완료 — 검증 단계로 이동
+[Phase {X}: {PhaseName}] Implementation complete — moving to verification
 
 Roadmap:  {phase progress line}
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
 ```
 ```
-다음 명령어:
+Next command:
 
   /Qcode-run-task {UUID}
 ```
 
 ### When `type: docs` / `type: analysis` / deletion-heavy
-SVS 검증을 인라인으로 수행한 뒤(VERIFY_CHECKLIST 확인 + 감독 게이트):
+After performing SVS verification inline (VERIFY_CHECKLIST check + supervision gate):
 ```
-[Phase {X}: {PhaseName}] 완료
+[Phase {X}: {PhaseName}] Complete
 
 Roadmap:  {phase progress line}
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ Complete
 ```
-다음 Phase가 있으면:
+If next Phase exists:
 ```
-다음 명령어:
+Next command:
 
   /Qgs Phase {X+1}: {NextPhaseName}
 
-  안 되면: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
+  Otherwise: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```
-모든 Phase가 완료되면:
+When all Phases are complete:
 ```
-🎉 로드맵 전체 완료. /Qcommit으로 최종 커밋하세요.
+🎉 Roadmap complete. Use /Qcommit for final commit.
 ```
 
 ## Will Not

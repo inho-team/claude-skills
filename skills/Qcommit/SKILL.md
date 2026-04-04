@@ -15,16 +15,16 @@ Actual commit work is delegated to the `Ecommit-executor` sub-agent.
 ## Examples
 
 ```
-User: "커밋해줘"
-→ Qcommit: stages all changes, writes natural Korean-project commit message, commits
+User: "Create a commit"
+→ Qcommit: stages all changes, writes natural commit message, commits
 
 User: "commit and push"
 → Qcommit: commits + git push
 
-User: "변경사항 저장하고 올려줘"
+User: "Save and push these changes"
 → Qcommit: commits + git push
 
-User: "이거 저장해"
+User: "Save this"
 → Qcommit: stages + commits current changes
 
 User: "commit this with a good message"

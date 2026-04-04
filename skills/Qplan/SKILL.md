@@ -19,6 +19,25 @@ The QE framework enforces a strict chain. Each skill handles ONE step and guides
 
 **Your responsibility is PLAN only. You MUST NOT write code, invoke /Qgs, or invoke /Qatomic-run.**
 
+## Pre-check: QE Framework Initialization
+
+Before starting planning, verify that the QE framework is set up:
+
+1. Check if `CLAUDE.md` exists in the project root.
+2. Check if `.qe/` directory exists.
+
+**If either is missing**, the project has not been initialized:
+- **STOP** and display:
+  ```
+  ⚠️ QE framework is not initialized.
+  Please run /Qinit first to set up the project.
+
+  /Qinit handles project info collection, auto-analysis, and SVS engine configuration in one step.
+  ```
+- Do NOT proceed with planning. Wait for the user to run `/Qinit` first.
+
+**If both exist**, proceed to Step 1.
+
 ## Workflow
 
 ### Step 1: Deep Discovery & Research
@@ -69,7 +88,7 @@ PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 ### Section 2: Plan Summary
 
 ```
-## 계획 요약 — {ProjectName}
+## Plan Summary — {ProjectName}
 
 {N} Phases · {M} Waves · ~{T} Tasks
 
@@ -83,10 +102,10 @@ PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 ### Section 3: Key Decisions (if any exist in DECISION_LOG.md)
 
 ```
-## 핵심 결정
+## Key Decisions
 
-| ID | 결정 | 근거 |
-|----|------|------|
+| ID | Decision | Rationale |
+|----|----------|-----------|
 | D001 | {decision title} | {1-line rationale} |
 | ... | ... | ... |
 ```
@@ -94,11 +113,11 @@ PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 ### Section 4: Next Command (always last, must be easy to copy)
 
 ```
-다음 명령어:
+Next Command:
 
   /Qgs Phase {X}: {PhaseName}
 
-  안 되면: /Qgenerate-spec Phase {X}: {PhaseName}
+  If that doesn't work: /Qgenerate-spec Phase {X}: {PhaseName}
 ```
 
 This must be the **last thing displayed** — no trailing explanation, no alternatives. The user copies and pastes this.

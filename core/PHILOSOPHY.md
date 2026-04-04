@@ -7,6 +7,24 @@
 
 ---
 
+## SVS Engine Routing
+
+Each SVS stage can be configured to use Claude (default) or Codex (via codex-plugin-cc):
+
+- **Spec**: Claude generates specs natively, or delegates to Codex via `/codex:rescue`
+- **Verify**: Claude executes via agents, or delegates to Codex via `/codex:rescue --write`
+- **Supervise**: Claude runs domain supervisors, or delegates to Codex via `/codex:review`
+
+Configuration: `.qe/svs-config.json` (optional — defaults to Claude for all stages)
+
+This architecture ensures:
+- Claude-only baseline works without any external dependencies
+- Codex integration is strictly optional via codex-plugin-cc bridge
+- No external provider APIs (Gemini, GPT) are directly invoked by the framework
+- User retains full choice of which stage to delegate to Codex
+
+---
+
 ## Position in the PSE Chain
 
 The SVS Loop is the **quality gate** that runs inside the Execute and Verify steps of the PSE Chain (`/Qplan → /Qgs → /Qatomic-run → /Qcode-run-task`). The PSE Chain is the user-facing workflow; the SVS Loop is the internal quality mechanism that ensures each task meets its spec.

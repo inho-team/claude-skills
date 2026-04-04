@@ -16,8 +16,8 @@ This skill is a **UI review guidelines reference only**. It does NOT auto-modify
 
 | Request | Correct action |
 |---------|---------------|
-| "UI 리뷰해줘", "접근성 체크", "design audit" | **This skill** — review and provide recommendations |
-| "UI 코드 수정해줘", "CSS 고쳐줘" | **NOT this skill** — use Qfrontend-design or standard code implementation |
+| "Review UI", "accessibility check", "design audit" | **This skill** — review and provide recommendations |
+| "Fix UI code", "Fix CSS" | **NOT this skill** — use Qfrontend-design or standard code implementation |
 
 ---
 

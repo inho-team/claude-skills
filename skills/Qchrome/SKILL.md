@@ -14,8 +14,8 @@ This skill is a **setup and usage guide only**. It does NOT execute browser oper
 
 | Request | Action |
 |---------|--------|
-| "chrome 설정해줘", "browser mcp 연결" | **This skill** — guide setup |
-| "웹페이지 열어줘", "스크린샷 찍어줘" | **NOT this skill** — use `mcp__claude-in-chrome__*` tools directly |
+| "Set up Chrome", "Connect browser MCP" | **This skill** — guide setup |
+| "Open a webpage", "Take a screenshot" | **NOT this skill** — use `mcp__claude-in-chrome__*` tools directly |
 
 ### Pre-check: MCP Connection Status
 
@@ -24,7 +24,7 @@ claude mcp list 2>/dev/null | grep -i chrome
 ```
 
 - **Connected**: Do NOT re-run setup. Tell user MCP is connected, use tools directly.
-- **Not connected + browser request**: "Claude-in-Chrome MCP가 연결되어 있지 않습니다. 먼저 설정이 필요합니다." → proceed with setup.
+- **Not connected + browser request**: "Claude-in-Chrome MCP is not connected. Setup is required first." → proceed with setup.
 - **Not connected + setup request**: proceed with setup.
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: Qvisual-qa
-description: Chrome browser-based visual QA. Navigates to URLs, takes screenshots, and compares rendered screens against reference images (Stitch screen.png or prior baseline) to detect layout, color, font, alignment, and spacing regressions. Use for 'visual qa', 'screenshot compare', 'visual test', 'check screen', 'UI compare', '화면 비교', '시각적 QA', '스크린샷 비교'. Distinct from Qweb-design-guidelines (which audits source code) — this skill compares actual rendered screens.
+description: Chrome browser-based visual QA. Navigates to URLs, takes screenshots, and compares rendered screens against reference images (Stitch screen.png or prior baseline) to detect layout, color, font, alignment, and spacing regressions. Use for 'visual qa', 'screenshot compare', 'visual test', 'check screen', 'UI compare', 'compare screen', 'visual comparison', 'screenshot comparison'. Distinct from Qweb-design-guidelines (which audits source code) — this skill compares actual rendered screens.
 metadata: 
 author: anthropic
 version: 1.0.0
@@ -17,9 +17,9 @@ This skill compares **rendered screens** against reference images. It does NOT a
 
 | Request | Action |
 |---------|--------|
-| "화면 비교해줘", "visual test", "스크린샷 비교" | **This skill** |
-| "UI 코드 리뷰해줘", "접근성 체크" | **NOT this skill** — use `Qweb-design-guidelines` |
-| "Chrome MCP 설정해줘" | **NOT this skill** — use `Qchrome` |
+| "Compare screen", "visual test", "screenshot comparison" | **This skill** |
+| "Review UI code", "accessibility check" | **NOT this skill** — use `Qweb-design-guidelines` |
+| "Set up Chrome MCP" | **NOT this skill** — use `Qchrome` |
 
 ---
 
@@ -34,11 +34,11 @@ claude mcp list 2>/dev/null | grep -i chrome
 **Connected** → proceed with workflow.
 **Not connected** → warn user:
 ```
-Claude-in-Chrome MCP가 연결되어 있지 않습니다.
-대안:
-  1. Qchrome 스킬로 Chrome MCP를 설정하세요.
-  2. Qagent-browser 스킬로 스크린샷을 수동 수집하세요.
-  3. 직접 스크린샷을 제공하면 Step 4부터 비교를 진행할 수 있습니다.
+Claude-in-Chrome MCP is not connected.
+Alternatives:
+  1. Use the Qchrome skill to set up Chrome MCP.
+  2. Use the Qagent-browser skill to manually collect screenshots.
+  3. If you provide screenshots directly, comparison can proceed from Step 4 onward.
 ```
 Do NOT attempt browser steps without MCP connection.
 

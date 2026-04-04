@@ -1,6 +1,6 @@
 # QE Framework System Overview
 
-QE Framework is a role-driven execution system for Claude Code and Codex. It keeps the user-facing workflow simple while allowing different AI systems to handle different roles behind the scenes.
+QE Framework is a SVS (Spec-Verify-Supervise) loop system for Claude Code. It provides a complete AI-driven workflow using Claude as the default provider, with optional Codex support via the `codex-plugin-cc` bridge.
 
 ## User Workflow
 
@@ -18,107 +18,110 @@ Most users only need these commands:
 - `/Qatomic-run`: execute implementation work
 - `/Qcode-run-task`: run review and final verification
 
-## Core Roles
+## SVS Loop Architecture
 
-QE separates work via the **PSE Chain** (user workflow) and **SVS Loop** (quality gate):
+QE separates work via the **PSE Chain** (user workflow) and **SVS Loop** (execution model):
 
-**PSE Chain** — the 4-step user workflow:
+**PSE Chain** — the user-facing workflow:
 - **Plan** (`/Qplan`): creates roadmap, phases, requirements
 - **Spec** (`/Qgs`): generates TASK_REQUEST + VERIFY_CHECKLIST
-- **Execute** (`/Qatomic-run`): implements via Haiku Wave execution
-- **Verify** (`/Qcode-run-task`): test → review → fix quality loop
+- **Execute** (`/Qatomic-run`): implements via Wave execution
+- **Verify** (`/Qcode-run-task`): runs verification and quality loop
 
-**SVS Loop** — the quality gate within Execute/Verify:
-- **Spec**: TASK_REQUEST defines the contract
-- **Verify**: VERIFY_CHECKLIST confirms completion
-- **Supervise**: Supervision agents confirm quality
+**SVS Loop** — the execution engine with 3 stages:
+- **Spec** (S): TASK_REQUEST generation defines the contract
+- **Verify** (V): Implementation validation and test cycles
+- **Supervise** (S): Quality gates and final review
 
-These map to underlying roles: planner, implementer, reviewer, supervisor. In `single-model` mode, one runner owns all roles. In `multi-model` or `tiered-model`, roles can be split across different runners.
+Each SVS stage can be routed to Claude (default) or Codex (via codex-plugin-cc). The routing is configured in `.qe/svs-config.json`.
 
-These roles are not tied to a single AI vendor. A project can assign Claude, Gemini, Codex, or multiple instances of the same provider to different roles.
+## Provider Routing
 
-## Runner-Based Mapping
+QE Framework defaults to Claude for all stages but supports optional Codex routing via `codex-plugin-cc`.
 
-QE uses `role -> runner` mapping.
+**Default (Claude-only)**:
+- Spec, Verify, and Supervise stages all use Claude
+- No external dependencies required
+- Complete functionality without installation
 
-A `runner` is an execution definition for one role assignment. Each runner contains:
-
-- provider
-- model
-- command
-- timeout
-
-This allows configurations such as:
-
-- Claude for planning and final verification
-- Codex for implementation
-- Gemini for review
-- or all four roles assigned to different Claude runners
+**Optional Codex Bridge**:
+- Install `codex-plugin-cc` for Codex integration
+- Route individual SVS stages to Codex via `svs-config.json`
+- Bridge logic in `scripts/lib/codex_bridge.mjs`
 
 ## Artifacts
 
-Role handoff is built around standard artifacts in `.qe/ai-team/artifacts/`:
+SVS stages exchange standard artifacts in `.qe/artifacts/`:
 
-- `role-spec.md`
-- `task-bundle.json`
-- `implementation-report.md`
-- `review-report.md`
-- `verification-report.md`
+- `TASK_REQUEST.md`: Spec stage output; defines implementation contract
+- `VERIFY_CHECKLIST.md`: Verify stage input/output; tracks completion and quality gates
+- `IMPLEMENTATION_REPORT.md`: Verify stage report; documents results and issues
+- `SUPERVISION_REPORT.md`: Supervise stage report; final quality assurance
 
-Ownership is explicit:
+Ownership is explicit by stage:
 
-- planner owns `role-spec.md` and `task-bundle.json`
-- implementer owns `implementation-report.md`
-- reviewer owns `review-report.md`
-- supervisor owns `verification-report.md`
+- Spec owns TASK_REQUEST
+- Verify owns VERIFY_CHECKLIST and IMPLEMENTATION_REPORT
+- Supervise owns SUPERVISION_REPORT
 
 ## Configuration
 
 The main configuration file is:
 
 ```text
-.qe/ai-team/config/team-config.json
+.qe/svs-config.json
 ```
 
 It defines:
 
-- which runner each role uses
-- how each runner executes
-- workflow policy and quality gate behavior
+- which provider (Claude or Codex) each SVS stage uses
+- provider options (model, temperature, timeout)
+- quality gate policies and verification rules
 
 ## Runtime
 
-The orchestration runtime is implemented with:
+The SVS execution engine is implemented with:
 
-- `scripts/validate_ai_team_config.mjs`
-- `scripts/run_role.mjs`
-- `scripts/run_team_workflow.mjs`
+- `scripts/lib/svs-engine.mjs`: Core SVS loop orchestration
+- `scripts/lib/codex_bridge.mjs`: Optional Codex provider bridge (requires codex-plugin-cc)
+- `scripts/validate_svs_config.mjs`: SVS configuration validation
 
-These scripts support:
+The engine supports:
 
-- config validation
-- single-role execution
-- full workflow execution
-- workflow-local artifact snapshots
-- resume and reuse modes
-- artifact normalization
+- Spec stage: generating TASK_REQUEST from requirements
+- Verify stage: executing implementation and validation
+- Supervise stage: quality gates and approval
+- Provider routing: Claude (default) or Codex (if available)
+- Resume and checkpoint modes
+- Artifact versioning and history
 
 ## Installation Model
 
-QE Framework is installed as:
+QE Framework is distributed as a Claude Code plugin:
 
-- a Claude plugin target for Claude Code
-- a Codex skill/agent target for Codex
-- external CLI runners when Codex or Gemini are assigned to workflow roles
-
-Typical install flow:
-
+**Minimal Install** (Claude-only, no external dependencies):
 ```text
 claude install
 claude plugin marketplace add inho-team/qe-framework
 claude plugin install qe-framework@inho-team-qe-framework
 ```
 
-## Current Architecture Goal
+**With Codex Support** (optional, requires codex-plugin-cc):
+```text
+npm install --save-dev codex-plugin-cc
+# svs-config.json can then route stages to codex-plugin-cc
+```
 
-The public interface stays simple, but internally QE supports structured multi-AI collaboration with explicit responsibility boundaries, repeatable artifacts, and verification gates.
+QE Framework works completely without Codex; the plugin is optional for teams that want to use Codex for specific SVS stages.
+
+## v4.0 Architecture
+
+QE v4.0 focuses on **Claude-first simplicity with optional Codex extensibility**:
+
+- **Single-provider baseline**: Claude handles all SVS stages by default
+- **Zero external dependencies**: Works without Codex, Gemini, or other external APIs
+- **Optional bridge**: `codex-plugin-cc` enables Codex routing for teams that want it
+- **Simplified routing**: 3 SVS stages (Spec, Verify, Supervise) vs. 4+ legacy roles
+- **Explicit configuration**: All provider choices in `svs-config.json`, no hidden fallbacks
+
+This approach reduces complexity while keeping extensibility for future multi-provider scenarios.

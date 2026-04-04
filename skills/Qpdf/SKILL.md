@@ -12,40 +12,40 @@ invocation_trigger: When framework initialization, maintenance, or audit is requ
 recommendedModel: haiku
 ---
 
-# PDF — 종합 PDF 처리 가이드
+# PDF — Comprehensive PDF Processing Guide
 
 ## Quick Reference
 
-| 작업 | 도구 | 명령/코드 |
+| Task | Tool | Command/Code |
 |------|------|-----------|
-| 텍스트 추출 | pdfplumber | `page.extract_text()` |
-| 테이블 추출 | pdfplumber | `page.extract_tables()` |
-| 병합 | pypdf | `writer.add_page(page)` |
-| 분할 | pypdf | 페이지별 파일 생성 |
-| 생성 | reportlab | Canvas 또는 Platypus |
-| CLI 병합 | qpdf | `qpdf --empty --pages ...` |
-| OCR | pytesseract | PDF→이미지→OCR |
-| 폼 채우기 | pypdf / pdf-lib | FORMS.md 참조 |
+| Extract text | pdfplumber | `page.extract_text()` |
+| Extract tables | pdfplumber | `page.extract_tables()` |
+| Merge | pypdf | `writer.add_page(page)` |
+| Split | pypdf | Create files per page |
+| Generate | reportlab | Canvas or Platypus |
+| CLI merge | qpdf | `qpdf --empty --pages ...` |
+| OCR | pytesseract | PDF→image→OCR |
+| Fill forms | pypdf / pdf-lib | See FORMS.md |
 
-## 텍스트·테이블 추출
+## Text & Table Extraction
 
-### pdfplumber (권장)
+### pdfplumber (Recommended)
 
 ```python
 import pdfplumber
 
 with pdfplumber.open("document.pdf") as pdf:
     for page in pdf.pages:
-        # 텍스트
+        # Text
         print(page.extract_text())
 
-        # 테이블
+        # Tables
         for table in page.extract_tables():
             for row in table:
                 print(row)
 ```
 
-### 테이블 → Excel 변환
+### Table → Excel Conversion
 
 ```python
 import pdfplumber
@@ -64,7 +64,7 @@ with pdfplumber.open("document.pdf") as pdf:
         combined.to_excel("extracted.xlsx", index=False)
 ```
 
-### 메타데이터
+### Metadata
 
 ```python
 from pypdf import PdfReader
@@ -73,9 +73,9 @@ meta = reader.metadata
 print(f"Title: {meta.title}, Author: {meta.author}")
 ```
 
-## 병합·분할
+## Merge & Split
 
-### 병합
+### Merge
 
 ```python
 from pypdf import PdfWriter, PdfReader
@@ -89,7 +89,7 @@ with open("merged.pdf", "wb") as f:
     writer.write(f)
 ```
 
-### 분할
+### Split
 
 ```python
 from pypdf import PdfReader, PdfWriter
@@ -102,7 +102,7 @@ for i, page in enumerate(reader.pages):
         writer.write(f)
 ```
 
-### 페이지 회전
+### Page Rotation
 
 ```python
 from pypdf import PdfReader, PdfWriter
@@ -110,15 +110,15 @@ from pypdf import PdfReader, PdfWriter
 reader = PdfReader("input.pdf")
 writer = PdfWriter()
 page = reader.pages[0]
-page.rotate(90)  # 시계방향 90도
+page.rotate(90)  # Clockwise 90 degrees
 writer.add_page(page)
 with open("rotated.pdf", "wb") as f:
     writer.write(f)
 ```
 
-## PDF 생성
+## PDF Generation
 
-### 기본 생성 (reportlab)
+### Basic Generation (reportlab)
 
 ```python
 from reportlab.lib.pagesizes import letter, A4
@@ -130,7 +130,7 @@ c.drawString(100, height - 100, "Hello World!")
 c.save()
 ```
 
-### 보고서 생성 (Platypus)
+### Report Generation (Platypus)
 
 ```python
 from reportlab.lib.pagesizes import A4
@@ -141,18 +141,18 @@ doc = SimpleDocTemplate("report.pdf", pagesize=A4)
 styles = getSampleStyleSheet()
 story = []
 
-story.append(Paragraph("보고서 제목", styles['Title']))
+story.append(Paragraph("Report Title", styles['Title']))
 story.append(Spacer(1, 12))
-story.append(Paragraph("본문 내용입니다. " * 20, styles['Normal']))
+story.append(Paragraph("Body content here. " * 20, styles['Normal']))
 story.append(PageBreak())
-story.append(Paragraph("2페이지", styles['Heading1']))
+story.append(Paragraph("Page 2", styles['Heading1']))
 
 doc.build(story)
 ```
 
-**주의**: ReportLab에서 유니코드 첨자/윗첨자 사용 금지. `<sub>`, `<super>` 태그 사용.
+**Note**: Do not use Unicode subscripts/superscripts in ReportLab. Use `<sub>`, `<super>` tags instead.
 
-## 워터마크
+## Watermark
 
 ```python
 from pypdf import PdfReader, PdfWriter
@@ -169,12 +169,12 @@ with open("watermarked.pdf", "wb") as f:
     writer.write(f)
 ```
 
-## 암호화·복호화
+## Encryption & Decryption
 
 ```python
 from pypdf import PdfReader, PdfWriter
 
-# 암호화
+# Encrypt
 writer = PdfWriter()
 for page in PdfReader("input.pdf").pages:
     writer.add_page(page)
@@ -184,11 +184,11 @@ with open("encrypted.pdf", "wb") as f:
 ```
 
 ```bash
-# CLI 복호화
+# CLI decrypt
 qpdf --password=mypassword --decrypt encrypted.pdf decrypted.pdf
 ```
 
-## OCR (스캔 문서)
+## OCR (Scanned Documents)
 
 ```python
 import pytesseract
@@ -196,39 +196,39 @@ from pdf2image import convert_from_path
 
 images = convert_from_path('scanned.pdf')
 for i, image in enumerate(images):
-    text = pytesseract.image_to_string(image, lang='kor+eng')
+    text = pytesseract.image_to_string(image, lang='eng+kor')
     print(f"Page {i+1}:\n{text}\n")
 ```
 
-## 이미지 추출
+## Image Extraction
 
 ```bash
-# Poppler 도구
+# Poppler tools
 pdfimages -j input.pdf output_prefix
-# 결과: output_prefix-000.jpg, output_prefix-001.jpg, ...
+# Result: output_prefix-000.jpg, output_prefix-001.jpg, ...
 ```
 
-## CLI 도구
+## CLI Tools
 
 ```bash
-# pdftotext — 텍스트 추출
+# pdftotext — Extract text
 pdftotext input.pdf output.txt
-pdftotext -layout input.pdf output.txt    # 레이아웃 보존
-pdftotext -f 1 -l 5 input.pdf output.txt  # 1-5페이지만
+pdftotext -layout input.pdf output.txt    # Preserve layout
+pdftotext -f 1 -l 5 input.pdf output.txt  # Pages 1-5 only
 
-# qpdf — 병합/분할
+# qpdf — Merge/split
 qpdf --empty --pages file1.pdf file2.pdf -- merged.pdf
 qpdf input.pdf --pages . 1-5 -- first5.pdf
-qpdf input.pdf output.pdf --rotate=+90:1  # 1페이지 회전
+qpdf input.pdf output.pdf --rotate=+90:1  # Rotate page 1
 ```
 
-## 의존성
+## Dependencies
 
-| 도구 | 설치 | 용도 |
-|------|------|------|
-| pypdf | `pip install pypdf` | 병합, 분할, 암호화 |
-| pdfplumber | `pip install pdfplumber` | 텍스트·테이블 추출 |
-| reportlab | `pip install reportlab` | PDF 생성 |
+| Tool | Install | Purpose |
+|------|---------|---------|
+| pypdf | `pip install pypdf` | Merge, split, encrypt |
+| pdfplumber | `pip install pdfplumber` | Text & table extraction |
+| reportlab | `pip install reportlab` | PDF generation |
 | pytesseract | `pip install pytesseract pdf2image` | OCR |
 | poppler | `brew install poppler` | pdftotext, pdfimages |
-| qpdf | `brew install qpdf` | CLI 병합/분할 |
+| qpdf | `brew install qpdf` | CLI merge/split |

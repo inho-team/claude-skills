@@ -17,16 +17,16 @@ Before running, verify whether `CLAUDE.md` exists in the project root.
 - **If it exists**: Run migration check (Step M) instead of exiting.
 
 ### Step M: CLAUDE.md Migration
-When `CLAUDE.md` already exists, check if it contains the `## QE 툴킷` section.
+When `CLAUDE.md` already exists, check if it contains the `## QE Toolkit` section.
 - **If the section exists**: Display "QE framework is already up to date." then exit.
 - **If the section is missing**: Migrate the existing CLAUDE.md.
   1. Read the existing CLAUDE.md content.
-  2. Read the `base.md` template and extract the `## QE 툴킷` section (from that heading to `## Task Log`).
-  3. If the existing CLAUDE.md has a `## Task Log` section, insert the QE 툴킷 section **before** it.
-  4. If not, append the QE 툴킷 section at the end.
+  2. Read the `base.md` template and extract the `## QE Toolkit` section (from that heading to `## Task Log`).
+  3. If the existing CLAUDE.md has a `## Task Log` section, insert the QE Toolkit section **before** it.
+  4. If not, append the QE Toolkit section at the end.
   5. Also ensure `## Task Log` with `.qe/TASK_LOG.md` reference exists; add if missing.
   6. Show diff preview to user via `AskUserQuestion` before applying.
-  7. Report: "CLAUDE.md migrated — QE 툴킷 section added."
+  7. Report: "CLAUDE.md migrated — QE Toolkit section added."
 
 ## Step 0: Acquire .qe/ Permissions
 
@@ -42,6 +42,52 @@ Ask the user for the minimum required information:
 - **Project name**: Required
 - **Project description**: One-line summary
 - **Tech stack**: Primary languages/frameworks (optional)
+
+### Step 1.5: SVS Engine Configuration (Optional)
+
+After collecting project info, ask the user whether to configure SVS engine routing using `AskUserQuestion`:
+
+**Question**: "Would you like to configure SVS engine routing? (Choose Claude or Codex for each Spec/Verify/Supervise stage)"
+
+**Options**:
+1. **Claude Only (Default)** — All stages handled by Claude. No additional configuration.
+2. **Claude + Codex Hybrid** — Choose engine per stage. Requires codex-plugin-cc.
+3. **Configure Later** — Proceed with initialization only. `.qe/svs-config.json` can be created manually later.
+
+**On "Claude Only"**: Skip — Do not create `.qe/svs-config.json`. All stages automatically use Claude.
+
+**On "Claude + Codex Hybrid"**:
+1. First check codex-plugin-cc installation status using `isCodexPluginAvailable()` from `scripts/lib/codex_bridge.mjs`.
+   - If not installed: Show warning ("codex-plugin-cc is not installed. Install it with `/plugin install codex@openai-codex` then try again.") → Fallback to Claude Only.
+   - If installed: Continue.
+2. For each SVS stage, use `AskUserQuestion` to select engine:
+
+   **Spec Stage**: "Select engine for Spec stage"
+   - Claude (Recommended) — Claude generates spec document
+   - Codex — Codex generates spec via `/codex:rescue`
+
+   **Verify Stage**: "Select engine for Verify stage"
+   - Claude (Recommended) — Claude agent implements changes
+   - Codex — Codex implements via `/codex:rescue --write`
+
+   **Supervise Stage**: "Select engine for Supervise stage"
+   - Claude (Recommended) — Claude domain supervisor reviews
+   - Codex — Codex reviews via `/codex:review`
+
+3. Create `.qe/svs-config.json` based on selections:
+   ```json
+   {
+     "spec": { "engine": "claude" },
+     "verify": { "engine": "codex" },
+     "supervise": { "engine": "claude" }
+   }
+   ```
+4. If Codex is selected for any stage, ask additional questions:
+   - **Model** (Optional): Specify Codex model (default: not set → use codex-plugin-cc default)
+   - **Effort** (Optional): Reasoning effort level (`low` / `medium` / `high` / `xhigh`, default: not set)
+5. Validate generated configuration with `npm run qe:validate`.
+
+**On "Configure Later"**: Skip — Show guidance message: "You can manually create `.qe/svs-config.json` later or re-run `/Qinit`"
 
 ### Step 2: Auto-analyze Project
 Delegate the analysis to the `Erefresh-executor` sub-agent. Since Erefresh-executor uses the same analysis logic as Qrefresh, consistency of analysis is guaranteed.

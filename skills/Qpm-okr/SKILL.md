@@ -1,6 +1,6 @@
 ---
 name: Qpm-okr
-description: Brainstorms and writes OKRs with SMART validation, initiative mapping, and roadmap connection. Use for 'OKR', 'objectives', 'key results', 'quarterly goals', '목표 설정', '핵심결과', '분기 목표'. Distinct from Qpm-roadmap (work sequencing) — this defines measurable goals and success criteria.
+description: Brainstorms and writes OKRs with SMART validation, initiative mapping, and roadmap connection. Use for 'OKR', 'objectives', 'key results', 'quarterly goals', 'goal setting', 'key results', 'quarterly goals'. Distinct from Qpm-roadmap (work sequencing) — this defines measurable goals and success criteria.
 invocation_trigger: When product discovery, requirements, or roadmap planning is required.
 recommendedModel: sonnet
 ---
@@ -143,8 +143,8 @@ Objective (quarterly goal)
 ## Usage Examples
 ```
 User: Help me write OKRs for next quarter
-User: OKR 브레인스토밍 도와줘
-User: 분기 목표 설정하고 핵심결과 작성해줘
+User: Help me brainstorm OKRs
+User: Set quarterly goals and write key results
 User: Review my OKRs and check if they're SMART
 ```
 

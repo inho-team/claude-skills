@@ -64,10 +64,10 @@ Request → Classify complexity → SIMPLE → Execute directly
 
 | Signal | Mode | Reason |
 |--------|------|--------|
-| `type: code` + has tests (test files exist in project) | **qa** | 테스트 인프라가 있으면 품질 루프 활용 |
-| `type: code` + auth/crypto/payment keywords | **qa** | 보안 민감 코드는 품질 검증 필수 |
-| `type: code` + no tests | **work** | 품질 루프 돌려봐야 테스트가 없어서 의미 없음 |
-| `type: docs` / `type: analysis` / `type: other` | **work** | 품질 루프 불필요 |
+| `type: code` + has tests (test files exist in project) | **qa** | If test infrastructure exists, leverage quality loop |
+| `type: code` + auth/crypto/payment keywords | **qa** | Security-sensitive code requires quality validation |
+| `type: code` + no tests | **work** | Quality loop pointless if tests don't exist |
+| `type: docs` / `type: analysis` / `type: other` | **work** | Quality loop unnecessary |
 
 Output: `[Utopia] COMPLEX → {mode} mode (reason)`
 
@@ -101,46 +101,46 @@ Request → Gate → Qgenerate-spec → Qrun-task → Qcode-run-task → Verify 
 
 ### Retry Loop (both work and qa)
 
-검증 실패 시 자동으로 원인 분석 → 재실행하는 루프. 성공할 때까지 반복하되 안전 제한 있음.
+Automatically diagnose and re-execute on verification failure. Repeats until success with safety limits.
 
 ```
 Verify failed
-  → Step 1: Diagnose — 실패 항목 분석, 원인 분류
-  → Step 2: Strategy — 원인별 대응 결정
-  → Step 3: Re-execute — 실패 항목만 재실행
-  → Step 4: Re-verify — 다시 검증
+  → Step 1: Diagnose — analyze failed items, categorize root causes
+  → Step 2: Strategy — determine response per cause
+  → Step 3: Re-execute — re-run failed items only
+  → Step 4: Re-verify — verify again
   → Pass? → Done
-  → Fail? → retry_count < max? → Step 1로 복귀
-                                → max 도달 → Escalate
+  → Fail? → retry_count < max? → return to Step 1
+                                → max reached → Escalate
 ```
 
 #### Diagnosis (Step 1)
 
-실패한 VERIFY_CHECKLIST 항목을 분석하고 원인을 분류:
+Analyze failed VERIFY_CHECKLIST items and categorize root causes:
 
-| 원인 | 대응 | 예시 |
-|------|------|------|
-| **구현 누락** | 해당 체크리스트 항목 재실행 | 파일 생성 안 됨, 함수 미구현 |
-| **구현 오류** | Ecode-debugger로 원인 파악 후 수정 | 테스트 실패, 런타임 에러 |
-| **스펙 모순** | 체크리스트 항목 수정 후 재실행 | 상충하는 요구사항 |
-| **환경 문제** | 환경 수정 후 재실행 | 의존성 누락, 권한 부족 |
+| Root Cause | Response | Example |
+|------------|----------|---------|
+| **Implementation gap** | Re-run the checklist item | File not created, function unimplemented |
+| **Implementation error** | Use Ecode-debugger to diagnose, then fix | Test failure, runtime error |
+| **Spec conflict** | Revise checklist item, then re-run | Conflicting requirements |
+| **Environment issue** | Fix environment, then re-run | Missing dependency, permission denied |
 
 #### Retry Limits
 
 | Mode | Max Retries | Max Total Time | Escalation |
 |------|-------------|----------------|------------|
-| work | 3 | — | 사용자에게 실패 보고 + 선택지 (Retry/Abort/Override) |
-| qa | 5 | — | 사용자에게 실패 보고 + QA report |
+| work | 3 | — | Report failure to user + choices (Retry/Abort/Override) |
+| qa | 5 | — | Report failure to user + QA report |
 
 #### Retry State Tracking
 
-`.qe/state/utopia-state.json`에 retry 상태 기록:
+Record retry state in `.qe/state/utopia-state.json`:
 ```json
 {
   "retry": {
     "count": 2,
     "failed_items": ["VERIFY item 3", "VERIFY item 5"],
-    "last_diagnosis": "구현 오류 — test assertion mismatch",
+    "last_diagnosis": "implementation error — test assertion mismatch",
     "history": [
       {"attempt": 1, "failed": 3, "fixed": 1},
       {"attempt": 2, "failed": 2, "fixed": 1}
@@ -151,10 +151,10 @@ Verify failed
 
 #### Approach Escalation
 
-같은 항목이 2회 연속 실패하면 접근법을 변경:
-- 1회차: 동일 방식으로 재시도
-- 2회차: Ecode-debugger로 근본 원인 분석 후 다른 방식 시도
-- 3회차(work) / 5회차(qa): 사용자에게 에스컬레이션
+If the same item fails twice consecutively, change approach:
+- 1st attempt: retry with same method
+- 2nd attempt: use Ecode-debugger to analyze root cause, try different approach
+- 3rd attempt (work) / 5th attempt (qa): escalate to user
 
 Output per retry:
 ```

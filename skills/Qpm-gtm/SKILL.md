@@ -1,6 +1,6 @@
 ---
 name: Qpm-gtm
-description: "Plans go-to-market strategy: ICP definition, growth loops, battlecards, positioning/messaging, North Star metrics. Use for 'GTM', 'go-to-market', 'ICP', 'battlecard', 'growth loop', 'positioning', 'launch strategy', '시장 진출', '배틀카드', '포지셔닝'. Distinct from Qpm-strategy (analysis) — this plans market entry and competitive positioning."
+description: "Plans go-to-market strategy: ICP definition, growth loops, battlecards, positioning/messaging, North Star metrics. Use for 'GTM', 'go-to-market', 'ICP', 'battlecard', 'growth loop', 'positioning', 'launch strategy', 'market entry', 'battlecard', 'positioning'. Distinct from Qpm-strategy (analysis) — this plans market entry and competitive positioning."
 invocation_trigger: When product discovery, requirements, or roadmap planning is required.
 recommendedModel: sonnet
 ---

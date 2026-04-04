@@ -1,6 +1,6 @@
 # QE Framework
 
-Spec-driven task execution framework for Claude Code and Codex.
+Spec-driven task execution framework for Claude Code, with optional Codex integration.
 
 QE Framework turns vague work into an explicit workflow:
 
@@ -9,9 +9,8 @@ QE Framework turns vague work into an explicit workflow:
 ```
 
 It supports:
-- `single-model`: Claude-centric legacy flow
-- `multi-model` / `hybrid`: role-based orchestration across Claude, Codex, Gemini, or other runner-backed CLIs
-- `tiered-model`: one-provider tiering such as Claude Opus / Sonnet / Haiku or Codex GPT-5.4 / GPT-5-Codex / GPT-5-Codex-Mini by difficulty
+- **Claude-only** (default): All SVS stages run on Claude
+- **Claude + Codex**: Configure individual SVS stages to use Codex via [codex-plugin-cc](https://github.com/openai/codex-plugin-cc)
 
 ## What This README Is
 
@@ -27,7 +26,6 @@ Use it to:
 - Philosophy: [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 - Detailed usage guide: [docs/USAGE_GUIDE.md](docs/USAGE_GUIDE.md)
 - Documentation map: [docs/DOCUMENTATION_MAP.md](docs/DOCUMENTATION_MAP.md)
-- Multi-model setup: [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md)
 - Global MCP setup: [docs/MCP_GLOBAL_SETUP.md](docs/MCP_GLOBAL_SETUP.md)
 - Secret management: [docs/SECRETS.md](docs/SECRETS.md)
 - System overview: [docs/SYSTEM_OVERVIEW.md](docs/SYSTEM_OVERVIEW.md)
@@ -38,16 +36,14 @@ Use it to:
 
 ## Core Idea
 
-QE separates responsibilities so planning, implementation, review, and final supervision do not collapse into one opaque step.
+QE separates responsibilities into three explicit stages so planning, verification, and supervision do not collapse into one opaque step.
 
-Recommended role split:
-- `planner`
-- `implementer`
-- `reviewer`
-- `supervisor`
+SVS pipeline:
+- **Spec** (planning): generate executable specs
+- **Verify** (verification): validate implementation
+- **Supervise** (supervision): gate and report completion
 
-In `single-model`, Claude can own all roles.
-In `hybrid`, `multi-model`, or `tiered-model`, those roles can be mapped to different runners or tiers in `.qe/ai-team/config/team-config.json`.
+By default, all stages run on Claude. To use Codex for specific stages, configure SVS routing (see below).
 
 ## Installation
 
@@ -60,7 +56,7 @@ Official install path:
 ```bash
 git clone https://github.com/inho-team/qe-framework.git
 cd qe-framework
-git checkout v3.0.27
+git checkout v4.0.2
 ```
 
 2. Build a local tarball:
@@ -72,10 +68,10 @@ npm pack --cache /tmp/qe-npm-cache
 3. Install the tarball globally:
 
 ```bash
-npm install -g ./inho-team-qe-framework-3.0.27.tgz
+npm install -g ./inho-team-qe-framework-4.0.2.tgz
 ```
 
-4. Sync Claude and Codex assets:
+4. Sync Claude assets:
 
 ```bash
 qe-framework-install
@@ -85,16 +81,13 @@ This installs:
 
 - Claude commands into `~/.claude/commands`
 - Claude agents into `~/.claude/agents`
-- Codex skills into `~/.codex/skills`
-- Codex agents into `~/.codex/agents`
-- a QE-managed block into `~/.codex/config.toml`
 
 Update path:
 
 ```bash
 git pull
 npm pack --cache /tmp/qe-npm-cache
-npm install -g ./inho-team-qe-framework-3.0.27.tgz
+npm install -g ./inho-team-qe-framework-4.0.2.tgz
 qe-framework-install
 ```
 
@@ -103,6 +96,34 @@ Uninstall path:
 ```bash
 qe-framework-uninstall
 ```
+
+## SVS Engine Routing (Optional)
+
+By default, all stages run on Claude. To route specific stages to Codex:
+
+1. Install codex-plugin-cc:
+
+```bash
+/plugin install codex@openai-codex
+```
+
+2. Create `.qe/svs-config.json`:
+
+```json
+{
+  "spec": { "engine": "claude" },
+  "verify": { "engine": "codex", "model": "gpt-5.4-mini", "effort": "high" },
+  "supervise": { "engine": "claude" }
+}
+```
+
+3. Validate:
+
+```bash
+npm run qe:validate
+```
+
+If codex-plugin-cc is not installed, all stages gracefully fall back to Claude.
 
 ## Quick Start
 
@@ -142,60 +163,21 @@ $Qinit
 /Qcode-run-task
 ```
 
-## Runtime Modes
-
-| Mode | Purpose |
-|------|---------|
-| `single-model` | Claude-only projects. `/Qatomic-run` uses the legacy Haiku swarm path. |
-| `hybrid` | Some roles stay on Claude, some roles use external runners. |
-| `multi-model` | Planner, implementer, reviewer, supervisor are explicitly mapped by role. |
-| `tiered-model` | High-difficulty planning/judgment use a high tier model, standard work uses a medium tier, and trivial work routes to a low tier. |
-
-## Subscription Presets
-
-Recommended presets for `/Qinit`:
-
-| Available tools | Suggested mode | Suggested default mapping |
-|-----------------|----------------|---------------------------|
-| `Claude only` | `single-model` | Claude owns all roles; `/Qatomic-run` uses Haiku swarm |
-| `Tiered Claude` | `tiered-model` | planner/supervisor = Opus, implementer/reviewer = Sonnet, low-tier helper = Haiku |
-| `Tiered Codex` | `tiered-model` | planner/supervisor = GPT-5.4, implementer/reviewer = GPT-5-Codex, low-tier helper = GPT-5-Codex-Mini |
-| `Claude + Codex` | `hybrid` | planner/reviewer/supervisor = Claude, implementer = Codex |
-| `Claude + Gemini` | `hybrid` | planner/implementer/supervisor = Claude, reviewer = Gemini |
-| `Claude + Codex + Gemini` | `multi-model` | planner = Claude, implementer = Codex, reviewer = Gemini, supervisor = Claude |
-
-See [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md) for the detailed role matrix.
-
-`/Qinit` should collect both:
-- provider per role
-- model per runner
-
-Recommended model defaults:
-- Claude high tier: `opus`
-- Claude medium tier: `sonnet`
-- Claude low tier: `haiku`
-- Codex high tier: `gpt-5.4`
-- Codex medium tier: `gpt-5-codex`
-- Codex low tier: `gpt-5-codex-mini`
-- Gemini reviewer: `gemini-2.5-pro`
-
 ## Current Release
 
-- Version: `3.0.27`
+- Version: `4.0.2`
 - Highlights:
-  - role-based runner mapping
-  - PATH-based Codex/Gemini execution
-  - background runner supervision
-  - quota-blocked fallback candidates with temporary `--role-override`
-  - `AskUserQuestion` guidance for one-run reassignment in `/Qatomic-run` and `/Qcode-run-task`
-  - OS-backed secret metadata and secure child-process injection via `Qsecret`
-  - global MCP registry and QE MCP server sync for Claude, Codex, and Gemini
+  - Claude-first baseline: all SVS stages default to Claude
+  - Optional Codex integration via codex-plugin-cc bridge
+  - Simplified SVS config (spec/verify/supervise) instead of role-based orchestration
+  - Graceful fallback to Claude if codex-plugin-cc is not installed
+  - Removed direct integrations with Gemini/GPT—Codex-only bridge for extensions
 
 ## Notes
 
 - After install or update, restart Claude Code and any active Codex session.
-- `team-config.json` matters whenever role routing is enabled: `hybrid`, `multi-model`, or `tiered-model`.
-- `--role-override` affects the current run only. It does not rewrite saved config.
+- `.qe/svs-config.json` is optional. Without it, all stages default to Claude.
+- If codex-plugin-cc is not installed, Codex stages in `.qe/svs-config.json` will gracefully fall back to Claude.
 
 ## License
 

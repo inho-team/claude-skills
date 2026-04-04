@@ -88,10 +88,10 @@ When verification runs, perform **both structural and executability checks in a 
 
 | # | Criterion | Fail Example |
 |---|-----------|--------------|
-| E1 | Single-action executability | `"API 설계 및 라우트 구현"` — two distinct edits |
+| E1 | Single-action executability | `"Design API and implement routes"` — two distinct edits |
 | E2 | Output path validity | `→ output: src/utils/helper` — missing extension |
 | E3 | Logical ordering | Item 3 references file from Item 5 |
-| E4 | Verifiable completion | `"코드를 적절히 리팩토링"` — subjective |
+| E4 | Verifiable completion | `"Refactor code appropriately"` — subjective |
 
 **For complex tasks (8+ items):** Spawn Plan agent (`subagent_type: "Plan"`, model: **Haiku**) for S1-S5 review while self-checking E1-E4 in parallel using **Sonnet**. Max 2 iterations.
 
@@ -127,12 +127,12 @@ On "Generate & Execute" or "Generate Only":
 
 Output status summary after file creation:
 ```
-✅ 생성 완료 (spec documents only):
+✅ Generation complete (spec documents only):
 - CLAUDE.md
 - .qe/tasks/pending/TASK_REQUEST_{UUID}.md
 - .qe/checklists/pending/VERIFY_CHECKLIST_{UUID}.md
 
-❌ 아직 없는 것 (실제 작업 결과물):
+❌ Not yet created (actual deliverables):
 - {expected output files from TASK_REQUEST checklist}
 ```
 
@@ -154,11 +154,11 @@ See `Qutopia` for autonomous execution modes (`--work`, `--qa`).
 ### Language Matching (Required)
 TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - Korean user → Korean documents; English user → English documents; mixed/unclear → English
-- **Scope:** TASK_REQUEST and VERIFY_CHECKLIST only. Internal framework files stay English. CLAUDE.md follows user language but not strictly enforced.
+- **Scope:** TASK_REQUEST and VERIFY_CHECKLIST only. Internal framework files stay English. CLAUDE.md follows user language when specified.
 
 ### CLAUDE.md
 - Single Source of Truth; read by AI every session
-- **Do NOT write task lists in CLAUDE.md.** Task history lives in `.qe/TASK_LOG.md`. CLAUDE.md only contains a reference pointer: `## Task Log` → `.qe/TASK_LOG.md` 참조
+- **Do NOT write task lists in CLAUDE.md.** Task history lives in `.qe/TASK_LOG.md`. CLAUDE.md only contains a reference pointer: `## Task Log` → see `.qe/TASK_LOG.md`
 
 ### TASK_REQUEST
 - **What vs How**: Clearly separate the business goal from the technical implementation logic (from QE planning patterns).
@@ -173,9 +173,9 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - Task complete when all items checked
 - Include note to update `.qe/TASK_LOG.md` task list to ✅
 - **Auto-include by type:**
-  - `type: code` → add: "변경된 코드에 보안 취약점(OWASP Top 10)이 없는가", "기존 테스트가 통과하는가"
-  - `type: code` + auth/crypto/payment → add: "인증/암호화 구현이 안전한가 (Esecurity-officer 또는 수동 확인)"
-  - `type: docs` → add: "문서 내 링크가 유효한가", "용어/포맷이 일관적인가"
+  - `type: code` → add: "No security vulnerabilities (OWASP Top 10) in changed code", "All existing tests pass"
+  - `type: code` + auth/crypto/payment → add: "Authentication/encryption implementation is secure (Esecurity-officer or manual review)"
+  - `type: docs` → add: "All links in documentation are valid", "Terminology and formatting are consistent"
 
 ## UUID Generation Rules
 - 8-character hex (e.g., `a1b2c3d4`)
@@ -189,12 +189,12 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 After generating spec files (on "Generate Only"), display:
 
 ```
-[Phase {X}: {PhaseName}] 스펙 생성 완료 — 실행 단계로 이동
+[Phase {X}: {PhaseName}] Spec generation complete — moving to execution phase
 
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  👉 /Qatomic-run  →  /Qcode-run-task
+SVS Chain:  ✅ /Qplan  →  ✅ /Qgenerate-spec  →  👉 /Qatomic-run  →  /Qrun-task
 ```
 ```
-다음 명령어:
+Next command:
 
   /Qatomic-run {UUID}
 ```

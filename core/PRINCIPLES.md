@@ -135,9 +135,9 @@ Decision rules:
 
 ---
 
-## Model Routing
+## Model Routing (Claude Only)
 
-Agent invocation should consider model complexity and availability. Each agent has a `recommendedModel` field in its frontmatter that guides model selection. The recommended model is **advisory** — the skill or caller makes the final decision.
+Agent invocation should consider model complexity and availability within Claude's model tiers. Each agent has a `recommendedModel` field in its frontmatter that guides model selection. The recommended model is **advisory** — the skill or caller makes the final decision.
 
 **Routing Criteria:**
 

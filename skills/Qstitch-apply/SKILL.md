@@ -1,6 +1,6 @@
 ---
 name: Qstitch-apply
-description: "Converts Stitch HTML designs into production-ready React TSX components. Use when applying Stitch output to a React project, converting HTML to React, or adapting Stitch screens into a theme-aware component. Trigger phrases: 'stitch apply', 'stitch to react', 'HTML to React', 'convert stitch', 'stitch 적용', 'stitch 변환', 'stitch 코드 적용', 'stitch 리액트 변환'. Distinct from Qstitch-cli which handles setup/configuration only — this skill performs the actual design-to-code conversion."
+description: "Converts Stitch HTML designs into production-ready React TSX components. Use when applying Stitch output to a React project, converting HTML to React, or adapting Stitch screens into a theme-aware component. Trigger phrases: 'stitch apply', 'stitch to react', 'HTML to React', 'convert stitch', 'apply stitch', 'convert stitch', 'stitch code apply', 'stitch react convert'. Distinct from Qstitch-cli which handles setup/configuration only — this skill performs the actual design-to-code conversion."
 user_invocable: true
 metadata: 
 author: qe-framework
@@ -15,9 +15,9 @@ recommendedModel: haiku
 
 | Request | Action |
 |---------|--------|
-| "stitch 적용", "HTML to React 변환", "stitch 코드 react로" | **This skill** — convert design to components |
-| "stitch 설정", "stitch mcp 연결" | **NOT this skill** — use `Qstitch-cli` |
-| "새 UI 컴포넌트 만들어줘" (no Stitch source) | **NOT this skill** — use `Qfrontend-design` |
+| "Apply stitch", "HTML to React conversion", "convert stitch code to react" | **This skill** — convert design to components |
+| "Set up Stitch", "Connect Stitch MCP" | **NOT this skill** — use `Qstitch-cli` |
+| "Create new UI component" (no Stitch source) | **NOT this skill** — use `Qfrontend-design` |
 
 ---
 

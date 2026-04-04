@@ -13,8 +13,8 @@ This skill is a **setup and usage guide only**. It does NOT execute UI modificat
 
 | Request | Correct action |
 |---------|---------------|
-| "agentation 설정해줘", "visual feedback 도구 연결" | **This skill** — guide setup |
-| "UI 수정해줘", "CSS 고쳐줘", "디자인 리뷰해줘" | **NOT this skill** — use Qfrontend-design, Qweb-design-guidelines, or standard code implementation |
+| "Set up Agentation", "Connect visual feedback tool" | **This skill** — guide setup |
+| "Fix the UI", "Fix the CSS", "Review the design" | **NOT this skill** — use Qfrontend-design, Qweb-design-guidelines, or standard code implementation |
 
 ---
 
@@ -54,7 +54,7 @@ claude mcp list 2>/dev/null | grep -i agentation
 npm list agentation 2>/dev/null || npx agentation --version 2>/dev/null
 ```
 
-- **MCP connected**: "Agentation MCP가 연결되어 있습니다. 바로 사용 가능합니다." — skip setup.
+- **MCP connected**: "Agentation MCP is connected. Ready to use." — skip setup.
 - **Package installed, no MCP**: Guide Step 3 (MCP Integration) only.
 - **Nothing installed**: Proceed with full setup from Step 1.
 
@@ -112,13 +112,13 @@ With MCP connected, you can talk to the agent naturally:
 
 ```
 # Resolve all feedback
-"내 피드백을 해결해줘"
+"Resolve my feedback"
 
 # Fix a specific annotation
-"주석 3번을 수정해줘" / "fix annotation #3"
+"Fix annotation #3"
 
 # List all annotations
-"현재 주석 목록 보여줘"
+"Show current annotations"
 ```
 
 The agent can also respond back:
@@ -133,7 +133,7 @@ The agent can also respond back:
 
 | Practice | Example |
 |----------|---------|
-| Be specific | "Button text is unclear — should say 'Save Draft'" not "fix this" |
+| Be specific | "Button text is unclear - should say 'Save Draft'" not "fix this" |
 | One issue per annotation | Easier for the agent to process individually |
 | Include context | "Expected: 16px padding. Actual: 8px padding" |
 | Use text selection | Select text for typo or content issues |

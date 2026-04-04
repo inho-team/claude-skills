@@ -13,8 +13,8 @@ This skill is a **setup and configuration guide only**. It does NOT execute Stit
 
 | Request | Action |
 |---------|--------|
-| "stitch 설정해줘", "stitch mcp 연결" | **This skill** — guide setup |
-| "스크린 만들어줘", "디자인 그려줘" | **NOT this skill** — use Stitch MCP tools directly |
+| "Set up Stitch", "Connect Stitch MCP" | **This skill** — guide setup |
+| "Create screen", "Draw design" | **NOT this skill** — use Stitch MCP tools directly |
 
 ### Pre-check: MCP Connection Status
 
@@ -23,7 +23,7 @@ claude mcp list 2>/dev/null | grep -i stitch
 ```
 
 - **Connected**: Do NOT re-run setup. Tell user MCP is connected, use tools directly.
-- **Not connected + design request**: "Stitch MCP가 연결되어 있지 않습니다. 먼저 설정이 필요합니다." → proceed with setup.
+- **Not connected + design request**: "Stitch MCP is not connected. Setup is required first." → proceed with setup.
 - **Not connected + setup request**: proceed with setup.
 
 ---
@@ -173,7 +173,7 @@ Restart Claude Code session to activate MCP tools.
 Stitch designs can be used as the design foundation for `Qfrontend-design`:
 
 ```
-Stitch 디자인 완성 → Qfrontend-design Step 0-S → design-context.md 생성 → Tailwind config에 반영 → 구현 → 수정 시 Agentation
+Stitch design complete → Qfrontend-design Step 0-S → create design-context.md → apply to Tailwind config → implement → use Agentation for revisions
 ```
 
 When invoking `Qfrontend-design` with a Stitch project, Step 0-S automatically extracts colors, fonts, spacing, and other design tokens from Stitch screens into `design-context.md`, which becomes the source of truth for implementation.

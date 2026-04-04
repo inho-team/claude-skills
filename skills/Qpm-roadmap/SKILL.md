@@ -1,6 +1,6 @@
 ---
 name: Qpm-roadmap
-description: Plans outcome-focused strategic roadmaps with RICE prioritization and stakeholder communication. Use for 'create a roadmap', 'quarterly plan', 'product roadmap', 'priority sorting', '로드맵', '분기 계획'. Distinct from Qpm-okr (goal-setting) — this sequences and visualizes work across time horizons.
+description: Plans outcome-focused strategic roadmaps with RICE prioritization and stakeholder communication. Use for 'create a roadmap', 'quarterly plan', 'product roadmap', 'priority sorting', 'roadmap', 'quarterly plan'. Distinct from Qpm-okr (goal-setting) — this sequences and visualizes work across time horizons.
 invocation_trigger: When product discovery, requirements, or roadmap planning is required.
 recommendedModel: sonnet
 ---

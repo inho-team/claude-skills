@@ -16,16 +16,16 @@ Manages the full branch lifecycle: create branch, commit changes (via Qcommit), 
 ## Examples
 
 ```
-User: "로그인 기능 개발할게"
+User: "I'll develop a login feature"
 → Qbranch: creates feat/add-login, switches to it
 
-User: "이거 PR 올려줘"
+User: "Push this as a PR"
 → Qbranch: pushes current branch, creates PR via gh
 
-User: "긴급 수정 필요해"
+User: "Need an emergency fix"
 → Qbranch: creates hotfix/ branch from main
 
-User: "브랜치 정리해줘"
+User: "Clean up branches"
 → Qbranch: deletes merged branches (local + remote)
 ```
 
@@ -45,7 +45,7 @@ User: "브랜치 정리해줘"
 **Direct push to main is blocked.** If the current branch is `main` or `master`:
 1. Warn the user that direct push to main is not allowed
 2. Offer to create a branch first via `AskUserQuestion`
-3. Only exception: if user explicitly overrides with "main에 직접 올려" or "push to main directly"
+3. Only exception: if user explicitly overrides with "push directly to main" or "push to main directly"
 
 ## Workflow
 
@@ -127,9 +127,9 @@ Show current branch info:
 When no explicit mode is given, infer from context:
 - No arguments + on main → offer to start a new branch
 - No arguments + on feature branch → show status
-- "PR", "올려", "push" mentioned → Mode 3 (PR)
-- "정리", "cleanup", "삭제" mentioned → Mode 4 (Cleanup)
-- "커밋", "commit", "저장" mentioned → Mode 2 (Commit)
+- "PR", "push", "push" mentioned → Mode 3 (PR)
+- "cleanup", "cleanup", "delete" mentioned → Mode 4 (Cleanup)
+- "commit", "commit", "save" mentioned → Mode 2 (Commit)
 
 ## Integration with Qcommit
 

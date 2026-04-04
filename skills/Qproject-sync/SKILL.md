@@ -1,6 +1,6 @@
 ---
 name: Qproject-sync
-description: "Synchronizes a project with a reference/standard project. Use when syncing project code with a template or upstream standard, merging upstream changes, or keeping a project aligned with a canonical base. Trigger phrases: 'project sync', 'sync standard', 'sync template', 'merge upstream', '프로젝트 동기화', '스탠다드 싱크', '템플릿 동기화'. Distinct from Qrefresh which refreshes .qe/ analysis data — this syncs actual project source files with a reference/standard project."
+description: "Synchronizes a project with a reference/standard project. Use when syncing project code with a template or upstream standard, merging upstream changes, or keeping a project aligned with a canonical base. Trigger phrases: 'project sync', 'sync standard', 'sync template', 'merge upstream', 'synchronize project', 'sync with standard', 'template sync'. Distinct from Qrefresh which refreshes .qe/ analysis data — this syncs actual project source files with a reference/standard project."
 user_invocable: true
 metadata: 
 author: anthropic
@@ -21,13 +21,13 @@ Classifies each changed file by sync category, shows a report, and applies selec
 ## Examples
 
 ```
-User: "스탠다드 싱크해줘"
+User: "Sync with standard"
 → Qproject-sync: diff against configured standard, show classification report, apply chosen merges
 
 User: "sync this project with ~/templates/front-std"
 → Qproject-sync: accepts explicit path, runs full sync workflow
 
-User: "프로젝트 동기화 dry-run"
+User: "Project sync dry-run"
 → Qproject-sync: shows classification report only, applies nothing
 
 User: "merge upstream changes automatically"

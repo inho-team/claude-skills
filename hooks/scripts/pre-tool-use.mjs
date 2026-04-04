@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import { loadConfig } from './lib/config.mjs';
 import { checkContextPressure } from './context-monitor.mjs';
 import { loadPendingContext } from './lib/context-loader.mjs';
-import { atomicWriteJson, readUnifiedState, writeUnifiedState, getContextMemo } from './lib/state.mjs';
+import { atomicWriteJson, readUnifiedState, writeUnifiedState, getContextMemo, isMemoValid, incrementBlockedReads, getBlockedReads } from './lib/state.mjs';
 import { getTeamContext } from './lib/team-detect.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -35,13 +35,20 @@ const hints = [];
 // --- Load Unified State (Single I/O call) ---
 const state = readUnifiedState(cwd);
 
-// --- ContextMemo Check ---
+// --- ContextMemo Enforcement (Hard Block on redundant reads) ---
 if (toolName === 'Read') {
   const toolInput = data.tool_input || data.toolInput || {};
   const filePath = toolInput.file_path || toolInput.filePath || '';
-  const cachedContent = getContextMemo(state, filePath);
-  if (cachedContent) {
-    hints.push(`[MEMO HIT] Content for ${filePath} is already in the ContextMemo. You can use it directly without calling Read again.`);
+  if (filePath && isMemoValid(state, filePath)) {
+    // File was previously read and has NOT been modified since — block the redundant read
+    const blockedCount = incrementBlockedReads(state);
+    // Persist state before exiting so the counter is saved
+    try { writeUnifiedState(cwd, state); } catch {}
+    process.stderr.write(
+      `[QE] MEMO HIT: ${filePath} — cached content available, skipping redundant read. ` +
+      `Use the content from your earlier read of this file. (${blockedCount} reads blocked this session)`
+    );
+    process.exit(2);
   }
 }
 

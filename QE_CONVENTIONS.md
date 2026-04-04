@@ -74,61 +74,61 @@ PSE Chain (user workflow)
 
 Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows these rules:
 
-1. **Phase 컨텍스트 + 로드맵 진행률** — 현재 Phase와 전체 진행 상태를 한눈에 표시
-2. **PSE Chain 상태 한 줄** — 현재 완료/진행 상태 표시
-3. **`다음 명령어:` 블록** — 복사하기 쉽도록 코드 블록 안에 단독 배치, **반드시 UUID 또는 Phase 인자 포함**
-4. **설명 금지** — 명령어 뒤에 대안, 부연, 선택지를 붙이지 않음
-5. **Task type 분기** — `type: code`만 `/Qcode-run-task`로 안내. docs/analysis/삭제 작업은 다음 Phase로 안내
-6. **숏컷 폴백** — `/Qgs`가 인식되지 않을 수 있으므로 `안 되면: /Qgenerate-spec ...` 를 항상 병기
+1. **Phase context + Roadmap progress** — Display current Phase and overall progress at a glance
+2. **PSE Chain status, one line** — Show current completion/progress status
+3. **`Next command:` block** — Place alone in a code block for easy copying, **must include UUID or Phase argument**
+4. **No explanations** — Do not add alternatives, elaborations, or choices after the command
+5. **Task type branching** — Guide only `type: code` to `/Qcode-run-task`. For docs/analysis/deletion tasks, guide to the next Phase
+6. **Shortcut fallback** — `/Qgs` may not be recognized, so always include `If not: /Qgenerate-spec ...`
 
-### Phase 진행률 표시
+### Phase Progress Display
 
-핸드오프 시 `.qe/planning/ROADMAP.md`를 읽어 전체 Phase 목록과 완료 상태를 표시한다:
+When handing off, read `.qe/planning/ROADMAP.md` to display the full Phase list and completion status:
 
 ```
 Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
           Strip&Purify   Codex Bridge   Polish&Release
 ```
 
-- `✅` = 완료, `👉` = 다음(진행 예정), `○` = 미시작
-- Phase 이름은 짧게 축약 (영문 ~12자 이내)
+- `✅` = Complete, `👉` = Next (in progress), `○` = Not started
+- Keep Phase names short (~12 characters max)
 
-### Code 작업 예시
+### Code Task Example
 ```
-[Phase 2: Codex Bridge] 구현 완료 — 검증 단계로 이동
+[Phase 2: Codex Bridge] Implementation complete — Moving to verification
 
 Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
 PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
 ```
 ```
-다음 명령어:
+Next command:
 
   /Qcode-run-task a1b2c3d4
 ```
 
-### Non-code 완료 예시
+### Non-code Task Complete Example
 ```
-[Phase 1: Strip & Purify] 완료
+[Phase 1: Strip & Purify] Complete
 
 Roadmap:  ✅ Phase 1  →  👉 Phase 2  →  ○ Phase 3
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ Complete
 ```
 ```
-다음 명령어:
+Next command:
 
   /Qgs Phase 2: Codex Bridge
 
-  안 되면: /Qgenerate-spec Phase 2: Codex Bridge
+  If not: /Qgenerate-spec Phase 2: Codex Bridge
 ```
 
-### 전체 로드맵 완료 시
+### When entire Roadmap is complete
 ```
-[Phase 3: Polish & Release] 완료 — 모든 Phase 완료
+[Phase 3: Polish & Release] Complete — All Phases finished
 
 Roadmap:  ✅ Phase 1  →  ✅ Phase 2  →  ✅ Phase 3
-PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ Complete
 
-🎉 로드맵 전체 완료. /Qcommit으로 최종 커밋하세요.
+🎉 Entire roadmap complete. Finalize with /Qcommit.
 ```
 
 ---
@@ -157,9 +157,9 @@ PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
 
 To maintain high reasoning quality and low latency, all agents and skills must adhere to these standards:
 
-### 1. Minimal I/O Rule
+### 1. Minimal I/O Rule (Enforced)
 - **Never read or write the same file twice** in a single execution turn.
-- **ContextMemo**: Always check for `[MEMO HIT]` hints from `pre-tool-use` before calling `Read`.
+- **ContextMemo (enforced)**: The `pre-tool-use` hook **hard-blocks** redundant `Read` calls for files already cached in the session. If a file was read before and not modified since, the Read is rejected with `exit(2)` and a `MEMO HIT` message. After a `Write`/`Edit` to that file, the next Read is allowed.
 - **Unified State**: Use `unified-state.json` via `hooks/scripts/lib/state.mjs` for all persistent session data.
 
 ### 2. Token-Aware Context Management

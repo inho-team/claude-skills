@@ -2,26 +2,36 @@
 'use strict';
 
 /**
- * Context Usage Monitor
+ * Context Usage Monitor — Auto-Compaction Trigger
  *
- * Monitors context window usage via tool call count as a proxy for context
- * consumption. Provides WARNING (35% estimated remaining) and CRITICAL
- * (25% estimated remaining) alerts with debounce logic.
+ * Monitors context window usage and emits system directives to automatically
+ * invoke Ecompact-executor when pressure thresholds are crossed.
+ *
+ * Behavior:
+ * - At 140k tokens (WARNING): Emits ACTION REQUIRED directive with Agent tool
+ *   invocation instructions for Ecompact-executor.
+ * - At 170k tokens (CRITICAL): Emits MANDATORY stop-and-compact directive.
+ *   Overrides cooldown.
  *
  * Design notes:
- * - Claude Code does not expose context remaining directly — tool call count
- *   is used as an approximation. The threshold mapping is abstracted so it
+ * - Claude Code does not expose context remaining directly — token counts
+ *   from usage stats are used. The threshold mapping is abstracted so it
  *   can be swapped for real metrics when the API supports them.
  * - Debounce: after the first alert, suppress re-alerts for 5 tool calls
  *   unless severity escalates.
+ * - Cooldown: after a compaction trigger, suppress re-triggers for 5 minutes
+ *   (tracked in unified-state.json contextCompaction field). CRITICAL
+ *   severity bypasses cooldown.
  * - State is persisted in session-stats.json alongside existing fields.
- * - Does not use imperative tone toward the user (QE principle).
  */
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { atomicWriteJson } from './lib/state.mjs';
+import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
+
+// Cooldown period: 5 minutes after a compaction trigger
+const COMPACTION_COOLDOWN_MS = 5 * 60 * 1000;
 
 // --- Severity levels ---
 const SEVERITY = {
@@ -44,22 +54,33 @@ const DEFAULT_THRESHOLDS = {
   context_debounce_count: 5,        // suppress re-alert for N tool calls
 };
 
-// --- Messages (non-imperative tone) ---
-const MESSAGES = {
-  [SEVERITY.WARNING]: [
-    '[Context Monitor - WARNING] Estimated ~30% context remaining (>= 140k tokens).',
-    'Starting new complex tasks at this point may lead to incomplete results.',
-    'It may be a good time to wrap up current work or consolidate progress.',
-    'Running /Qcompact can help reclaim context space.',
-  ].join(' '),
+/**
+ * Build context pressure message with token count.
+ * Returns a system-instruction-style directive for auto-compaction.
+ *
+ * @param {string} severity - SEVERITY.WARNING or SEVERITY.CRITICAL
+ * @param {number} inputTokens - Current input token count
+ * @returns {string} Formatted directive message
+ */
+function buildDirectiveMessage(severity, inputTokens) {
+  const currentK = Math.round(inputTokens / 1000);
 
-  [SEVERITY.CRITICAL]: [
-    '[Context Monitor - CRITICAL] Context usage is at a critical level (>= 170k tokens) — estimated ~15% remaining.',
-    'Context exhaustion is imminent.',
-    'Running Ecompact-executor now is strongly recommended to preserve session continuity.',
-    'If in Utopia mode, Ecompact-executor will handle compaction automatically.',
-  ].join(' '),
-};
+  if (severity === SEVERITY.CRITICAL) {
+    return [
+      `\u{1F534} CRITICAL CONTEXT PRESSURE: ${currentK}k / 200k tokens`,
+      'MANDATORY: Stop current work. Invoke Ecompact-executor immediately.',
+      'Context will be lost if you continue without compaction.',
+      `Run: Agent tool \u2192 subagent_type: "Ecompact-executor", prompt: "Auto-compaction triggered at ${currentK}k tokens"`,
+    ].join('\n');
+  }
+
+  // WARNING (Yellow zone)
+  return [
+    `\u26A0\uFE0F CONTEXT PRESSURE: ${currentK}k / 200k tokens (Yellow zone)`,
+    'ACTION REQUIRED: Invoke Ecompact-executor to save context snapshot before continuing.',
+    `Run: Agent tool \u2192 subagent_type: "Ecompact-executor", prompt: "Auto-compaction triggered at ${currentK}k tokens"`,
+  ].join('\n');
+}
 
 /**
  * Estimate context severity based on token usage.
@@ -109,7 +130,43 @@ export function shouldDebounce(currentSeverity, stats, thresholds) {
 }
 
 /**
+ * Check whether compaction is in cooldown (recently triggered).
+ *
+ * @param {object} compactionState - contextCompaction object from unified-state
+ * @returns {boolean} true if still in cooldown
+ */
+function isInCooldown(compactionState) {
+  if (!compactionState || !compactionState.cooldownUntil) return false;
+  return Date.now() < new Date(compactionState.cooldownUntil).getTime();
+}
+
+/**
+ * Record that compaction was auto-triggered in unified-state.
+ *
+ * @param {string} cwd - Project working directory
+ */
+function recordCompactionTrigger(cwd) {
+  try {
+    const unified = readUnifiedState(cwd);
+    const now = new Date().toISOString();
+    unified.contextCompaction = {
+      lastTriggeredAt: now,
+      autoTriggered: true,
+      cooldownUntil: new Date(Date.now() + COMPACTION_COOLDOWN_MS).toISOString(),
+    };
+    writeUnifiedState(cwd, unified);
+  } catch {
+    // Fault-tolerant: proceed even if state update fails
+  }
+}
+
+/**
  * Main entry point: evaluate context pressure and return an alert if needed.
+ *
+ * At 140k tokens (WARNING / Yellow zone), emits a system directive instructing
+ * Claude to invoke Ecompact-executor. At 170k tokens (CRITICAL / Red zone),
+ * emits a mandatory stop-and-compact directive. A 5-minute cooldown prevents
+ * re-triggering after a compaction has already been initiated.
  *
  * @param {string} cwd - Project working directory
  * @param {object} [preloadedStats] - Pre-read session stats (avoids duplicate file I/O)
@@ -147,7 +204,21 @@ export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
     return { message: null, severity, stats };
   }
 
-  // Debounce check
+  // Check compaction cooldown — if recently triggered, suppress unless severity escalated
+  try {
+    const unified = readUnifiedState(cwd);
+    const compactionState = unified.contextCompaction;
+    if (compactionState && isInCooldown(compactionState)) {
+      // Even during cooldown, CRITICAL always breaks through
+      if (severity !== SEVERITY.CRITICAL) {
+        return { message: null, severity, stats };
+      }
+    }
+  } catch {
+    // Fault-tolerant: proceed with alert if state read fails
+  }
+
+  // Debounce check (tool-call-based, separate from cooldown)
   if (shouldDebounce(severity, stats, thresholds)) {
     return { message: null, severity, stats };
   }
@@ -168,25 +239,12 @@ export function checkContextPressure(cwd, preloadedStats, preloadedCfg) {
     }
   }
 
-  // Check Utopia mode for tailored message
-  let message = MESSAGES[severity];
-  const utopiaFile = join(cwd, '.qe', 'state', 'utopia-state.json');
-  if (severity === SEVERITY.CRITICAL) {
-    try {
-      if (existsSync(utopiaFile)) {
-        const utopiaState = JSON.parse(readFileSync(utopiaFile, 'utf8'));
-        if (utopiaState.enabled === true) {
-          message = [
-            '[Context Monitor - CRITICAL] Estimated ~15% context remaining.',
-            'Context exhaustion is imminent in Utopia mode (>= 170k tokens).',
-            'Ecompact-executor should be triggered now to preserve autonomous session continuity.',
-          ].join(' ');
-        }
-      }
-    } catch {
-      // Fault-tolerant: use default message
-    }
-  }
+  // Build directive message with current token count
+  const inputTokens = stats.usage?.input_tokens || 0;
+  let message = buildDirectiveMessage(severity, inputTokens);
+
+  // Record compaction trigger in unified-state (sets cooldown)
+  recordCompactionTrigger(cwd);
 
   return { message, severity, stats };
 }

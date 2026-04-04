@@ -22,61 +22,7 @@ Before any design work, gather essential context. Code tells you what was built,
 
 ### Step 0-S: Stitch Design Context Extraction (When Stitch project exists)
 
-When the user has a Stitch project, extract design tokens before writing any code.
-
-**Flow:**
-```
-Stitch project → list_screens → get_screen (each) → parse HTML/CSS → design-context.md
-```
-
-**Procedure:**
-1. `mcp__stitch__list_projects` → find the target project
-2. `mcp__stitch__list_screens` → get all screens in the project
-3. `mcp__stitch__get_screen` → fetch each screen's HTML/CSS code
-4. **Extract design tokens** from the fetched code:
-   - **Colors**: all color values (hex, rgb, oklch, hsl) → group into brand, surface, semantic
-   - **Fonts**: font-family declarations → map to display, body, mono roles
-   - **Spacing**: recurring margin/padding/gap values → identify base unit (4pt, 8pt, etc.)
-   - **Typography scale**: font-size values → map to display, heading, body, caption
-   - **Border radius**: recurring radius values
-   - **Shadows**: box-shadow declarations
-   - **Breakpoints**: media query values (if present)
-5. Write `design-context.md` in the project root:
-
-```markdown
-# Design Context (extracted from Stitch)
-
-## Source
-- Stitch Project: {project_name} ({project_id})
-- Screens: {screen_list}
-- Extracted: {date}
-
-## Color Palette
-| Role | Value | Usage |
-|------|-------|-------|
-| brand-primary | {value} | {where used} |
-| ... | ... | ... |
-
-## Typography
-| Role | Font Family | Weight | Size |
-|------|-------------|--------|------|
-| display | {font} | {weight} | {size} |
-| ... | ... | ... | ... |
-
-## Spacing System
-- Base unit: {N}px
-- Common values: {list}
-
-## Border Radius
-- {values}
-
-## Shadows
-- {values}
-```
-
-6. Use the extracted tokens in **Step 1-2 (Tailwind Config Setup)** — map Stitch values directly to Tailwind config tokens instead of inventing new ones.
-
-**Key rule**: Stitch design is the source of truth for visual tokens. Do not override Stitch colors/fonts with defaults unless the user explicitly requests it.
+See references/stitch-extraction.md for the full Stitch extraction procedure and design-context.md template.
 
 ## Step 1: Design Foundation
 
@@ -94,82 +40,7 @@ Commit to a bold aesthetic direction:
 
 Set up `tailwind.config` before writing any code. Design tokens must be defined upfront to maintain consistency across components.
 
-> **Stitch integration**: If `design-context.md` exists (from Step 0-S), map its extracted values directly into the config below. Stitch tokens take precedence over example defaults.
-
-```js
-// tailwind.config.js
-export default {
-  theme: {
-    extend: {
-      // 1. Fonts — Blacklisted fonts prohibited, refer to reference/typography.md
-      fontFamily: {
-        display: ['"Outfit"', 'sans-serif'],
-        body: ['"Instrument Sans"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
-        // Korean project example
-        // display: ['"Gmarket Sans"', 'sans-serif'],
-        // body: ['"Pretendard"', 'sans-serif'],
-      },
-
-      // 2. Colors — OKLCH-based, brand neutral tinting
-      colors: {
-        brand: {
-          50:  'oklch(0.95 0.02 250)',
-          100: 'oklch(0.90 0.04 250)',
-          500: 'oklch(0.60 0.20 250)',  // primary
-          900: 'oklch(0.20 0.05 250)',
-        },
-        surface: {
-          0: 'oklch(0.98 0.005 250)',   // page background
-          1: 'oklch(0.95 0.008 250)',   // card
-          2: 'oklch(0.92 0.01 250)',    // elevated
-        },
-      },
-
-      // 3. Spacing — 4pt system
-      spacing: {
-        '4.5': '1.125rem',  // 18px — 4pt grid extension
-      },
-
-      // 4. Type scale — modular scale
-      fontSize: {
-        'display': ['clamp(2.5rem, 5vw + 1rem, 4.5rem)', { lineHeight: '1.1' }],
-        'heading': ['clamp(1.5rem, 3vw + 0.5rem, 2.5rem)', { lineHeight: '1.2' }],
-      },
-
-      // 5. Animation — 100/300/500 rule
-      transitionTimingFunction: {
-        'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
-        'in-expo': 'cubic-bezier(0.7, 0, 0.84, 0)',
-      },
-      transitionDuration: {
-        'instant': '100ms',
-        'state': '300ms',
-        'modal': '500ms',
-      },
-
-      // 6. Responsive — container queries
-      containers: {
-        'card': '400px',
-        'sidebar': '300px',
-      },
-    },
-  },
-  plugins: [
-    require('@tailwindcss/container-queries'),
-  ],
-}
-```
-
-**Checklist** (verify after setup):
-- [ ] `fontFamily` — No blacklisted fonts used, language-specific fonts designated
-- [ ] `colors` — Brand palette + neutral tinting + semantic (success/error/warning)
-- [ ] `spacing` — Based on 4pt grid
-- [ ] `fontSize` — `clamp()` applied to display/heading
-- [ ] `transitionTimingFunction` — Exponential easing defined
-- [ ] dark mode — `darkMode: 'class'` or `'media'` configured
-
-**For non-Tailwind projects**: Define the same tokens as CSS custom properties in `:root`. The key principle is **tokens before code**.
+See references/tailwind-config-example.md for the full config example, checklist, and Stitch integration notes.
 
 ### 1-3. Component Breakdown (Required)
 

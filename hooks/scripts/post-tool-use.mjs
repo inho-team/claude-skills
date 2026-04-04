@@ -3,7 +3,7 @@
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { readUnifiedState, writeUnifiedState, updateContextMemo, invalidateContextMemo, getCwd } from './lib/state.mjs';
+import { readUnifiedState, writeUnifiedState, updateContextMemo, markMemoModified, getCwd } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
 
 let input = '';
@@ -45,7 +45,8 @@ if (!isError && toolName === 'Read') {
   const toolInput = data.tool_input || data.toolInput || {};
   const filePath = toolInput.file_path || toolInput.filePath || '';
   if (filePath) {
-    invalidateContextMemo(state, filePath);
+    // Mark as modified so pre-tool-use allows re-read of the updated file
+    markMemoModified(state, filePath);
   }
 }
 

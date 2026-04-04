@@ -1,6 +1,6 @@
 ---
 name: Qpm-retro
-description: Facilitates retrospectives (Start/Stop/Continue, 4Ls, Sailboat), pre-mortem analysis, and release notes generation. Use for 'retrospective', 'retro', 'pre-mortem', 'release notes', 'sprint review', 'postmortem', '회고', '릴리즈 노트'. Distinct from Qlesson-learned (git history analysis) — this runs structured team reflection sessions.
+description: Facilitates retrospectives (Start/Stop/Continue, 4Ls, Sailboat), pre-mortem analysis, and release notes generation. Use for 'retrospective', 'retro', 'pre-mortem', 'release notes', 'sprint review', 'postmortem', 'retrospective', 'release notes'. Distinct from Qlesson-learned (git history analysis) — this runs structured team reflection sessions.
 invocation_trigger: When product discovery, requirements, or roadmap planning is required.
 recommendedModel: sonnet
 ---
@@ -11,110 +11,16 @@ Run structured retrospectives, conduct pre-mortem risk analysis, and generate re
 
 ## Retrospective Facilitation
 
-### Format 1: Start / Stop / Continue
+### Available Formats
 
-Best for: teams new to retros or short timebox (30 min).
+| Format | Best For |
+|--------|----------|
+| Start / Stop / Continue | Teams new to retros or short timebox (30 min) |
+| 4Ls (Liked, Learned, Lacked, Longed for) | Reflective teams that want deeper insight |
+| Mad / Sad / Glad | Surfacing emotional undercurrents the team avoids |
+| Sailboat (Wind, Anchor, Rock, Island) | Visual thinkers and metaphor-driven discussion |
 
-```markdown
-## Sprint [N] Retrospective — Start/Stop/Continue
-**Date:** [date] | **Facilitator:** [name]
-
-### Start (things we should begin doing)
--
-
-### Stop (things that hurt us)
--
-
-### Continue (things that are working)
--
-
-### Action Items
-| Action | Owner | Due |
-|--------|-------|-----|
-| | | |
-```
-
-### Format 2: 4Ls (Liked, Learned, Lacked, Longed for)
-
-Best for: reflective teams that want deeper insight.
-
-```markdown
-## Sprint [N] Retrospective — 4Ls
-**Date:** [date] | **Facilitator:** [name]
-
-### Liked (what went well)
--
-
-### Learned (new insights or skills)
--
-
-### Lacked (what was missing)
--
-
-### Longed for (what we wished we had)
--
-
-### Action Items
-| Action | Owner | Due |
-|--------|-------|-----|
-| | | |
-```
-
-### Format 3: Mad / Sad / Glad
-
-Best for: surfacing emotional undercurrents the team avoids.
-
-```markdown
-## Sprint [N] Retrospective — Mad/Sad/Glad
-**Date:** [date] | **Facilitator:** [name]
-
-### Mad (frustrated about)
--
-
-### Sad (disappointed by)
--
-
-### Glad (grateful for)
--
-
-### Action Items
-| Action | Owner | Due |
-|--------|-------|-----|
-| | | |
-```
-
-### Format 4: Sailboat (Wind, Anchor, Rock, Island)
-
-Best for: visual thinkers and teams that want a metaphor-driven discussion.
-
-```markdown
-## Sprint [N] Retrospective — Sailboat
-**Date:** [date] | **Facilitator:** [name]
-
-### Wind (what propelled us forward)
--
-
-### Anchor (what slowed us down)
--
-
-### Rock (risks or obstacles ahead)
--
-
-### Island (our goal / destination)
--
-
-### Action Items
-| Action | Owner | Due |
-|--------|-------|-----|
-| | | |
-```
-
-### Facilitation Tips
-- Rotate formats every 2-3 sprints to prevent staleness
-- Silent brainstorm first (5 min), then group discussion
-- Limit to 3 action items — more than that rarely get done
-- Each action item needs an owner and a due date
-- Review previous retro actions at the start of the next retro
+See references/retro-format-templates.md for all format templates and facilitation tips.
 
 ## Pre-mortem Analysis
 
@@ -263,11 +169,11 @@ Best for: end-of-project or end-of-quarter wrap-ups (longer than a sprint retro)
 ## Usage Examples
 ```
 User: Run a retrospective for our last sprint
-User: 스프린트 회고 진행해줘
+User: Run a retrospective for this sprint
 User: Do a pre-mortem for this project
-User: 릴리즈 노트 작성해줘
+User: Write release notes for this version
 User: Help me write release notes from these PRs
-User: 프로젝트 포스트모템 도와줘
+User: Help me with a post-mortem for this project
 ```
 
 Credits: Frameworks adapted from phuryn/pm-skills (MIT)

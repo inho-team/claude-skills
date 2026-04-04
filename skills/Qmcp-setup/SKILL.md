@@ -11,8 +11,8 @@ This skill is a **setup and configuration guide only**. It does NOT execute MCP 
 
 | Request | Correct action |
 |---------|---------------|
-| "MCP 서버 설정해줘", "connect Google Drive" | **This skill** — guide setup steps |
-| "Google Drive에서 파일 가져와", "Slack 메시지 보내" | **NOT this skill** — use connected MCP tools directly |
+| "Set up MCP server", "connect Google Drive" | **This skill** — guide setup steps |
+| "Get files from Google Drive", "Send Slack messages" | **NOT this skill** — use connected MCP tools directly |
 
 ### Pre-check: MCP Server Status
 
@@ -22,7 +22,7 @@ Before guiding setup, check if the requested MCP server is already connected:
 claude mcp list 2>/dev/null | grep -i {service-name}
 ```
 
-**If connected**: "이미 연결되어 있습니다. MCP 도구를 직접 사용하세요." — exit skill.
+**If connected**: "Already connected. Use MCP tools directly." — exit skill.
 **If NOT connected**: proceed with setup guide.
 
 ---
@@ -114,82 +114,7 @@ Start a new Claude Code session and verify the MCP tools are available.
 
 ## Service-Specific Setup Guides
 
-### Google Drive (`@piotr-agier/google-drive-mcp`)
-
-**1. Google Cloud Console Setup:**
-- Go to https://console.cloud.google.com
-- Create a project or use existing
-- Enable APIs: Google Drive API, Google Docs API, Google Sheets API, Google Slides API
-- Create OAuth 2.0 Client ID (Desktop application type)
-- Download the JSON credentials file
-
-**2. Place Credentials:**
-```bash
-mkdir -p ~/.config/google-drive-mcp
-mv ~/Downloads/client_secret_*.json ~/.config/google-drive-mcp/gcp-oauth.keys.json
-```
-
-**3. Add to Claude Code:**
-```bash
-claude mcp add google-drive -- npx @piotr-agier/google-drive-mcp
-```
-
-**4. First Run:**
-Browser opens for Google OAuth login. Approve permissions. Tokens auto-save to `~/.config/google-drive-mcp/tokens.json`.
-
-**Capabilities:** File CRUD, search, shared drives, folder navigation, Google Docs/Sheets/Slides editing, Calendar management.
-
----
-
-### GitHub (`@modelcontextprotocol/server-github`)
-
-**1. Create Personal Access Token:**
-- Go to https://github.com/settings/tokens
-- Generate token with required scopes (repo, read:org, etc.)
-
-**2. Add to Claude Code:**
-```bash
-claude mcp add github -e GITHUB_PERSONAL_ACCESS_TOKEN=ghp_xxx -- npx @modelcontextprotocol/server-github
-```
-
-**Capabilities:** Repo management, issues, PRs, file operations, branch management, search.
-
----
-
-### Slack (`@anthropics/mcp-server-slack`)
-
-**1. Create Slack App:**
-- Go to https://api.slack.com/apps
-- Create new app > From scratch
-- Add OAuth scopes: channels:history, channels:read, chat:write, users:read
-- Install to workspace, copy Bot User OAuth Token
-
-**2. Add to Claude Code:**
-```bash
-claude mcp add slack -e SLACK_BOT_TOKEN=xoxb-xxx -e SLACK_TEAM_ID=T0xxx -- npx @anthropics/mcp-server-slack
-```
-
-**Capabilities:** Read/send messages, list channels, search messages, manage threads.
-
----
-
-### PostgreSQL (`@modelcontextprotocol/server-postgres`)
-
-```bash
-claude mcp add postgres -- npx @modelcontextprotocol/server-postgres postgresql://user:pass@localhost:5432/dbname
-```
-
-**Capabilities:** Query execution, schema inspection, read-only by default.
-
----
-
-### Filesystem (`@modelcontextprotocol/server-filesystem`)
-
-```bash
-claude mcp add filesystem -- npx @modelcontextprotocol/server-filesystem /path/to/allowed/directory
-```
-
-**Capabilities:** Read/write files, directory listing, search, within allowed paths only.
+See references/service-setup-guides.md for detailed setup instructions for Google Drive, GitHub, Slack, PostgreSQL, and Filesystem.
 
 ---
 

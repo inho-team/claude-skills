@@ -18,14 +18,14 @@ A mode that automatically switches response style based on context window pressu
 - Deliver only the essentials
 - Code blocks show only the changed portions
 - Explanations limited to 1–2 sentences
-- **Trigger**: Semantic Compression pass via `Ecompact-executor`.
+- **Auto-Triggered**: At 140k tokens, the context monitor emits a system directive that automatically invokes `Ecompact-executor` to save a context snapshot. A 5-minute cooldown prevents repeated triggers.
 
 ### Red (140k–170k+ tokens) — Survival Mode
 - One-line answers
 - Code shown as diff only
 - Minimize reading new files
-- **Hard Stop**: At 170k tokens, immediate handoff or compaction via `Qcompact` is mandatory.
-- If task cannot complete, suggest handoff.
+- **Auto-Triggered (Mandatory)**: At 170k tokens, the context monitor emits a mandatory stop directive. All current work must pause while `Ecompact-executor` runs compaction. This directive overrides cooldown.
+- If task cannot complete after compaction, suggest handoff.
 
 
 ## Compression Techniques

@@ -145,11 +145,20 @@ const MEMO_FILE_LIMIT = 10 * 1024; // 10KB
 const MEMO_TOTAL_LIMIT = 100 * 1024; // 100KB
 
 /**
- * Update ContextMemo with file content
+ * Initialize memo structure if needed
+ */
+function ensureMemo(state) {
+  if (!state.memo) state.memo = { files: {}, meta: {}, total_size: 0, blocked_reads: 0 };
+  if (!state.memo.meta) state.memo.meta = {};
+  if (state.memo.blocked_reads === undefined) state.memo.blocked_reads = 0;
+  return state.memo;
+}
+
+/**
+ * Update ContextMemo with file content and metadata
  */
 export function updateContextMemo(state, filePath, content) {
-  if (!state.memo) state.memo = { files: {}, total_size: 0 };
-  const memo = state.memo;
+  const memo = ensureMemo(state);
 
   if (content.length > MEMO_FILE_LIMIT) return;
 
@@ -160,9 +169,15 @@ export function updateContextMemo(state, filePath, content) {
     if (!firstKey) break;
     memo.total_size -= Buffer.byteLength(memo.files[firstKey], 'utf8');
     delete memo.files[firstKey];
+    delete memo.meta[firstKey];
   }
 
   memo.files[filePath] = content;
+  memo.meta[filePath] = {
+    readAt: Date.now(),
+    modifiedSince: false,
+    contentSize
+  };
   memo.total_size += contentSize;
 }
 
@@ -174,12 +189,64 @@ export function getContextMemo(state, filePath) {
 }
 
 /**
- * Invalidate ContextMemo for a file
+ * Get ContextMemo metadata for a file
+ */
+export function getContextMemoMeta(state, filePath) {
+  return state?.memo?.meta?.[filePath] || null;
+}
+
+/**
+ * Check if a file has a valid (non-stale) memo cache entry.
+ * Returns true if the file was previously read AND has not been modified since.
+ */
+export function isMemoValid(state, filePath) {
+  const meta = state?.memo?.meta?.[filePath];
+  if (!meta) return false;
+  return !meta.modifiedSince && !!state?.memo?.files?.[filePath];
+}
+
+/**
+ * Mark a file as modified in the memo cache.
+ * Called by post-tool-use when Write/Edit targets a cached file.
+ */
+export function markMemoModified(state, filePath) {
+  const memo = ensureMemo(state);
+  if (memo.meta[filePath]) {
+    memo.meta[filePath].modifiedSince = true;
+  }
+  // Also remove cached content since it's now stale
+  if (memo.files[filePath]) {
+    memo.total_size -= Buffer.byteLength(memo.files[filePath], 'utf8');
+    delete memo.files[filePath];
+  }
+}
+
+/**
+ * Increment the blocked reads counter
+ */
+export function incrementBlockedReads(state) {
+  const memo = ensureMemo(state);
+  memo.blocked_reads = (memo.blocked_reads || 0) + 1;
+  return memo.blocked_reads;
+}
+
+/**
+ * Get the blocked reads count
+ */
+export function getBlockedReads(state) {
+  return state?.memo?.blocked_reads || 0;
+}
+
+/**
+ * Invalidate ContextMemo for a file (full removal)
  */
 export function invalidateContextMemo(state, filePath) {
   if (state?.memo?.files?.[filePath]) {
     state.memo.total_size -= Buffer.byteLength(state.memo.files[filePath], 'utf8');
     delete state.memo.files[filePath];
+  }
+  if (state?.memo?.meta?.[filePath]) {
+    delete state.memo.meta[filePath];
   }
 }
 

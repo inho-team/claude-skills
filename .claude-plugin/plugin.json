@@ -1,6 +1,6 @@
 {
   "name": "qe-framework",
-  "version": "4.0.2",
+  "version": "5.0.0",
   "description": "QE Framework v4 — Claude-first SVS (Spec-Verify-Supervise) loop with optional Codex bridge via codex-plugin-cc.",
   "author": { "name": "inho-team" },
   "skills": "./skills/",

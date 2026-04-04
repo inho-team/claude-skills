@@ -123,7 +123,7 @@ Cross-session knowledge with TTL (permanent / 30d / 7d / 1d). Auto-pruned at ses
 
 ## Version
 
-`5.0.0` — Claude-only baseline with enforced token efficiency, competitive features from OMC/GSD analysis.
+`5.1.0` — SIVS (Spec-Implement-Verify-Supervise) architecture with enforced token efficiency.
 
 ## License
 

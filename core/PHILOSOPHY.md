@@ -7,6 +7,12 @@
 
 ---
 
+## Position in the PSE Chain
+
+The SVS Loop is the **quality gate** that runs inside the Execute and Verify steps of the PSE Chain (`/Qplan → /Qgs → /Qatomic-run → /Qcode-run-task`). The PSE Chain is the user-facing workflow; the SVS Loop is the internal quality mechanism that ensures each task meets its spec.
+
+---
+
 ## The Core Principle
 
 > Work without a spec is guesswork.
@@ -19,7 +25,7 @@ The QE Framework is built around one repeating loop:
 Spec → Verify → Supervise → (if failed) Remediate → Spec → ...
 ```
 
-This loop — the **SVS Loop** — is not optional. It is the framework.
+This loop — the **SVS Loop** — is not optional. It is the quality gate that drives every task to completion.
 
 ---
 

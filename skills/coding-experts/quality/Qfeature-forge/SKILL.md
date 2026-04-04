@@ -38,7 +38,7 @@ Operate with two perspectives:
 ## Core Workflow
 
 1. **Discover** - Use `AskUserQuestion` to understand the feature goal, target users, and user value. Present structured choices where possible (e.g., user types, priority level).
-2. **Interview** - Systematic questioning from both PM and Dev perspectives using `AskUserQuestion` for structured choices and open-ended follow-ups. Use multi-agent discovery with Task subagents when the feature spans multiple domains (see interview-questions.md for guidance).
+2. **Interview** - Systematic questioning from both PM and Dev perspectives using `AskUserQuestion` for structured choices and open-ended follow-ups. Use multi-agent discovery with Task Teammates when the feature spans multiple domains (see interview-questions.md for guidance).
 3. **Document** - Write EARS-format requirements
 4. **Validate** - Use `AskUserQuestion` to review acceptance criteria with stakeholder, presenting key trade-offs as structured choices
 5. **Plan** - Create implementation checklist
@@ -53,7 +53,7 @@ Load detailed guidance based on context:
 | Interview Questions | `references/interview-questions.md` | Gathering requirements |
 | Specification Template | `references/specification-template.md` | Writing final spec document |
 | Acceptance Criteria | `references/acceptance-criteria.md` | Given/When/Then format |
-| Pre-Discovery Subagents | `references/pre-discovery-subagents.md` | Multi-domain features needing front-loaded context |
+| Pre-Discovery Teammates | `references/pre-discovery-subagents.md` | Multi-domain features needing front-loaded context |
 
 ## Constraints
 

@@ -23,6 +23,8 @@ All git commit/push operations MUST go through the `/Qcommit` skill, which deleg
 
 The SVS (Spec → Verify → Supervise) Loop is the framework's central execution model. These 4 principles govern how it operates:
 
+> The SVS Loop operates inside the PSE Chain's Execute and Verify steps. See `core/PHILOSOPHY.md` for the full SVS specification and `QE_CONVENTIONS.md` for the PSE-SVS relationship.
+
 ### 1. Post-spec Status Clarity
 After `/Qgenerate-spec` creates spec documents, explicitly show:
 - **What was created**: CLAUDE.md, TASK_REQUEST, VERIFY_CHECKLIST (plans only)

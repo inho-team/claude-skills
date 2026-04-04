@@ -10,7 +10,7 @@ recommendedModel: opus
 ## Role
 You are the Chief Architect and Project Manager. Your job is **planning only** — you create the strategic roadmap and requirements, then hand off to the next skill in the PSE chain.
 
-## PSE Loop Overview
+## PSE Chain Overview
 The QE framework enforces a strict chain. Each skill handles ONE step and guides the user to the next:
 
 ```
@@ -54,59 +54,59 @@ After execution is complete (by /Qatomic-run + /Qcode-run-task), review the resu
 | `research/` | Deep technical research reports and domain analysis. |
 | `phases/{X}/` | Phase artifacts directory. |
 
-## Multi-Model Role Mode
+## Handoff
+After completing planning, you MUST display this structured output. Fill in the `{...}` placeholders from the actual plan.
 
-If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qplan` remains the planner entry point.
-
-Additional responsibilities in that mode:
-- Read the role mapping before planning
-- Record planning decisions so downstream roles inherit the same scope
-- Ensure the active phase in `.qe/planning/STATE.md` matches the objective that later appears in `.qe/ai-team/artifacts/role-spec.md`
-- Treat external provider choice as configuration, not as a change to the planning method
-
-### Planner Artifacts (role-owned outputs)
-Only when role-separated or tiered orchestration is active, write the following after Step 3 (phase activation) without altering the legacy `.qe/planning/*` outputs:
-
-| Artifact | Path | Content Requirements |
-|----------|------|----------------------|
-| `role-spec.md` | `.qe/ai-team/artifacts/` | Markdown with headings `# Role Spec`, `## Objective`, `## Scope`, `## Constraints`, `## Acceptance Criteria`, `## Execution Notes`. Populate each section from the active phase, requirements, and decisions. Call out which roles own which responsibilities and reference the relevant TASK_REQUEST UUIDs that will flow into Qgs. |
-| `task-bundle.json` | `.qe/ai-team/artifacts/` | JSON object `{ \"tasks\": [...] }` where each task entry includes `id`, `title`, `status`, `owner`, `wave`, and `acceptance_criteria` (array of strings). Derive IDs from roadmap/phase breakdown so implementers can trace items back to planning. Default `status` to `pending` unless a phase already started. |
-
-Rules:
-- Never emit these planner artifacts in `single-model` mode (keep backward compatibility).
-- Overwrite planner-owned artifacts only when the planner intentionally revises the scope; otherwise append new waves.
-- Keep `.qe/planning/` as the architectural source of truth and mirror, not replace, its content in the planner artifacts so implementers/reviewers can work offline from `.qe/ai-team/artifacts/`.
-
-Planner-stage source of truth in role-separated/tiered mode:
-- `.qe/planning/PROJECT.md`
-- `.qe/planning/ROADMAP.md`
-- `.qe/planning/REQUIREMENTS.md`
-- `.qe/planning/DECISION_LOG.md`
-- `.qe/planning/STATE.md`
-- `.qe/ai-team/artifacts/role-spec.md`
-- `.qe/ai-team/artifacts/task-bundle.json`
-
-## Mandatory Handoff Message
-After completing planning, you MUST display this EXACTLY:
+### Section 1: PSE Chain (always first)
 
 ```
----
-## PSE 다음 단계
+PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
+             계획완료      스펙생성      구현실행          검증·리뷰
+```
 
-계획이 완료되었습니다. 다음 명령을 실행하세요:
+### Section 2: Plan Summary
+
+```
+## 계획 요약 — {ProjectName}
+
+{N} Phases · {M} Waves · ~{T} Tasks
+
+| Phase | Goal | Key Deliverables |
+|-------|------|-----------------|
+| {Phase1Name} | {1-line goal} | {comma-separated deliverables} |
+| {Phase2Name} | {1-line goal} | {comma-separated deliverables} |
+| ... | ... | ... |
+```
+
+### Section 3: Key Decisions (if any exist in DECISION_LOG.md)
+
+```
+## 핵심 결정
+
+| ID | 결정 | 근거 |
+|----|------|------|
+| D001 | {decision title} | {1-line rationale} |
+| ... | ... | ... |
+```
+
+### Section 4: Next Command (always last, must be easy to copy)
+
+```
+다음 명령어:
 
   /Qgs Phase {X}: {PhaseName}
 
-PSE 체인: ✅ /Qplan → 👉 /Qgs → /Qatomic-run → /Qcode-run-task
----
+  안 되면: /Qgenerate-spec Phase {X}: {PhaseName}
 ```
+
+This must be the **last thing displayed** — no trailing explanation, no alternatives. The user copies and pastes this.
 
 ## Will
 - Create roadmap, requirements, and phase structure.
 - Use Sonnet/Opus for deep architectural reasoning.
-- Always display the handoff message at the end.
+- Always display the structured handoff (PSE Chain → Summary → Decisions → Next Command).
 
 ## Will Not
 - Write or modify source code.
 - Invoke /Qgs or /Qatomic-run directly.
-- Skip the handoff message.
+- Skip the handoff or bury the next command in prose.

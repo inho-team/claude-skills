@@ -10,7 +10,7 @@ QE Framework is built around a simple idea:
 
 The framework exists to force explicit handoffs between these stages.
 
-## The PSE Loop
+## The PSE Chain
 
 QE uses the Plan -> Spec -> Execute loop as the default path:
 
@@ -55,7 +55,7 @@ In `hybrid`, `multi-model`, or `tiered-model`, these roles can be split across d
 `/Qatomic-run` is not just “parallel execution”.
 It is the default implementer-stage entry point in the canonical QE workflow.
 
-- In `single-model`, it uses the legacy Haiku swarm path.
+- In `single-model`, it uses the Haiku Wave execution path.
 - In `hybrid`, `multi-model`, or `tiered-model`, it should prefer the configured implementer runner.
 
 That makes `/Qatomic-run` the bridge between the original Claude-only system and the newer role-based orchestration model.

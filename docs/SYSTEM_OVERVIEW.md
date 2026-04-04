@@ -20,12 +20,20 @@ Most users only need these commands:
 
 ## Core Roles
 
-QE separates work into four roles:
+QE separates work via the **PSE Chain** (user workflow) and **SVS Loop** (quality gate):
 
-- `planner`: creates and refines the plan and executable spec
-- `implementer`: performs implementation work
-- `reviewer`: independently reviews the implementation
-- `supervisor`: makes the final verification decision
+**PSE Chain** — the 4-step user workflow:
+- **Plan** (`/Qplan`): creates roadmap, phases, requirements
+- **Spec** (`/Qgs`): generates TASK_REQUEST + VERIFY_CHECKLIST
+- **Execute** (`/Qatomic-run`): implements via Haiku Wave execution
+- **Verify** (`/Qcode-run-task`): test → review → fix quality loop
+
+**SVS Loop** — the quality gate within Execute/Verify:
+- **Spec**: TASK_REQUEST defines the contract
+- **Verify**: VERIFY_CHECKLIST confirms completion
+- **Supervise**: Supervision agents confirm quality
+
+These map to underlying roles: planner, implementer, reviewer, supervisor. In `single-model` mode, one runner owns all roles. In `multi-model` or `tiered-model`, roles can be split across different runners.
 
 These roles are not tied to a single AI vendor. A project can assign Claude, Gemini, Codex, or multiple instances of the same provider to different roles.
 

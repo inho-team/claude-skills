@@ -29,8 +29,8 @@ Use this skill any time you are writing for a human:
 When context is limited:
 
 1. Draft based on judgment
-2. Hand the draft and relevant section files to a subagent
-3. Have the subagent proofread and return a revised version
+2. Hand the draft and relevant section files to a Teammate
+3. Have the Teammate proofread and return a revised version
 
 Loading a single section (~1,000–4,500 tokens) instead of full content saves significant context.
 

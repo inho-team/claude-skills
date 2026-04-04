@@ -120,19 +120,19 @@ Present spec summary, then use `AskUserQuestion`:
 
 ## Multi-Agent Pre-Discovery
 
-For features spanning multiple domains, launch Task subagents with relevant skills **before** starting the interview. This front-loads technical context so the interview focuses on decisions rather than exploration.
+For features spanning multiple domains, launch Task Teammates with relevant skills **before** starting the interview. This front-loads technical context so the interview focuses on decisions rather than exploration.
 
 ### Pattern: Parallel Skill-Invoked Discovery
 
 ```
 User request: "I need a feature that does X"
 
-Before interview, launch subagents in parallel:
+Before interview, launch Teammates in parallel:
 - Task(subagent_type="general-purpose"): Invoke architecture-designer skill to assess system impact
 - Task(subagent_type="general-purpose"): Invoke security-reviewer skill to identify auth/data concerns
 - Task(subagent_type="Explore"): Search codebase for existing patterns related to the feature
 
-Collect subagent findings → Use them to inform interview questions
+Collect Teammate findings → Use them to inform interview questions
 ```
 
 This ensures the Feature Forge interview starts with concrete technical context rather than assumptions.
@@ -143,7 +143,7 @@ This ensures the Feature Forge interview starts with concrete technical context 
 
 | Phase | Focus | Tool |
 |-------|-------|------|
-| Pre-Discovery | Technical context | Task subagents with skills |
+| Pre-Discovery | Technical context | Task Teammates with skills |
 | Discovery | Problem, users, value | Open-ended → AskUserQuestion |
 | Details | Journey, scope, constraints | AskUserQuestion → Open-ended |
 | Edge Cases | Failures, limits, security | AskUserQuestion → Open-ended |

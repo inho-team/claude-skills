@@ -28,34 +28,13 @@ You are a specialist document writer acting as a **sub-component of the `/Qplan`
 - Multiple tasks get separate TASK_REQUEST / VERIFY_CHECKLIST pairs.
 - Newly generated documents always go in `pending/`.
 
-## Multi-Model Role Mode
-
-If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qgenerate-spec` must also act as the planner-stage artifact generator.
-
-### Artifact emission order
-1. Generate the standard documents (CLAUDE.md, TASK_REQUEST, VERIFY_CHECKLIST) first.
-2. Immediately after writing both TASK_REQUEST and VERIFY_CHECKLIST pairs, mirror that information into:
-
-| Filename | Path | Owner | Content Rules |
-|----------|------|-------|---------------|
-| `role-spec.md` | `.qe/ai-team/artifacts/` | planner | Markdown w/ `# Role Spec`, `## Objective`, `## Scope`, `## Constraints`, `## Acceptance Criteria`, `## Execution Notes`. Populate these sections directly from the current TASK_REQUEST + roadmap context so implementers gain the same scope without reopening /Qplan. |
-| `task-bundle.json` | `.qe/ai-team/artifacts/` | planner | JSON `{ \"tasks\": [ ... ] }`. Each task entry MUST include: `id` (UUID), `title`, `status` (default `pending`), `owner` (role or name), `wave` (phase index), and `acceptance_criteria` (array). Optionally include `checklist`, `files`, or `dependencies` arrays derived from the TASK_REQUEST content. |
-
-### Guardrails
-- Only emit these files when config mode is not `single-model`; otherwise skip entirely.
-- Overwrite planner-owned artifacts only for the UUIDs being regenerated; preserve other tasks in the JSON array.
-- Derive `owner` from the `roles` mapping in `team-config.json` (e.g., `implementer.provider`).
-- Keep planner artifacts in sync with whatever you just wrote to `.qe/tasks/` so reviewers never see conflicting instructions.
-- Never let implementer/reviewer instructions bleed into these files; they must remain planner voice only.
-- Include `complexity` and `delegation_guidance` when the active mode is `tiered-model`, so implementer routing has explicit evidence.
-
 ## Workflow
 
 ### Step 1: Context Acquisition (Mandatory)
 Before collecting user info, identify the strategic context:
 1. **Check Roadmap**: Read `.qe/planning/ROADMAP.md` and `STATE.md`.
 2. **Identify Phase**: If an active Phase exists, use its **Success Criteria** and **Requirement IDs** as the primary source of truth for the spec.
-3. **Missing Roadmap**: If no roadmap exists, **STOP** and suggest running `/Qplan` first to maintain the PSE Loop integrity.
+3. **Missing Roadmap**: If no roadmap exists, **STOP** and suggest running `/Qplan` first to maintain the PSE Chain integrity.
 
 ### Step 2: Information Gathering
 ... (omitted) ...
@@ -98,7 +77,7 @@ Any fail → fix automatically. After max iterations, proceed with best version.
 
 ### Step 3: Review, Create, and Execute (The High-Performance Path)
 - **MANDATORY**: Use `AskUserQuestion` to present these options.
-- **Recommend Atomic-Run**: If the checklist has 4+ independent items, clearly label **"Generate & Atomic-Run (Swarm)"** as the **[Recommended]** path. Explain that it uses multiple parallel Haiku agents for maximum speed.
+- **Recommend Atomic-Run**: If the checklist has 4+ independent items, clearly label **"Generate & Atomic-Run (Wave)"** as the **[Recommended]** path. Explain that it uses multiple parallel Haiku agents for maximum speed.
 - **Auto-Chain**: Once the user selects an execution option, immediately invoke the corresponding skill (`/Qrun-task` or `/Qatomic-run`) with the generated UUIDs.
 
 On "Generate & Atomic-Run":
@@ -156,7 +135,6 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 ### CLAUDE.md
 - Single Source of Truth; read by AI every session
 - **Do NOT write task lists in CLAUDE.md.** Task history lives in `.qe/TASK_LOG.md`. CLAUDE.md only contains a reference pointer: `## Task Log` → `.qe/TASK_LOG.md` 참조
-## Document Writing Rules
 
 ### TASK_REQUEST
 - **What vs How**: Clearly separate the business goal from the technical implementation logic (from QE planning patterns).
@@ -183,22 +161,19 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - After completing tasks, if recurring patterns found, suggest template improvements
 - On user approval, reflect patterns in future generation
 
-## Mandatory Handoff Message
-After generating spec files (on "Generate Only"), you MUST display this EXACTLY:
+## Handoff
+After generating spec files (on "Generate Only"), display:
 
 ```
----
-## PSE 다음 단계
-
-스펙 생성이 완료되었습니다. 실행을 위해 다음 명령을 실행하세요:
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  👉 /Qatomic-run  →  /Qcode-run-task
+```
+```
+다음 명령어:
 
   /Qatomic-run {UUID}
-
-PSE 체인: ✅ /Qplan → ✅ /Qgs → 👉 /Qatomic-run → /Qcode-run-task
----
 ```
 
-Note: "Generate & Execute" and "Generate & Atomic-Run" options auto-chain, so the handoff message is only needed for "Generate Only".
+Note: "Generate & Execute" and "Generate & Atomic-Run" options auto-chain, so the handoff is only needed for "Generate Only".
 
 ## Output Format
 - Wrap document content in markdown code blocks when displaying

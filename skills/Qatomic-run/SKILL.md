@@ -1,11 +1,11 @@
 ---
 name: Qatomic-run
-description: "Parallel execution engine using Haiku Swarm. Best for TASK_REQUESTs with many simple, atomic checklist items. Triggers multiple Haiku teammates to execute independent items concurrently."
+description: "Parallel execution engine using Haiku Wave. Best for TASK_REQUESTs with many simple, atomic checklist items. Triggers multiple Haiku teammates to execute independent items concurrently."
 invocation_trigger: "When a TASK_REQUEST contains many atomic items that can be executed in parallel by low-reasoning agents."
 recommendedModel: sonnet
 ---
 
-# Qatomic-run — Haiku Swarm Execution Engine
+# Qatomic-run — Haiku Wave Execution Engine
 
 ## Role
 A coordination skill that orchestrates multiple **Haiku Teammates** to execute atomic checklist items in parallel. It acts as the "Lead" session that partitions work and merges results.
@@ -18,7 +18,7 @@ Read the `TASK_REQUEST` and identify items suitable for parallel execution:
 - Low complexity (single file edits, text changes, simple logic).
 - Non-overlapping file ownership.
 
-### Step 2: Swarm Initiation
+### Step 2: Wave Initiation
 Create an **Agent Team** using the `Agent` tool:
 - Assign **one Haiku Teammate per atomic item**.
 - **Atomic Commits**: Teammates MUST perform a `git commit` immediately after completing their specific item.
@@ -31,106 +31,63 @@ As Haiku teammates complete their tasks:
 - Synthesize changes without re-reading entire files unless a merge conflict occurs.
 - Aggregate all changes into the main working branch.
 
-### Step 4: Quality Loop
-After all atomic items are done, automatically trigger `/Qcode-run-task` to ensure the combined implementation is architecturally sound.
+### Step 4: Post-Execution Gate
+After all atomic items are done, determine the next step based on task type:
+- **`type: code`** → trigger `/Qcode-run-task` for test → review → fix quality loop.
+- **`type: docs` / `type: analysis` / deletion-heavy tasks** → run SVS Loop verification (VERIFY_CHECKLIST check + supervision) directly, skip `/Qcode-run-task`.
 
 ## Execution Rules
-- **Wave Model**: Group independent items from `TASK_REQUEST` into execution waves. Wave N+1 starts only after Wave N is verified.
+- **Wave**: Group independent items from `TASK_REQUEST` into execution waves. Wave N+1 starts only after Wave N is verified.
 - **File Ownership**: No two teammates can modify the same file within the same wave. Lead (Sonnet) must partition files before spawning.
 - **Haiku-First**: Always use `haiku` for teammates. If an item requires Sonnet, it's not "Atomic" and should be handled by standard `/Qrt`.
 - **Context Integrity**: Use `ContextMemo` to ensure teammates have current state without redundant I/O.
-
-## Multi-Model Role Mode
-
-If `.qe/ai-team/config/team-config.json` exists and `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qatomic-run` is the default implementer stage in the `Qplan` chain.
-
-In that mode, `/Qatomic-run` must prefer the configured external implementer runner over the legacy Haiku swarm path.
-- Read `.qe/ai-team/config/team-config.json` before spawning any teammate.
-- Resolve `roles.implementer.runner` and its matching entry in `runners`.
-- Show a short status line to the user before execution:
-  - `Implementer runner: {runnerName}`
-  - `Provider: {provider}`
-  - `Model: {model}`
-- If the runner points to an external CLI such as Codex or Gemini, do **not** use Haiku teammates for the implementation step.
-- In role-separated or tiered mode, the Haiku swarm path becomes a fallback only for single-model setups or when the configured implementer runner is explicitly Claude-based and the user chooses the legacy path.
-
-Implementer invariants in that mode:
-- **Read-only spec**: Consume `.qe/ai-team/artifacts/role-spec.md` + `task-bundle.json` and the TASK_REQUEST pair, but never rewrite planner-owned documents unless the planner explicitly requests changes.
-- **Scope enforcement**: Partition work strictly within the files/modules enumerated in the bundle. If an item would exceed scope, pause and request planner approval rather than editing.
-- **Implementation report output**: After synthesis, append to `.qe/ai-team/artifacts/implementation-report.md` with a markdown block containing:
-  - Changed files (absolute or repo-relative list)
-  - Commands / checks executed (tests, linters, scripts)
-  - Unresolved risks or follow-ups
-  - Date/time stamp + implementer identity
-- **No silent spec rewrites**: Any requirement shifts must bounce back to planner; otherwise proceed with tactical decisions only.
-
-Required execution path in role-separated/tiered mode:
-
-1. Validate that `.qe/ai-team/config/team-config.json` exists.
-2. Run the external implementer runner with the project-local command below:
-
-```powershell
-node scripts/run_role.mjs --role implementer --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/role-spec.md --artifact .qe/ai-team/artifacts/task-bundle.json --execute
-```
-
-3. Read the JSON result from the command output.
-4. Confirm that:
-   - `execution_attempted` is `true`
-   - `execution_error` is `null`
-   - `provider` and `model` match the configured implementer runner
-5. Report to the user which runner actually executed.
-6. Only after the external runner completes should `/Qcode-run-task` begin.
-
-Quota / subscription fallback:
-- If the JSON result reports `background_status: "blocked_quota"` or `execution_error` contains quota / rate-limit / billing / subscription language, stop the normal flow and use `AskUserQuestion`.
-- Read `fallback_candidates` and `override_examples` from the JSON result before asking anything.
-- Present candidates in returned order. Treat `recommended: true` candidates as the preferred options and mention `compatibility`:
-  - `direct`: already suitable for the same role
-  - `unassigned`: not bound to another role, safe to borrow for this run
-  - `cross_role`: bound to another role, only use if the user explicitly chooses it
-- Ask: `The implementer runner is temporarily unavailable. Reassign implementer for this run only?`
-- Required `AskUserQuestion` options:
-  - first recommended fallback runner
-  - second recommended fallback runner if present
-  - `Stop and inspect`
-- If the user chooses a fallback, rerun the same command with exactly one extra flag:
-
-```powershell
-node scripts/run_role.mjs --role implementer --config .qe/ai-team/config/team-config.json --input .qe/ai-team/artifacts/role-spec.md --artifact .qe/ai-team/artifacts/task-bundle.json --execute --role-override implementer=<selected_runner>
-```
-
-- State clearly that the override is temporary for the current run only.
-- If the user declines, halt and report that no external implementer completed.
-
-If the command fails, surface the failure explicitly:
-- `Configured implementer runner did not execute.`
-- show the provider/model that were intended
-- show the reported error
-- do not claim that Codex/Gemini executed if the fallback stayed inside Claude
-
-These multi-model rules are skipped entirely when `mode` is `single-model`, where legacy Haiku behavior remains the default.
 
 ## Will
 - Orchestrate parallel execution via Agent Teams
 - Monitor Haiku teammate performance
 - Synthesize results and handle merges
 
-## Mandatory Handoff Message
-After all atomic items are complete, you MUST display this EXACTLY:
+## Handoff
+After all Wave items are complete, display the execution summary, then branch by task type.
 
+### Execution Summary (always show)
 ```
----
-## PSE 다음 단계
+## 실행 완료 — {TaskName}
 
-실행이 완료되었습니다. 검증을 위해 다음 명령을 실행하세요:
+| 항목 | 값 |
+|------|---|
+| Task Type | {code / docs / analysis} |
+| Wave 수 | {N} |
+| 완료 항목 | {X}/{Y} |
+| Teammate 수 | {Z} |
+```
+
+### When `type: code`
+```
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
+```
+```
+다음 명령어:
 
   /Qcode-run-task
-
-PSE 체인: ✅ /Qplan → ✅ /Qgs → ✅ /Qatomic-run → 👉 /Qcode-run-task
----
 ```
+
+### When `type: docs` / `type: analysis` / deletion-heavy
+SVS 검증을 인라인으로 수행한 뒤(VERIFY_CHECKLIST 확인 + 감독 게이트):
+```
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
+```
+다음 Phase가 있으면:
+```
+다음 명령어:
+
+  /Qgs Phase {X+1}: {PhaseName}
+
+  안 되면: /Qgenerate-spec Phase {X+1}: {PhaseName}
+```
+다음 Phase가 없으면 완료 보고로 종료.
 
 ## Will Not
 - Implement complex architectural changes (handle via standard **Etask-executor**)
 - Bypass the quality loop
-- Skip the handoff message
+- Skip the handoff

@@ -4,21 +4,100 @@
 
 ---
 
-## Master Workflow: The PSE Loop
+## Terminology Glossary
 
-All engineering work in this project MUST follow the **Plan-Spec-Execute (PSE) Loop** driven by `/Qplan`:
+All skills, agents, and documents in this framework MUST use these standard terms. Deprecated terms should be replaced on sight.
 
-1.  **PLAN**: Use `/Qplan` to define the high-level Roadmap and Active Phase.
-2.  **SPEC**: `/Qplan` triggers `/Qgs` to generate **Haiku-Ready Atomic Tasks**.
-3.  **EXECUTE**: `/Qplan` triggers `/Qatomic-run` to execute atomic tasks via **Haiku Swarm**.
-4.  **VERIFY**: Final architectural verification and quality loop via Sonnet.
+| Concept | Standard Term | Deprecated | Notes |
+|---------|--------------|------------|-------|
+| User workflow | **PSE Chain** | ~~PSE Loop~~ | The 4-step user-facing workflow |
+| Quality gate | **SVS Loop** | — | Inner quality gate within Execute/Verify steps |
+| Parallel execution group | **Wave** | ~~Swarm~~ | Independent items grouped for concurrent execution |
+| Parallel agent | **Teammate** | ~~Subagent~~ (internal only) | Haiku Teammate = Haiku-model agent in a Wave |
+| Spec generation skill | **Qgs** | Qgenerate-spec (internal full name) | User always sees `/Qgs` |
+| Skill internal stages | **Step** | — | Step 1, Step 2, ... inside a skill |
+| Project roadmap stages | **Phase** | — | Phase 1, Phase 2, ... in `.qe/planning/` |
+| Parallel batch within Phase | **Wave** | — | Wave 1.1, Wave 1.2, ... within a Phase |
+| Leader session | **Lead** | ~~Orchestrator~~ (except agent names) | The coordinating session in Wave execution |
+| Handoff section in skills | **## Handoff** | ~~Mandatory Handoff Output/Message~~ | Standardized output format at skill completion |
 
-### Multi-Model Interpretation
-- `Qplan` owns the planner role and `.qe/planning/` state.
-- `Qgs` materializes planner output into executable task specs.
-- `Qatomic-run` is the default implementer stage.
-- `Qcode-run-task` is the default reviewer/supervisor verification stage.
-- `Qrun-task` is the fallback path for non-atomic execution, not the canonical PSE route.
+### PSE Chain (outer workflow)
+
+```
+/Qplan  →  /Qgs  →  /Qatomic-run  →  /Qcode-run-task
+ Plan       Spec      Execute          Verify
+```
+
+- **Plan**: Define roadmap, phases, requirements (`/Qplan`)
+- **Spec**: Generate TASK_REQUEST + VERIFY_CHECKLIST (`/Qgs`)
+- **Execute**: Implement checklist items via Wave execution (`/Qatomic-run`)
+- **Verify**: Test → review → fix quality loop (`/Qcode-run-task`)
+
+### SVS Loop (inner quality gate)
+
+```
+Spec → Verify → Supervise → (FAIL) Remediate → Spec → ...
+```
+
+The SVS Loop runs **inside** the Execute and Verify steps of the PSE Chain. It is the quality gate that ensures each task meets its spec before completion. See `core/PHILOSOPHY.md` for full specification.
+
+### Relationship
+
+```
+PSE Chain (user workflow)
+├── Plan ─────────── /Qplan
+├── Spec ─────────── /Qgs (Qgenerate-spec)
+├── Execute ──────── /Qatomic-run or /Qrun-task
+│     └── SVS Loop (quality gate)
+│           ├── Spec: TASK_REQUEST defines the contract
+│           ├── Verify: VERIFY_CHECKLIST confirms completion
+│           └── Supervise: Supervision agents confirm quality
+└── Verify ───────── /Qcode-run-task
+      └── SVS Loop (quality gate, final pass)
+```
+
+---
+
+## PSE Chain: Skill Roles
+
+| PSE Step | Skill | Role |
+|----------|-------|------|
+| Plan | `/Qplan` | Roadmap, phases, requirements |
+| Spec | `/Qgs` | TASK_REQUEST + VERIFY_CHECKLIST generation |
+| Execute | `/Qatomic-run` | Wave execution with Haiku Teammates (default) |
+| Execute | `/Qrun-task` | Sequential execution (fallback for non-atomic tasks) |
+| Verify | `/Qcode-run-task` | Test → review → fix quality loop |
+
+---
+
+## Handoff Format Rules
+
+Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows these rules:
+
+1. **PSE Chain 상태 한 줄** — 현재 완료/진행 상태 표시
+2. **`다음 명령어:` 블록** — 복사하기 쉽도록 코드 블록 안에 단독 배치
+3. **설명 금지** — 명령어 뒤에 대안, 부연, 선택지를 붙이지 않음
+4. **Task type 분기** — `type: code`만 `/Qcode-run-task`로 안내. docs/analysis/삭제 작업은 다음 Phase로 안내
+5. **숏컷 폴백** — `/Qgs`가 인식되지 않을 수 있으므로 `안 되면: /Qgenerate-spec ...` 를 항상 병기
+
+```
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  👉 /Qcode-run-task
+```
+```
+다음 명령어:
+
+  /Qcode-run-task
+```
+
+**Non-code 완료 시:**
+```
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qatomic-run  →  ✅ 완료
+```
+```
+다음 명령어:
+
+  /Qgs Phase {X+1}: {PhaseName}
+```
 
 ---
 

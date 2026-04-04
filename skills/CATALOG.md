@@ -8,12 +8,12 @@
 |-------|-------------------|--------------|
 | `/Qplan` | When starting any project or milestone. | **Master entry point.** Manages the Plan-Spec-Execute (PSE) Loop. |
 
-## Core Components (Internal PSE Loop)
+## Core Components (Internal PSE Chain)
 
 | Skill | Invocation Trigger | Core Benefit |
 |-------|-------------------|--------------|
 | `/Qgs` | Alias for `/Qgenerate-spec`. | Generates Haiku-Ready atomic specs. |
-| `/Qatomic-run` | When a TASK_REQUEST contains atomic items. | High-speed Haiku Swarm execution. |
+| `/Qatomic-run` | When a TASK_REQUEST contains atomic items. | High-speed Haiku Wave execution. |
 | `/Qrt` | Alias for `/Qrun-task`. | Standard task execution engine. |
 | `/Qsummary` | When work summary is needed. | High-density status reporting. |
 

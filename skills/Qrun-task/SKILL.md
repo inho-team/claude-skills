@@ -5,15 +5,15 @@ invocation_trigger: When a TASK_REQUEST or checklist needs implementation or ver
 recommendedModel: haiku
 ---
 
-# Task Execution Skill (Qplan PSE Loop Component)
+# Task Execution Skill (PSE Chain Fallback)
 
 ## Role
-Execute tasks based on spec documents. This is a **secondary execution engine** within the `/Qplan` PSE Loop, used when tasks cannot be fully atomized for `/Qatomic-run`.
+Execute tasks based on spec documents. This is a **secondary execution engine** within the `/Qplan` PSE Chain, used when tasks cannot be fully atomized for `/Qatomic-run`.
 
 > **MANDATORY:** All user confirmations MUST use the `AskUserQuestion` tool. Do NOT output options as plain text — always call the tool.
 
 ## Relationship to the Primary Chain
-- Canonical path: `/Qplan -> /Qgenerate-spec -> /Qatomic-run -> /Qcode-run-task`.
+- Canonical path: `/Qplan -> /Qgs -> /Qatomic-run -> /Qcode-run-task`.
 - Prefer `/Qatomic-run` whenever the checklist can be partitioned; use `/Qrun-task` when tasks are non-atomic, long-form, or explicitly routed for remediation.
 - Even in fallback mode, still hand off to `/Qcode-run-task` to maintain the verification and supervision gate.
 
@@ -27,28 +27,7 @@ Execute tasks based on spec documents. This is a **secondary execution engine** 
 .qe/tasks/{pending,in-progress,completed,on-hold}/TASK_REQUEST_*.md
 .qe/checklists/{pending,in-progress,completed,on-hold}/VERIFY_CHECKLIST_*.md
 .qe/tasks/remediation/REMEDIATION_REQUEST_*.md
-.qe/ai-team/config/team-config.json
-.qe/ai-team/artifacts/{role-spec.md,task-bundle.json,implementation-report.md,review-report.md,verification-report.md}
 ```
-
-## Multi-Model Role Mode
-
-If `.qe/ai-team/config/team-config.json` exists and its `mode` is `multi-model`, `hybrid`, or `tiered-model`, `/Qrun-task` must enforce role boundaries in addition to the standard SVS loop. Always read the config before execution; if `mode` resolves to `single-model` or the file is missing, skip the rest of this section to preserve backward-compatible behavior.
-
-`/Qrun-task` is still the secondary execution path in the QE ecosystem. Prefer `/Qatomic-run` when following the primary `Qplan -> Qgs -> Qatomic-run -> Qcode-run-task` chain.
-
-### Required behavior in role-separated/tiered mode
-1. Read role configuration before execution (capture planner/implementer/reviewer/supervisor provider assignments for later logging)
-2. Treat `role-spec.md` and `task-bundle.json` as planner-owned artifacts (do not edit them; treat scope as immutable unless planner reopens)
-3. During implementation, require an `implementation-report.md` artifact with changed files, checklist status, commands run, and unresolved risks
-4. Before completion, require a `review-report.md` artifact from the reviewer role (block completion until verdict is `approve` or supervisor override)
-5. Supervision writes the final `verification-report.md` (include final decision + rationale); do not close the task until this file exists
-
-### Boundary rules
-- Implementer may modify code and tests, but must not silently rewrite planner-owned artifacts
-- Reviewer should be read-only by default unless project policy explicitly permits edits
-- Supervisor owns pass/fail/remediation judgment
-- If reviewer verdict is `request_changes`, task cannot move to completed without remediation or supervisor override
 
 ## Delegation Rule
 When checklist has **5+ items**, delegate to `Etask-executor` agent. Main agent tracks progress, state transitions, and verification. After delegation, update timestamps: `- [x] item ✅ (HH:MM)`.
@@ -170,6 +149,36 @@ After completion, check for remaining tasks:
    - List upcoming tasks (UUID + name)
    - Ask: "다음 작업을 실행하려면 `/Qrun-task {UUID}`를 실행해주세요."
 4. If no remaining tasks, skip this step
+
+---
+
+## Handoff
+After task completion (Step 5), branch by task type.
+
+### When `type: code`
+```
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  👉 /Qcode-run-task
+```
+```
+다음 명령어:
+
+  /Qcode-run-task {UUID}
+```
+
+### When `type: docs` / `type: analysis` / deletion-heavy
+SVS 검증을 인라인으로 수행한 뒤:
+```
+PSE Chain:  ✅ /Qplan  →  ✅ /Qgs  →  ✅ /Qrun-task  →  ✅ 완료
+```
+다음 Phase가 있으면:
+```
+다음 명령어:
+
+  /Qgs Phase {X+1}: {PhaseName}
+
+  안 되면: /Qgenerate-spec Phase {X+1}: {PhaseName}
+```
+다음 Phase가 없으면 완료 보고로 종료.
 
 ---
 

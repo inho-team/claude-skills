@@ -175,6 +175,24 @@ Even if tests pass, perform a **Coverage Gap Audit**:
    ```
    - Confirm with `AskUserQuestion`: "Additional attempt" / "Complete as-is" / "Manual fix"
 
+### Step 4.8: Comment Coverage Gate
+After test+review, verify documentation coverage of changed code:
+1. Run `checkComments()` from `hooks/scripts/lib/comment-checker.mjs` on all changed files
+2. Report format: "Comment coverage: {documented}/{total} ({coverage}%)"
+3. **Threshold: 80% minimum** for public functions, classes, and exported symbols
+4. **Below 80%**: Warn and list undocumented items (optional fix)
+5. **Below 50%**: Flag as FAIL in verification (blocks completion)
+
+**Skip conditions:**
+- Type: `docs` or `analysis` tasks
+- Test-only files or internal utilities marked with `@internal` JSDoc
+
+**On failure (below 50%):**
+- Report uncovered items to the user
+- Delegate documentation fix to `Ecode-debugger` with coverage report
+- After fix, re-run comment checker and return to verification
+- If coverage reaches 80%+, proceed to Step 5
+
 ### Step 5: Report Results
 
 Summarize and report final results.

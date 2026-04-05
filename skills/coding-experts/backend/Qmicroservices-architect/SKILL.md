@@ -112,55 +112,75 @@ const orderSaga = [reserveInventoryStep, chargePaymentStep, scheduleShipmentStep
 await runSaga(orderSaga, { orderId, customerId, items });
 ```
 
-### Health & Readiness Probe (Kubernetes)
-```yaml
-livenessProbe:
-  httpGet:
-    path: /health/live
-    port: 8080
-  initialDelaySeconds: 10
-  periodSeconds: 15
-readinessProbe:
-  httpGet:
-    path: /health/ready
-    port: 8080
-  initialDelaySeconds: 5
-  periodSeconds: 10
+### Event-Driven Message Handler (Kafka)
+```js
+async function handleOrderEventMessage(message) {
+  const { type, payload, correlationId } = message;
+  logger.info({ correlationId }, `Processing ${type}`);
+  try {
+    if (type === 'OrderCreated') {
+      await reserveInventory(payload.orderId, payload.items);
+    } else if (type === 'PaymentProcessed') {
+      await scheduleShipment(payload.orderId);
+    }
+    await acknowledgeMessage(message);
+  } catch (err) {
+    logger.error({ correlationId, err }, 'Event processing failed');
+    // Nack for retry or DLQ routing
+  }
+}
 ```
-`/health/live` — returns 200 if the process is running.  
-`/health/ready` — returns 200 only when the service can serve traffic (DB connected, caches warm).
 
-## Constraints
+## Code Patterns (Microservices Essentials)
 
-### MUST DO
-- Apply domain-driven design for service boundaries
-- Use database per service pattern
-- Implement circuit breakers for external calls
-- Add correlation IDs to all requests
-- Use async communication for cross-aggregate operations
-- Design for failure and graceful degradation
-- Implement health checks and readiness probes
-- Use API versioning strategies
+1. **Circuit Breaker** — Fail fast when downstream service is degraded; auto-reset after timeout.
+2. **Saga Orchestration** — Multi-step distributed transactions with compensating rollback steps.
+3. **Event-Driven Handler** — Async message processing with correlation ID propagation and graceful error handling.
 
-### MUST NOT DO
-- Create distributed monoliths
-- Share databases between services
-- Use synchronous calls for long-running operations
-- Skip distributed tracing implementation
-- Ignore network latency and partial failures
-- Create chatty service interfaces
-- Store shared state without proper patterns
-- Deploy without observability
+## Comment Template
 
-## Output Templates
+Service documentation (JSDoc / Javadoc):
+```
+/**
+ * OrderService
+ * 
+ * API Contract:
+ * - POST /orders — create order (idempotent: use order-idempotency-key header)
+ * - GET /orders/{id} — fetch order details
+ * - DELETE /orders/{id} — cancel order (calls compensation saga)
+ * 
+ * Dependencies: inventory-service (gRPC), payment-service (async event), warehouse-service (REST)
+ * SLA: 99.5% uptime; p99 latency <200ms for GET; circuits open after 5 failures.
+ * Data: owns Order aggregate; eventual consistency with shipment status.
+ */
+```
 
-When designing microservices architecture, provide:
-1. Service boundary diagram with bounded contexts
-2. Communication patterns (sync/async, protocols)
-3. Data ownership and consistency model
-4. Resilience patterns for each integration point
-5. Deployment and infrastructure requirements
+## Lint Rules
 
-## Knowledge Reference
+- **Language** — Use language-specific linter (reference `lint-commands.md` for eslint/flake8/checkstyle).
+- **OpenAPI** — Validate specs with `spectral lint service-spec.yaml`.
+- **Docker** — Lint Dockerfile with `hadolint` to enforce security layers, minimize image size.
 
-Domain-driven design, bounded contexts, event storming, REST/gRPC, message queues (Kafka, RabbitMQ), service mesh (Istio, Linkerd), Kubernetes, circuit breakers, saga patterns, event sourcing, CQRS, distributed tracing (Jaeger, Zipkin), API gateways, eventual consistency, CAP theorem
+## Security Checklist
+
+- [ ] Service-to-service auth: mTLS or JWT signed with service private key
+- [ ] API gateway enforces rate limiting (per-tenant, per-API-key)
+- [ ] Secrets: no hardcoded credentials; use Vault, K8s Secrets, or cloud KMS
+- [ ] Network policies: ingress/egress rules restrict inter-service traffic
+- [ ] Distributed tracing: instrument for audit; log user actions with correlation ID
+
+## Anti-patterns (Wrong vs. Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| Distributed monolith: all services call same DB → data coupling | Database per service: each owns its schema; async events sync state |
+| Shared database: eliminates transaction boundaries | Service DB + Event Sourcing: consistent within bounded context; eventual consistency across |
+| Synchronous chains: A→B→C→D blocks on failures | Async chains: A publishes event; B, C, D subscribe independently with retries |
+| No circuit breaker: cascading failures when downstream breaks | Circuit breaker: fail fast, half-open probe, auto-reset after timeout |
+| Chatty services: 100 calls per request, network overhead | Coarse-grained boundaries: single call returns composed data; use caching/CQRS |
+
+## Constraints (MUST / MUST NOT)
+
+**MUST:** Domain-driven design boundaries | Database per service | Circuit breakers | Correlation IDs | Async for cross-aggregate | Graceful degradation | Health/readiness probes
+
+**MUST NOT:** Distributed monoliths | Shared DB schemas | Sync long-running calls | Skip distributed tracing | Ignore network failures | Chatty interfaces

@@ -139,6 +139,209 @@ function useWindowWidth(): number {
 - Ignore React strict mode warnings
 - Skip error boundaries in production
 
+## Code Patterns
+
+### Basic: Functional Component with Props Interface
+```tsx
+/**
+ * Button component with custom styling and click handler.
+ * @param props - Button component props
+ * @param props.label - Button text
+ * @param props.onClick - Click event handler
+ * @param props.disabled - Optional disabled state
+ * @returns JSX.Element - Rendered button
+ * @example
+ * <ActionButton label="Click me" onClick={() => alert('clicked')} />
+ */
+interface ActionButtonProps {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+export function ActionButton({ label, onClick, disabled = false }: ActionButtonProps) {
+  return (
+    <button onClick={onClick} disabled={disabled}>
+      {label}
+    </button>
+  );
+}
+```
+
+### Error Handling: ErrorBoundary & useErrorBoundary Hook
+```tsx
+import { Component, ReactNode } from 'react';
+
+/**
+ * ErrorBoundary class component for catching rendering errors.
+ * @param children - Child components to wrap
+ */
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) return <p>Error occurred</p>;
+    return this.props.children;
+  }
+}
+
+// React 19: useErrorBoundary hook (client component)
+import { useErrorBoundary } from 'react';
+export function SafeComponent() {
+  const { resetBoundary } = useErrorBoundary();
+  return <button onClick={resetBoundary}>Reset</button>;
+}
+```
+
+### Advanced: Custom Hook with Generics & Memoization
+```tsx
+import { useState, useCallback, useMemo } from 'react';
+
+/**
+ * Custom hook for managing form state with validation.
+ * @template T - Form data type
+ * @param initialValue - Initial form state
+ * @param onSubmit - Form submission callback
+ * @returns [formState, handlers, isValid]
+ * @example
+ * const [form, { setValue }, isValid] = useForm({ name: '' }, handleSubmit);
+ */
+function useForm<T extends Record<string, any>>(
+  initialValue: T,
+  onSubmit: (data: T) => Promise<void>
+) {
+  const [formState, setFormState] = useState(initialValue);
+  const [errors, setErrors] = useState<Partial<T>>({});
+
+  const setValue = useCallback((key: keyof T, value: T[keyof T]) => {
+    setFormState((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
+
+  return [formState, { setValue, setErrors }, isValid] as const;
+}
+```
+
+## Comment Template (JSDoc/TSDoc)
+
+### Component
+```tsx
+/**
+ * Displays a list of items with optional filtering.
+ * @param props - Component props
+ * @param props.items - Array of items to display
+ * @param props.onSelect - Callback when item is selected
+ * @returns JSX.Element - Rendered list component
+ * @example
+ * <ItemList items={data} onSelect={handleSelect} />
+ */
+```
+
+### Hook
+```tsx
+/**
+ * Custom hook for managing toggle state.
+ * @param initialValue - Initial toggle state
+ * @returns [state, toggle, reset] - Current state, toggle function, and reset function
+ * @example
+ * const [isOpen, toggle] = useToggle(false);
+ */
+```
+
+### Utility
+```tsx
+/**
+ * Validates email format.
+ * @param email - Email string to validate
+ * @returns boolean - True if valid email format
+ * @throws Error if email is null/undefined
+ * @example
+ * const valid = isValidEmail('user@example.com');
+ */
+```
+
+## Lint Rules
+
+Run before commit:
+- `npx eslint {file} --ext .ts,.tsx` — Check react-hooks/rules-of-hooks (error), react-hooks/exhaustive-deps (warn)
+- `npx tsc --noEmit` — Type check all files
+- `npx prettier --write {file}` — Format code
+
+Config files: `.eslintrc.json`, `tsconfig.json`, `.prettierrc`
+
+Critical rules:
+- `react-hooks/rules-of-hooks`: Error — hooks must be in function body
+- `react-hooks/exhaustive-deps`: Warn — useEffect dependencies must be complete
+
+## Security Checklist
+
+- **XSS via dangerouslySetInnerHTML**: Never with user input; use DOMPurify if HTML unavoidable
+- **Prototype Pollution**: Validate API responses before spreading; never `{...userInput}`
+- **npm Supply Chain**: Run `npm audit`, use lock files, review dependencies
+- **Client-Side Token Storage**: Never store auth tokens in Redux/Context; use HTTP-only cookies
+- **Open Redirect**: Validate URLs; block `javascript:` and `data:` schemes; use URL() constructor
+
+## Anti-patterns (Wrong → Correct)
+
+**1. Prop Drilling** → Use Context or state management library
+```tsx
+// WRONG: Drilling through many components
+<ComponentA user={user}><ComponentB user={user}>...</ComponentB></ComponentA>
+
+// CORRECT: Use Context
+const UserContext = createContext<User | null>(null);
+<UserContext.Provider value={user}><ComponentB /></UserContext.Provider>
+```
+
+**2. useEffect for Derived State** → Use useMemo
+```tsx
+// WRONG: Recalculate on every render
+const [fullName, setFullName] = useState('');
+useEffect(() => setFullName(`${first} ${last}`), [first, last]);
+
+// CORRECT: Memoize derived value
+const fullName = useMemo(() => `${first} ${last}`, [first, last]);
+```
+
+**3. Inline Components** → Extract to named functions
+```tsx
+// WRONG: Defined inside render, recreated each render
+function Parent() { return <div><Child /></div>; }
+const Child = () => <span>test</span>;
+
+// CORRECT: Named component outside parent
+const Child = () => <span>test</span>;
+function Parent() { return <div><Child /></div>; }
+```
+
+**4. Index as Key** → Use stable unique IDs
+```tsx
+// WRONG: Index changes with reordering
+{items.map((item, idx) => <Item key={idx} />)}
+
+// CORRECT: Use unique identifier
+{items.map((item) => <Item key={item.id} />)}
+```
+
+**5. Direct State Mutation** → Use immutable updates
+```tsx
+// WRONG: Mutates state directly
+const copy = state;
+copy.name = 'new';
+setState(copy);
+
+// CORRECT: Create new object
+setState({ ...state, name: 'new' });
+```
+
 ## Output Templates
 
 When implementing React features, provide:

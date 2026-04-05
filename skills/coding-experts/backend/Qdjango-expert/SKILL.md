@@ -159,6 +159,93 @@ When implementing Django features, provide:
 3. ViewSet or views with permissions
 4. Brief note on query optimization
 
+## Code Patterns
+
+### Basic: Model + Manager
+```python
+class PublishedManager(models.Manager):
+    """Custom manager filtering published articles."""
+    def get_queryset(self):
+        return super().get_queryset().filter(is_published=True)
+
+class Article(models.Model):
+    """Article model with published timestamp and custom manager."""
+    title = models.CharField(max_length=255, db_index=True)
+    author = models.ForeignKey("auth.User", on_delete=models.CASCADE)
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, db_index=True)
+    
+    objects = PublishedManager()
+```
+
+### Error Handling: Custom Middleware
+```python
+class ExceptionMiddleware:
+    """Catch validation and permission errors, return JSON."""
+    def __init__(self, get_response):
+        self.get_response = get_response
+    
+    def __call__(self, request):
+        try:
+            return self.get_response(request)
+        except PermissionDenied:
+            return JsonResponse({"error": "Forbidden"}, status=403)
+```
+
+### Advanced: DRF Serializer + Permission
+```python
+class ArticleSerializer(serializers.ModelSerializer):
+    """Validates title length, returns nested author."""
+    def validate_title(self, value):
+        if len(value) < 3:
+            raise serializers.ValidationError("Min 3 chars")
+        return value
+
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    """Allow edit only if request user is author."""
+    def has_object_permission(self, request, view, obj):
+        return request.method in SAFE_METHODS or obj.author == request.user
+```
+
+## Comment Template (Google Style)
+```python
+def publish_article(article_id: int) -> Article:
+    """Publish an article by ID.
+    
+    Args:
+        article_id: Primary key of Article to publish.
+    
+    Returns:
+        Updated Article with is_published=True.
+    
+    Raises:
+        Article.DoesNotExist: If article not found.
+    """
+```
+
+## Lint Rules
+- **ruff**: `select = ["E", "F", "W", "I001"]` (errors, undefined, warnings, imports)
+- **mypy --strict**: Enforce type hints on all functions
+- **black**: Line length 88, format all files before commit
+- **Config**: `pyproject.toml` with `[tool.black]`, `[tool.mypy]`, `[tool.ruff]`
+
+## Security Checklist
+1. **SQL Injection**: Always use ORM; avoid `raw()` and string interpolation in queries
+2. **XSS**: Template auto-escape on by default; never use `|safe` on user input
+3. **CSRF**: `CsrfViewMiddleware` enabled in `MIDDLEWARE`; POST requires `{% csrf_token %}`
+4. **Mass Assignment**: Explicitly set `fields` in serializers; never use `fields = "__all__"` with untrusted input
+5. **SECRET_KEY**: Load from `os.environ`, never hardcode; rotate in production
+6. **DEBUG=False**: Must be `False` in production to hide stack traces
+
+## Anti-patterns (Wrong → Correct)
+| Wrong | Correct |
+|-------|---------|
+| View with 200+ lines of business logic | Extract to service classes or model managers |
+| `Article.objects.filter(author=user)` in loop | Use `prefetch_related("author")` at query time |
+| No index on frequently filtered fields | Add `db_index=True` or `Meta.indexes` |
+| Validation and calculations in serializer `create()` | Move to model methods or service layer |
+| `Article.objects.raw("SELECT * FROM ...")` | Use ORM QuerySet; parameterize if raw needed |
+
 ## Knowledge Reference
 
 Django 5.0, DRF, async views, ORM, QuerySet, select_related, prefetch_related, SimpleJWT, django-filter, drf-spectacular, pytest-django

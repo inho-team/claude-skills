@@ -159,6 +159,143 @@ void blink_init(void) {
 }
 ```
 
+## Code Patterns with Doxygen
+
+**Basic: GPIO Init Function**
+```c
+/**
+ * @brief Initialize GPIO pin as output with optional pullup.
+ * @param[in] port GPIO port (GPIOA, GPIOB, ...)
+ * @param[in] pin  Pin number (0–15)
+ * @retval 0 on success, -1 if pin out of range
+ */
+int gpio_init_output(GPIO_TypeDef *port, uint8_t pin) {
+    if (pin > 15) return -1;
+    RCC->AHB1ENR |= (1 << ((uintptr_t)port >> 10));
+    port->MODER |= (1 << (pin * 2));
+    return 0;
+}
+```
+
+**Error Handling: Status Enum + Checking**
+```c
+typedef enum { HAL_OK = 0, HAL_TIMEOUT = 1, HAL_ERROR = 2 } hal_status_t;
+
+/**
+ * @brief Wait for DMA transfer complete with timeout.
+ * @param[in] dma_ch DMA channel handle
+ * @param[in] timeout_ms Timeout in milliseconds
+ * @retval HAL_OK on success, HAL_TIMEOUT if deadline missed, HAL_ERROR if DMA failed
+ */
+hal_status_t dma_wait_complete(DMA_Channel_t *dma_ch, uint32_t timeout_ms) {
+    uint32_t start = systick_ms();
+    while (!(dma_ch->ISR & DMA_ISR_TCIF)) {
+        if (systick_ms() - start > timeout_ms) return HAL_TIMEOUT;
+        if (dma_ch->ISR & DMA_ISR_TEIF) return HAL_ERROR;
+    }
+    return HAL_OK;
+}
+```
+
+**Advanced: ISR with Volatile + Memory Barrier**
+```c
+static volatile uint32_t g_adc_value = 0;
+static volatile uint8_t g_adc_ready = 0;
+
+/**
+ * @brief ADC EOC interrupt handler.
+ * @note Executes in ISR context; timing critical (<10 µs target).
+ *       Memory barrier ensures register read completes before g_adc_ready write.
+ */
+void ADC1_IRQHandler(void) {
+    if (ADC1->SR & ADC_SR_EOC) {
+        g_adc_value = ADC1->DR;  /* read clears EOC */
+        __DMB();                  /* data memory barrier */
+        g_adc_ready = 1;
+    }
+}
+```
+
+## Comment Template (Doxygen for Embedded)
+
+**Function Block**
+```c
+/**
+ * @brief One-line description of what the function does.
+ * @param[in]  arg1 Input parameter: brief description
+ * @param[out] arg2 Output parameter or pointer
+ * @retval 0 (HAL_OK) Success
+ * @retval -1 (HAL_ERROR) Invalid input or resource unavailable
+ * @note Thread-safe if called from task context only; NOT safe from ISR.
+ */
+```
+
+**ISR Block**
+```c
+/**
+ * @brief Handle UART receive complete interrupt.
+ * @note ISR context; max latency 50 µs (measured on scope).
+ *       Do NOT call blocking functions; use queues to signal tasks.
+ */
+```
+
+**Register Map / Peripheral**
+```c
+/**
+ * @defgroup TIMER_REGS STM32F4 TIM2 Register Map
+ * @{
+ * @brief Bit field definitions for TIM2 control registers.
+ * @param TIM2->CR1.CEN Counter enable (1=running, 0=stopped)
+ * @param TIM2->PSC Prescaler value; timer clock = APB1 / (PSC+1)
+ * @}
+ */
+```
+
+## Lint Rules: clang-tidy, cppcheck, MISRA
+
+**Enabled Checks**
+- `clang-tidy`: modernize-*, performance-*, readability-function-size
+- `cppcheck --enable=all`: catches uninitialized variables, integer overflow, memory leaks
+- MISRA C:2012 (if tool available): Required 21, Advisory 40+ (focus: no recursion, bounded loops, explicit casts)
+
+**Config: .clang-tidy**
+```yaml
+Checks: '-*,readability-*,performance-*,-readability-magic-numbers'
+CheckOptions:
+  - { key: readability-function-size.LineThreshold, value: 60 }
+```
+
+## Security Checklist (5+ Item Baseline)
+
+- [ ] **Buffer Overflow**: All buffers statically allocated with known sizes; use `sizeof()` in loops, never unbounded strcpy()
+- [ ] **Integer Overflow**: Check ADC/sensor readings for saturation; use guard assertions on calculations
+- [ ] **Stack Overflow**: Limit recursion depth (document max depth); monitor with `uxTaskGetStackHighWaterMark()` in FreeRTOS
+- [ ] **Timing Attacks**: Avoid data-dependent branches in crypto code; use constant-time comparisons (e.g., `memcmp_ct()`)
+- [ ] **Firmware Validation**: Cryptographic signature or CRC on flash updates; fail-safe rollback on checksum failure
+- [ ] **Debug Port Protection**: Disable JTAG/SWD in production; tie to fuse bits or config register
+
+## Anti-Patterns (5 Wrong/Correct Pairs)
+
+1. **Busy-Wait Loop** ❌ vs. **Interrupt + Flag** ✅
+   - Wrong: `while (!(UART->SR & RXNE)) { }` blocks everything
+   - Correct: Use ISR + task signaling; non-blocking check
+
+2. **Unbounded Buffer** ❌ vs. **Fixed-Size Ring Buffer** ✅
+   - Wrong: `char buf[]; sprintf(buf, ...)` uncontrolled
+   - Correct: `char buf[256]; snprintf(buf, 256, ...)` with bounds
+
+3. **Floating-Point in ISR** ❌ vs. **Fixed-Point Math** ✅
+   - Wrong: FPU context not saved; slow or crash
+   - Correct: Use `int16_t / int32_t` with bit shifts
+
+4. **Dynamic Memory in Safety-Critical** ❌ vs. **Static Pre-Allocation** ✅
+   - Wrong: `malloc()` in control loop; fragmentation + latency
+   - Correct: Reserve at init; reuse preallocated pools
+
+5. **Unchecked Return Values** ❌ vs. **Status Checking** ✅
+   - Wrong: `uart_send(data); next_step();` ignores FIFO full
+   - Correct: `if (uart_send(...) != HAL_OK) handle_error();`
+
 ## Output Templates
 
 When implementing embedded features, provide:

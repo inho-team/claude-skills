@@ -37,95 +37,119 @@ Load detailed guidance based on context:
 | Database Design | `references/database-design.md` | Normalization, keys, constraints, schemas |
 | Dialect Differences | `references/dialect-differences.md` | PostgreSQL vs MySQL vs SQL Server specifics |
 
-## Quick-Reference Examples
+## Code Patterns
 
-### CTE Pattern
+### Basic: SELECT with JOIN
 ```sql
--- Isolate expensive subquery logic for reuse and readability
-WITH ranked_orders AS (
+-- Purpose: Retrieve customer orders with inline total calculation
+-- Parameters: order_date must be parameterized (?1) to prevent SQL injection
+-- Expected output: customer_name, order_id, total_amount (sum of line items)
+SELECT 
+    c.name AS customer_name,
+    o.order_id,
+    SUM(li.quantity * li.unit_price) AS total_amount
+FROM customers c
+INNER JOIN orders o ON c.customer_id = o.customer_id
+LEFT JOIN line_items li ON o.order_id = li.order_id
+WHERE o.order_date > ?1
+GROUP BY c.customer_id, c.name, o.order_id;
+```
+
+### Error Handling: Transaction with SAVEPOINT
+```sql
+-- Purpose: Safely process fund transfers with rollback on constraint violation
+-- Rollback: ROLLBACK TO sp_transfer; handles duplicate key or insufficient funds
+BEGIN TRANSACTION;
+    SAVEPOINT sp_transfer;
+    UPDATE accounts SET balance = balance - ?1 WHERE account_id = ?2;
+    UPDATE accounts SET balance = balance + ?1 WHERE account_id = ?3;
+    
+    -- Constraint violation triggers automatic rollback to savepoint
+    IF @@ERROR <> 0 ROLLBACK TRANSACTION;
+COMMIT TRANSACTION;
+```
+
+### Advanced: Window Function + CTE
+```sql
+-- Purpose: Rank employees by salary within department and track running payroll
+-- Parameters: department_id filter applied before aggregation
+-- Output: Includes salary_rank and cumulative payroll for trend analysis
+WITH ranked_dept AS (
     SELECT
-        customer_id,
-        order_id,
-        total_amount,
-        ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS rn
-    FROM orders
-    WHERE status = 'completed'          -- filter early, before the join
+        department_id,
+        employee_id,
+        salary,
+        ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS salary_rank,
+        SUM(salary) OVER (PARTITION BY department_id ORDER BY hire_date) AS running_payroll
+    FROM employees
+    WHERE department_id = ?1
 )
-SELECT customer_id, order_id, total_amount
-FROM ranked_orders
-WHERE rn = 1;                           -- latest completed order per customer
+SELECT * FROM ranked_dept WHERE salary_rank <= 10;
 ```
 
-### Window Function Pattern
+## Comment Template
+
+### Query Comments
 ```sql
--- Running total and rank within partition — no self-join required
-SELECT
-    department_id,
-    employee_id,
-    salary,
-    SUM(salary)  OVER (PARTITION BY department_id ORDER BY hire_date) AS running_payroll,
-    RANK()       OVER (PARTITION BY department_id ORDER BY salary DESC) AS salary_rank
-FROM employees;
+-- Purpose: Calculate monthly revenue by product category
+-- Parameters: start_date (DATE), end_date (DATE) — use parameterized queries (?1, ?2)
+-- Expected output: category, month, total_revenue, item_count
+-- Dependencies: Requires fact_sales, dim_product, dim_date tables
 ```
 
-### EXPLAIN ANALYZE Interpretation
+### Procedure/Function Comments
 ```sql
--- PostgreSQL: always use ANALYZE to see actual row counts vs. estimates
-EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
-SELECT *
-FROM orders o
-JOIN customers c ON c.id = o.customer_id
-WHERE o.created_at > NOW() - INTERVAL '30 days';
+/*
+ * Procedure: sp_reconcile_account_balance
+ * Parameters:
+ *   @account_id INT — primary key of account to reconcile
+ *   @tolerance_amount DECIMAL(10,2) — max allowed variance (default: 0.01)
+ * Returns: INT status code (0=success, 1=mismatch, 2=error)
+ * Example: EXEC sp_reconcile_account_balance @account_id=42, @tolerance_amount=0.01
+ * Side effects: May update reconciliation_log table; rolls back if tolerance exceeded
+ */
 ```
-Key things to check in the output:
-- **Seq Scan on large table** → add or fix an index
-- **actual rows ≫ estimated rows** → run `ANALYZE <table>` to refresh statistics
-- **Buffers: shared hit** vs **read** → high `read` count signals missing cache / index
 
-### Before / After Optimization Example
+### Migration Comments
 ```sql
--- BEFORE: correlated subquery, one execution per row (slow)
-SELECT order_id,
-       (SELECT SUM(quantity) FROM order_items oi WHERE oi.order_id = o.id) AS item_count
-FROM orders o;
-
--- AFTER: single aggregation join (fast)
-SELECT o.order_id, COALESCE(agg.item_count, 0) AS item_count
-FROM orders o
-LEFT JOIN (
-    SELECT order_id, SUM(quantity) AS item_count
-    FROM order_items
-    GROUP BY order_id
-) agg ON agg.order_id = o.id;
-
--- Supporting covering index (includes all columns touched by the query)
-CREATE INDEX idx_order_items_order_qty
-    ON order_items (order_id)
-    INCLUDE (quantity);
+-- Migration: Add encrypted_ssn column to employees table
+-- Reason: PII compliance — store social security numbers in encrypted format
+-- Rollback: ALTER TABLE employees DROP COLUMN encrypted_ssn;
+-- Validation: SELECT COUNT(*) FROM employees WHERE encrypted_ssn IS NULL;
 ```
 
-## Constraints
+## Lint Rules
 
-### MUST DO
-- Analyze execution plans before recommending optimizations
-- Use set-based operations over row-by-row processing
-- Apply filtering early in query execution (before joins where possible)
-- Use EXISTS over COUNT for existence checks
-- Handle NULLs explicitly in comparisons and aggregations
-- Create covering indexes for frequent queries
-- Test with production-scale data volumes
+Run **sqlfluff** for automated formatting and lint checks:
+```bash
+sqlfluff lint {file} --dialect postgres  # dialect: postgres, mysql, tsql, oracle
+sqlfluff fix {file} --dialect postgres   # auto-fix style issues
+```
 
-### MUST NOT DO
-- Use SELECT * in production queries
-- Use cursors when set-based operations work
-- Ignore platform-specific optimizations when targeting a specific dialect
-- Implement solutions without considering data volume and cardinality
+Configure `.sqlfluff` in project root:
+```ini
+[core]
+dialect = postgres
+max_line_length = 100
 
-## Output Templates
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+```
 
-When implementing SQL solutions, provide:
-1. Optimized query with inline comments
-2. Required indexes with rationale
-3. Execution plan analysis
-4. Performance metrics (before/after)
-5. Platform-specific notes if applicable
+## Security Checklist
+
+- **SQL Injection**: Always use parameterized queries (?1, @param). Never concatenate user input.
+- **Privilege Escalation**: Grant minimal GRANT permissions; use role-based access control (RBAC); audit GRANT changes.
+- **Data Exposure**: Implement column-level permissions (via views or GRANT); mask PII in non-prod; audit SELECT on sensitive columns.
+- **Backup Encryption**: Encrypt backup files at rest; test restore from encrypted backup; log backup locations.
+- **Audit Logging**: Enable query audit logging; log DDL changes (CREATE, ALTER, DROP); monitor login failures.
+
+## Anti-patterns
+
+| Pattern | Why Wrong | Correct Approach |
+|---------|-----------|------------------|
+| `SELECT *` | Unknown cardinality; includes unnecessary columns; breaks schema changes | List explicit columns: `SELECT id, name, email` |
+| Implicit JOINs (WHERE clause) | Unclear precedence; hard to maintain | Use explicit `INNER JOIN`, `LEFT JOIN` |
+| No index on WHERE columns | Full table scan; slow on large tables | `CREATE INDEX idx_table_column ON table(column)` |
+| N+1 in application | One query per row; scales poorly | Batch with `JOIN` or `IN` clause; use aggregation |
+| JSON in relational storage | Non-atomic updates; query complexity | Normalize to separate table with FK; use JSONB only for config |

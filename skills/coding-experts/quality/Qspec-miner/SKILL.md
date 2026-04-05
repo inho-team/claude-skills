@@ -108,3 +108,52 @@ Include:
 5. Inferred acceptance criteria
 6. Uncertainties and questions
 7. Recommendations
+
+## Code Patterns (Reverse Engineering)
+
+1. **Behavior Analysis**: Run code with inputs; observe outputs; infer spec
+   - Test happy path, error cases, edge boundaries
+2. **Test Coverage Analysis**: Existing tests reveal what was deemed important
+3. **Code Path Tracing**: Follow HTTP request from entry to DB and back
+
+## Comment Template
+
+```
+// [REVERSE SPEC] Discovered behavior:
+// When POST /users with { email, password }, returns { id, token }
+// Evidence: line 42 in routes.js; test case at tests/auth.spec.js:15
+// Inferred: Email must be unique (constraint at models/user.js)
+// Uncertain: What happens if password < 8 chars? (no test found)
+```
+
+## Static Analysis for Spec Mining
+
+- Use `grep` to find all route definitions and export statements
+- Track imports to discover module boundaries and dependencies
+- Search for error handlers to understand failure modes
+- Analyze test files to extract acceptance criteria
+
+## Security Spec Extraction
+
+1. Look for auth checks in middleware or guard functions
+2. Identify parameterized queries vs vulnerable patterns
+3. Find rate limiting, CORS, CSP headers in configuration
+4. Trace password hashing, JWT validation, token expiry
+5. Note any hardcoded credentials or TODOs marked "security"
+
+## Anti-patterns (5 Examples)
+
+**Wrong:** Guessing behavior without running code
+**Correct:** Execute with test inputs; log outputs; then infer spec
+
+**Wrong:** No test coverage analysis (missing behavior edge cases)
+**Correct:** Read test files; they show what was tested and what gaps remain
+
+**Wrong:** Ignoring edge cases found in error handlers
+**Correct:** Document all error paths; mark as discovered via error handling
+
+**Wrong:** Single-pass analysis (read once, declare done)
+**Correct:** Multi-pass: first structure, then behavior, then security
+
+**Wrong:** No stakeholder validation (inferred spec without confirmation)
+**Correct:** List uncertainties; ask domain owner to validate inferences

@@ -116,6 +116,108 @@ Code review report must include:
 6. **Questions for author** — Clarifications needed
 7. **Verdict** — Approve / Request Changes / Comment
 
+## Code Patterns (3 Examples)
+
+### Pattern 1: Constructive Feedback with Code Example
+```markdown
+**Issue:** Hardcoded magic number lacks context
+**File:** src/order-processor.ts, line 42
+
+Instead of:
+  if (total > 1000) { applyDiscount = 0.15; }
+
+Consider:
+  const BULK_ORDER_THRESHOLD = 1000;
+  const BULK_DISCOUNT_RATE = 0.15;
+  if (total > BULK_ORDER_THRESHOLD) { applyDiscount = BULK_DISCOUNT_RATE; }
+
+**Why:** Improves readability and makes thresholds discoverable for future changes.
+```
+
+### Pattern 2: Security Issue with Remediation
+```markdown
+**Issue:** User input not sanitized (XSS Risk)
+**File:** src/pages/profile.tsx, line 88
+**Severity:** High
+
+Vulnerable:
+  <div dangerouslySetInnerHTML={{ __html: userBio }} />
+
+Fixed:
+  import DOMPurify from 'dompurify';
+  <div>{DOMPurify.sanitize(userBio)}</div>
+
+**Impact:** Attackers can inject malicious scripts.
+```
+
+### Pattern 3: Performance N+1 Finding
+```markdown
+**Issue:** N+1 query in user list endpoint
+**File:** src/api/users.service.ts, line 156
+
+Current (executes query inside loop):
+  for (const user of users) {
+    user.orders = await Order.find({ userId: user.id });
+  }
+
+Better (batch query):
+  const ordersByUser = await Order.find({ userId: { $in: userIds } });
+```
+
+## Comment Template
+
+Review comments should always follow this format:
+
+```markdown
+**[Category: BUG|PERF|SECURITY|STYLE]** 
+**Severity: CRITICAL|HIGH|MEDIUM|LOW**
+
+[Clear 1-line problem statement]
+
+File: path/to/file.ts, line X
+Context: [3-line code snippet]
+
+Suggestion: [Specific fix with code example]
+Why: [Rationale — impact or best practice]
+```
+
+## Lint Rules
+
+Configure these tools in CI to enforce consistency:
+
+```bash
+# ESLint + standard rules
+npx eslint "src/**/*.{js,ts}" --fix
+
+# TypeScript strict mode
+tsc --strict --noUncheckedIndexedAccess
+
+# Prettier formatting
+npx prettier --write "src/**/*.{js,ts,tsx}"
+
+# Commit hook to lint before review
+husky add .husky/pre-push "npm run lint"
+```
+
+## Security Checklist (5+)
+
+- [ ] No hardcoded secrets, API keys, or credentials
+- [ ] Input validation present (SQL injection, XSS, command injection risks)
+- [ ] Authentication/authorization checks before sensitive operations
+- [ ] No deserialization of untrusted data
+- [ ] Crypto usage verified (no weak algorithms, proper key management)
+- [ ] Dependencies checked for known vulnerabilities (`npm audit`)
+
+## Anti-Patterns (5 Wrong/Correct)
+
+| Anti-Pattern | Wrong | Correct |
+|---|---|---|
+| **Nitpicking Style** | "Use 2 spaces instead of 4" (blocking minor formatting) | Let Prettier handle formatting; focus on logic |
+| **No Actionable Feedback** | "This is bad" | "This function has 12 parameters — consider using an options object" |
+| **Rubber Stamping** | Approving without reading test coverage | Verify tests exist and cover edge cases |
+| **Blocking on Preferences** | "I prefer const over let everywhere" (personal taste) | Follow existing codebase style; suggest linter addition if missing |
+| **Reviewing Too Much at Once** | 500-line PR with comments on all 500 lines | Split PR; suggest refactoring in separate issue if it exceeds scope |
+
 ## Knowledge Reference
 
 SOLID, DRY, KISS, YAGNI, design patterns, OWASP Top 10, language idioms, testing patterns

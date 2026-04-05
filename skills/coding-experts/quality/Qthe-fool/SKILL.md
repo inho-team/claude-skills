@@ -122,3 +122,55 @@ After any mode, the final output must include:
 ## Knowledge Reference
 
 Socratic method, Hegelian dialectic, steel manning, pre-mortem analysis, red teaming, falsificationism, abductive reasoning, second-order thinking, cognitive biases, inversion technique
+
+## Code Patterns (Critical Thinking)
+
+1. **Devil's Advocate**: Argue strongest opposing view; find synthesis
+2. **Pre-Mortem**: Imagine failure; work backward to prevent it
+3. **Red Team**: Attack your own idea; strengthen defenses
+
+## Comment Template
+
+```
+// [CHALLENGE] Position: "We should use database X"
+// Assumption: Cost savings justify migration risk
+// Counterargument: Migration takes 3 months; operational risk outweighs savings
+// Synthesis: Use X only if new project; defer migration for existing apps
+```
+
+## Argument Validation Rules
+
+- All claims must be grounded in evidence, not intuition
+- Challenges must name specific, concrete risks (not vague "what ifs")
+- Synthesis must address counterargument, not ignore it
+- Never stack minor objections to create false weakness
+
+## Security Assumption Challenging
+
+1. Challenge: "We're using HTTPS, so we're secure"
+   - Check: Is CSP set? Are secrets in environment? Is TLS config hardened?
+2. Challenge: "We validate input on the frontend"
+   - Check: Server enforces same validation, right? (client can be bypassed)
+3. Challenge: "Our data is encrypted"
+   - Check: Who holds encryption keys? Where are they stored?
+4. Challenge: "Only admins can access this endpoint"
+   - Check: Is auth checked before authz? Can token be stolen?
+5. Challenge: "No one has reported a breach"
+   - Check: Do we log attempts? Do we monitor logs? Are logs auditable?
+
+## Anti-patterns (5 Examples)
+
+**Wrong:** Agreeing with everything (playing yes-man)
+**Correct:** Steel the position, then present 3-5 strongest objections
+
+**Wrong:** Challenging without evidence ("I don't like this")
+**Correct:** "This assumes X; if X fails, then Y breaks. Here's why X might fail"
+
+**Wrong:** Personal attacks ("You're wrong because you're inexperienced")
+**Correct:** "This proposal assumes Z; let's test that assumption"
+
+**Wrong:** Blocking without alternatives ("This will never work")
+**Correct:** "This approach has risks A, B, C; alternative is X, which trades off Y"
+
+**Wrong:** Challenging everything equally (all objections seem equally valid)
+**Correct:** Rank by severity; distinguish "nice to have" from "blocks go-live"

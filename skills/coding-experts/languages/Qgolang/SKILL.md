@@ -68,6 +68,81 @@ The `run` shell script orchestrates Go toolchain commands. No business logic in 
 
 See [CODE_RULES.md](skills/CODE_RULES.md) for complete standards.
 
+## Code Patterns
+
+### Basic: Struct with Methods & GoDoc
+```go
+// User represents an authenticated user.
+type User struct {
+	id   string // unexported
+	name string
+}
+
+// NewUser creates a User with validation.
+func NewUser(id, name string) (*User, error) {
+	if name == "" {
+		return nil, fmt.Errorf("name required")
+	}
+	return &User{id: id, name: name}, nil
+}
+
+// Name returns the user's name.
+func (u *User) Name() string { return u.name }
+```
+
+### Error Handling: Sentinel Errors + Wrapping
+```go
+var ErrNotFound = errors.New("not found")
+var ErrUnauthorized = errors.New("unauthorized")
+
+func fetch(id string) (*User, error) {
+	if id == "" {
+		return nil, fmt.Errorf("fetch: %w", ErrNotFound)
+	}
+	return &User{id: id}, nil
+}
+```
+
+### Advanced: Table-Driven Tests
+```go
+func TestTruncate(t *testing.T) {
+	cases := []struct {
+		name   string
+		input  string
+		max    int
+		want   string
+	}{
+		{"empty", "", 10, ""},
+		{"fit", "abc", 10, "abc"},
+		{"trim", "abcdef", 3, "abc"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := Truncate(tc.input, tc.max)
+			if got != tc.want {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+```
+
+## Comment Template (GoDoc)
+
+All exported symbols require GoDoc. Format:
+```go
+// PackageName [short description].
+package main
+
+// FunctionName does [what] and returns [what].
+func FunctionName(param Type) (Result, error) { ... }
+
+// FieldName is [purpose]. Unexported fields never documented.
+type Struct struct {
+	FieldName Type
+}
+```
+
 ## Error Handling
 
 - Return errors explicitly; check immediately; never discard with `_`
@@ -94,12 +169,58 @@ See [CODE_RULES.md](skills/CODE_RULES.md) for complete standards.
 
 See [TEST_RULES.md](skills/TEST_RULES.md) for complete standards.
 
+## Lint Rules
+
+**golangci-lint** — `.golangci.yml` required at project root. Enforce:
+- `errcheck`: no dropped errors
+- `gosimple`: simplify code idioms
+- `ineffassign`: detect unused assignments
+- `misspell`: catch typos
+- `unused`: remove dead code
+
+```yaml
+# .golangci.yml minimal
+run:
+  timeout: 5m
+linters:
+  enable:
+    - errcheck
+    - gofmt
+    - gosimple
+    - ineffassign
+    - misspell
+    - unused
+    - vet
+```
+
+**gofmt** — Run `gofmt -w .` before every commit. No manual formatting.
+
+**go vet** — `go vet ./...` must be clean. Check for: incorrect Printf usage, unreachable code, unused variables.
+
+## Security Checklist
+
+- [ ] SQL injection: Always use prepared statements; never concatenate user input
+- [ ] Path traversal: Validate paths; use `filepath.Join` + check result stays within bounds
+- [ ] Goroutine leaks: Ensure all spawned goroutines exit; use context cancellation
+- [ ] Race conditions: `-race` flag mandatory in tests; no unsynchronized access to shared data
+- [ ] Secrets in code: No hardcoded keys/tokens; use `keyring` or environment variables only
+
+## Anti-Patterns (Wrong vs. Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `_ := someFunc()` — discards error | `if err := someFunc(); err != nil { return err }` |
+| `go doWork()` without cancel — leak | `go func(ctx context.Context) { ... }(ctx)` + listen to ctx.Done() |
+| `func init() { globalState = ... }` | Constructor: `NewApp() *App { return &App{} }` |
+| `interface{}` everywhere — type-unsafe | `interface{ Reader }` or concrete type — be specific |
+| 10-level if nesting, 100-line function | Max 3 levels; refactor; small files; guard clauses |
+
 ## Quality Gates
 
 - `gofmt` must produce no changes
 - `go vet ./...` must be clean
 - `golangci-lint run` must be clean
-- `go test ./...` must pass with zero failures
+- `go test ./... -race` must pass with zero failures
 - Run `./run check` at task completion — no commits without full pass
 
 ## Prohibited Patterns

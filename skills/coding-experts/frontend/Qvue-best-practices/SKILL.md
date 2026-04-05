@@ -140,17 +140,122 @@ Performance work is a post-functionality pass. Do not optimize before core behav
 - Over-abstraction in hot list paths -> [perf-avoid-component-abstraction-in-lists](references/perf-avoid-component-abstraction-in-lists.md)
 - Expensive updates triggered too often -> [updated-hook-performance](references/updated-hook-performance.md)
 
-## 5) Final self-check before finishing
+## 5) Code Patterns — Vue Optimization with JSDoc
+
+Reference: See `references/reactivity.md`, `references/perf-v-once-v-memo-directives.md`, `references/perf-virtualize-large-lists.md`
+
+### Basic: Computed vs Watch Usage
+```typescript
+// PATTERN: Prefer computed for derivation; use watch for side effects only
+const count = shallowRef(0)
+
+// ✅ Computed: pure derivation, cached
+const doubled = computed(() => count.value * 2)
+
+// ✅ Watch: side effects triggered by change
+watch(count, (val) => console.log('Count changed to:', val))
+
+// ❌ WRONG: watch for derivation loses caching
+const tripled = ref(0)
+watch(count, (val) => { tripled.value = val * 3 })
+```
+
+### Error Handling: onErrorCaptured Composition
+```typescript
+// ✅ Wrap composables in error boundary
+import { onErrorCaptured } from 'vue'
+
+export function useApiCall() {
+  const error = ref(null)
+  
+  onErrorCaptured((err) => {
+    error.value = err.message
+    return false // suppress further propagation
+  })
+  
+  return { error }
+}
+```
+
+### Advanced: v-memo + Virtual Scrolling
+```vue
+<!-- ✅ PATTERN: v-memo for selection changes + virtual scroll for 1000+ items -->
+<template>
+  <VirtualScroller :list="items" #default="{ item }">
+    <div v-memo="[item.id === selectedId]" :class="{ selected: item.id === selectedId }">
+      <ExpensiveComponent :data="item" />
+    </div>
+  </VirtualScroller>
+</template>
+
+<script setup>
+// Reference: perf-virtualize-large-lists.md
+const selectedId = ref(null)
+const items = ref(/* 10000+ items */)
+</script>
+```
+
+## 6) Comment Template — JSDoc for Vue Composables
+
+```typescript
+/**
+ * useApiCall - Manage async data fetching with error handling
+ * @param {string} url - API endpoint
+ * @param {UseApiCallOptions} options - Configuration object
+ * @returns {Object} { data, loading, error, refetch }
+ * 
+ * @example
+ * const { data, loading, error } = useApiCall('/api/users', { immediate: true })
+ * 
+ * @see composables.md for composable organization patterns
+ */
+export function useApiCall(url, options = {}) {
+  // implementation
+}
+```
+
+## 7) Lint Rules — Quality Tooling
+
+Apply these linters to Vue projects:
+- **eslint-plugin-vue**: Essential Vue template/SFC rules. Must-enable: `vue/multi-word-component-names`, `vue/no-v-html-unsafe`, `vue/no-unused-vars`
+- **vue-tsc**: Type-check SFCs in strict mode (`strictTemplates: true`)
+- **Prettier**: Format .vue files consistently. Add `.vue` to parser config
+
+Run before commit:
+```bash
+eslint src --ext .vue --fix && vue-tsc --noEmit && prettier --write src
+```
+
+## 8) Security Checklist (5+ Critical Items)
+
+- [ ] **v-html XSS**: Never use `v-html` with user input. Sanitize via DOMPurify or server-side HTML escape
+- [ ] **Template Injection**: Never use `v-bind` on computed templates. Use `<component :is="dynamicComponentRef" />`
+- [ ] **CSRF Protection**: Add CSRF tokens to form submissions. Pinia stores must not expose auth tokens in state
+- [ ] **Dependency Audit**: Run `npm audit` weekly. Lock vulnerable transitive deps in `package-lock.json`
+- [ ] **Pinia Data Exposure**: Do not store session tokens or secrets in Pinia stores. Use httpOnly cookies instead
+
+## 9) Anti-patterns — Reference & Wrong/Correct Pairs
+
+See full details: `references/component-data-flow.md`, `references/reactivity.md`, `references/composables.md`
+
+| Pattern | WRONG | CORRECT |
+|---------|-------|---------|
+| **Destructuring reactive()** | `const { count } = reactive({count: 0})` | `const { count } = toRefs(state)` |
+| **Watch non-getter** | `watch(state.count, ...)` | `watch(() => state.count, ...)` |
+| **Watcher derivation** | `const doubled = ref(0); watch(..., () => { doubled.value = ... })` | `const doubled = computed(...)` |
+| **Direct Pinia mutation** | `store.items.push(...)` (no action) | Define action: `store.addItem(item)` |
+| **v-html with user data** | `<div v-html="userComment" />` | Use DOMPurify: `v-html="sanitize(userComment)"` |
+
+## 10) Final Self-Check Before Finishing
 
 - Core behavior works and matches requirements.
 - All must-read references were read and applied.
 - Reactivity model is minimal and predictable.
 - SFC structure and template rules are followed.
+- Code patterns section applied (computed vs watch, error handling, v-memo + virtualization).
 - Components are focused and well-factored, splitting when needed.
 - Entry/root and route view components remain composition surfaces unless there is an explicit small-demo exception.
-- Component split decisions are explicit and defensible (responsibility boundaries are clear).
-- Data flow contracts are explicit and typed.
-- Composables are used where reuse/complexity justifies them.
-- Moved state/side effects into composables if applicable
+- Linting rules pass (eslint-plugin-vue, vue-tsc, prettier).
+- Security checklist items verified (no v-html with user input, CSRF tokens, dependency audit).
 - Optional features are used only when requirements demand them.
 - Performance changes were applied only after functionality was complete.

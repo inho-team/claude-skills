@@ -141,6 +141,98 @@ curl -f https://myapp.example.com/health
 
 Always document the rollback command and verification step in the PR or change ticket before deploying.
 
+## Code Patterns
+
+**Multi-stage Dockerfile** — Reduce image size by building in one stage, copying artifacts to another:
+```dockerfile
+FROM golang:1.21 AS builder
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -o app .
+
+FROM alpine:3.18
+COPY --from=builder /src/app /app
+CMD ["/app"]
+```
+
+**GitHub Actions Workflow** — Automated build, test, scan, push:
+```yaml
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build & scan
+        run: docker build -t myapp . && trivy image myapp
+      - name: Push
+        run: docker push ghcr.io/org/myapp:${{ github.sha }}
+```
+
+**Docker Compose Health Checks** — Ensure dependencies are ready:
+```yaml
+services:
+  api:
+    build: .
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+```
+
+## Comment Template
+
+**Dockerfile Comments:**
+```dockerfile
+# Stage 1: Build — compile and cache dependencies
+FROM node:20-alpine AS builder
+# Install only prod deps in final image
+RUN npm ci --omit=dev
+# Stage 2: Runtime — minimal footprint
+FROM node:20-alpine
+# Drop root: apply least privilege
+USER app
+```
+
+**YAML Comments (CI/CD):**
+```yaml
+# Trigger only on main branch to avoid noise
+on:
+  push:
+    branches: [main]
+# Secrets: reference via GitHub Secrets, never inline
+env:
+  REGISTRY_URL: ghcr.io
+  # NEVER commit API keys — use secrets context
+  # API_KEY: ${{ secrets.DOCKER_PAT }}
+```
+
+## Lint Rules
+
+- **hadolint** (Dockerfile): `hadolint Dockerfile` — catches `RUN apt-get install` without cache clear, missing HEALTHCHECK, running as root
+- **actionlint** (GitHub Actions): `actionlint .github/workflows/*.yml` — validates workflow syntax, secret leaks, env var typos
+- **yamllint** (YAML): `yamllint -c relaxed .` — enforces indentation, consistent quotes, no trailing spaces
+
+## Security Checklist
+
+1. **Image Scanning** — Run Trivy, Snyk, or Aqua before pushing to registry
+2. **Secret Management** — Use GitHub Secrets, AWS Secrets Manager, or HashiCorp Vault; never in `secrets.yaml`
+3. **Least Privilege** — Non-root users, read-only filesystems, drop unnecessary capabilities
+4. **Signed Images** — Enable Docker Content Trust (DCT) or Sigstore in CI/CD
+5. **No Root Containers** — `USER app` or `USER 1000:1000` in Dockerfile
+6. **Dependency Pinning** — Lock image tags: `python:3.12.1@sha256:abc...` not `python:3.12`
+7. **RBAC in Pipelines** — GitHub: limit `GITHUB_TOKEN` scope; K8s: use service account with minimal permissions
+
+## Anti-Patterns
+
+| Wrong | Correct |
+|-------|---------|
+| Single-stage 2GB Docker image | Multi-stage build: builder + final (~500MB) |
+| `ENV DB_PASSWORD=secret123` in Dockerfile | GitHub Secrets + `${{ secrets.DB_PASSWORD }}` |
+| SSH into prod, manually deploy | GitOps: commit to repo, ArgoCD syncs automatically |
+| No rollback procedure documented | Pre-deploy: `kubectl rollout undo deployment/app -n prod` |
+| Single monolithic pipeline (build + test + deploy) | Separate jobs: `build` → `test` → `scan` → `deploy` (fan-out) |
+
 ## Knowledge Reference
 
 GitHub Actions, GitLab CI, Jenkins, CircleCI, Docker, Kubernetes, Helm, ArgoCD, Flux, Terraform, Pulumi, Crossplane, AWS/GCP/Azure, Prometheus, Grafana, PagerDuty, Backstage, LaunchDarkly, Flagger

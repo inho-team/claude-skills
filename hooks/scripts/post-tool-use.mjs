@@ -5,6 +5,8 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { readUnifiedState, writeUnifiedState, updateContextMemo, markMemoModified, getCwd } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
+import { checkComments, isCheckableFile } from './lib/comment-checker.mjs';
+import { runLint, isLintableFile } from './lib/lint-runner.mjs';
 
 let input = '';
 try {
@@ -141,8 +143,56 @@ if (['Write', 'Edit'].includes(toolName)) {
 
   // Security keyword hint
   const secContent = toolInput.new_string || toolInput.content || '';
-  if (secContent && /\b(auth|jwt|password|secret|token|credential|bcrypt|encrypt|decrypt)\b/i.test(secContent)) {
-    hints.push('Security-sensitive code detected. Run Esecurity-officer before completing.');
+  if (secContent && /\b(auth|jwt|password|secret|token|credential|bcrypt|encrypt|decrypt|api_key|private_key|ssh|certificate)\b/i.test(secContent)) {
+    hints.push('MANDATORY SECURITY REVIEW: Security-sensitive code detected (auth/crypto/secrets). You MUST invoke Esecurity-officer agent before completing this task. Do NOT skip this step.');
+  }
+
+  // --- Comment Coverage Check ---
+  if (filePath && isCheckableFile(filePath)) {
+    try {
+      // Read the file content that was just written/edited
+      const fileContent = readFileSync(filePath, 'utf-8');
+      const result = checkComments(filePath, fileContent);
+
+      if (result.missing.length > 0) {
+        const missingList = result.missing.slice(0, 3).map(m =>
+          `${m.type} "${m.name}" (line ${m.line})`
+        ).join(', ');
+        const moreCount = result.missing.length > 3 ? ` (+${result.missing.length - 3} more)` : '';
+        hints.push(
+          `[Comment] ${result.missing.length} undocumented public ${result.missing.length === 1 ? 'item' : 'items'}: ${missingList}${moreCount}. ` +
+          `Coverage: ${result.coverage}%. Add ${result.language} standard documentation comments. ` +
+          `See: skills/coding-experts/references/comment-formats.md`
+        );
+      }
+    } catch {
+      // Fault tolerance — never let comment checker crash the hook
+    }
+  }
+
+  // --- Lint Quality Gate ---
+  if (filePath && isLintableFile(filePath)) {
+    try {
+      const lintResult = runLint(filePath, cwd, { autoFix: true, maxRetries: 2, timeout: 3000 });
+
+      if (lintResult.skipped) {
+        // No lint config found — silent skip
+      } else if (lintResult.passed) {
+        if (lintResult.fixed) {
+          hints.push(`[Lint] Auto-fixed lint issues in ${filePath.split('/').pop()} using ${lintResult.tool}.`);
+        }
+        // Clean pass — no hint needed
+      } else {
+        // Lint failed after retries
+        const errorPreview = (lintResult.errors || []).slice(0, 3).join('; ');
+        const moreCount = (lintResult.errors || []).length > 3 ? ` (+${lintResult.errors.length - 3} more)` : '';
+        hints.push(
+          `[Lint] FAILED after ${lintResult.attempts || 1} attempt(s) with ${lintResult.tool}: ${errorPreview}${moreCount}. Fix the lint errors before proceeding.`
+        );
+      }
+    } catch {
+      // Fault tolerance — never let lint runner crash the hook
+    }
   }
 }
 

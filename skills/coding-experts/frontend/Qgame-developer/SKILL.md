@@ -68,96 +68,96 @@ When implementing game features, provide:
 3. Performance considerations and optimizations
 4. Brief explanation of architecture decisions
 
-## Key Code Patterns
+## Code Patterns
 
-### Object Pooling (Unity C#)
+### Basic: MonoBehaviour with XML Documentation
 ```csharp
-public class ObjectPool<T> where T : Component
-{
-    private readonly Queue<T> _pool = new();
-    private readonly T _prefab;
-    private readonly Transform _parent;
-
-    public ObjectPool(T prefab, int initialSize, Transform parent = null)
-    {
-        _prefab = prefab;
-        _parent = parent;
-        for (int i = 0; i < initialSize; i++)
-            Release(Create());
-    }
-
-    public T Get()
-    {
-        T obj = _pool.Count > 0 ? _pool.Dequeue() : Create();
-        obj.gameObject.SetActive(true);
-        return obj;
-    }
-
-    public void Release(T obj)
-    {
-        obj.gameObject.SetActive(false);
-        _pool.Enqueue(obj);
-    }
-
-    private T Create() => Object.Instantiate(_prefab, _parent);
-}
-```
-
-### Component Caching (Unity C#)
-```csharp
+/// <summary>
+/// Handles player input and movement. Cache all components in Awake.
+/// </summary>
 public class PlayerController : MonoBehaviour
 {
-    // Cache all component references in Awake — never call GetComponent in Update
+    /// <summary>Movement speed in units per second.</summary>
+    [SerializeField] private float speed = 5f;
     private Rigidbody _rb;
-    private Animator _animator;
-    private PlayerInput _input;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
-        _animator = GetComponent<Animator>();
-        _input = GetComponent<PlayerInput>();
-    }
-
-    private void FixedUpdate()
-    {
-        // Use cached references; use deltaTime for frame-independence
-        Vector3 move = _input.MoveDirection * (speed * Time.fixedDeltaTime);
-        _rb.MovePosition(_rb.position + move);
+        if (_rb == null) Debug.LogError("PlayerController requires Rigidbody");
     }
 }
 ```
 
-### State Machine (Unity C#)
+### Error Handling: Null Check & TryGetComponent
 ```csharp
-public abstract class State
+public class WeaponController : MonoBehaviour
 {
-    public abstract void Enter();
-    public abstract void Tick(float deltaTime);
-    public abstract void Exit();
-}
-
-public class StateMachine
-{
-    private State _current;
-
-    public void TransitionTo(State next)
+    private bool TryGetWeaponAnimator(out Animator animator)
     {
-        _current?.Exit();
-        _current = next;
-        _current.Enter();
+        return TryGetComponent<Animator>(out animator);
     }
 
-    public void Tick(float deltaTime) => _current?.Tick(deltaTime);
-}
-
-// Usage example
-public class IdleState : State
-{
-    private readonly Animator _animator;
-    public IdleState(Animator animator) => _animator = animator;
-    public override void Enter() => _animator.SetTrigger("Idle");
-    public override void Tick(float deltaTime) { /* poll transitions */ }
-    public override void Exit() { }
+    private void Start()
+    {
+        if (!TryGetWeaponAnimator(out var anim))
+            { Debug.LogError("Animator not found"); enabled = false; return; }
+        anim.SetTrigger("Ready");
+    }
 }
 ```
+
+### Advanced: Object Pooling for Bullets
+```csharp
+public class BulletPool : MonoBehaviour
+{
+    private Queue<Bullet> _pool = new();
+    [SerializeField] private Bullet prefab;
+    [SerializeField] private int initialSize = 20;
+
+    public Bullet Get() => _pool.Count > 0 ? _pool.Dequeue() : Instantiate(prefab);
+    public void Release(Bullet b) => _pool.Enqueue(b);
+}
+```
+
+## Comment Template (Unity C#)
+
+```csharp
+/// <summary>Describes what the class/method does in one sentence.</summary>
+/// <remarks>Additional context: use cases, constraints, performance notes.</remarks>
+/// <example><code>MyClass.DoSomething(param);</code></example>
+public void MethodName(string param) { /* ... */ }
+```
+
+## Lint Rules
+
+**Unity/Roslyn Analyzers:**
+- Enable `IDE0005` (remove unused imports)
+- Enable `CS4014` (missing await on async)
+- Enable `CS0414` (unused private fields)
+- **Custom:** No GetComponent in Update/LateUpdate/FixedUpdate
+- **Custom:** Allocations only in Awake/Start, never in hot loops
+
+**Unreal Coding Standard:**
+- Run `UnrealAutomationTool BuildGraph` with linting enabled
+- Enforce const-correctness on parameters
+- Validate UPROPERTY() visibility (public, private, protected)
+
+## Security Checklist (5+)
+
+- [ ] **Cheat Prevention:** Validate game state on server; never trust client input for score/progress
+- [ ] **Server Authority:** Critical logic (damage, kills, inventory) executes server-side only
+- [ ] **Input Validation:** Sanitize player actions; ignore out-of-bounds move vectors
+- [ ] **Save File Tampering:** Use checksums/encryption for persistent save data; validate on load
+- [ ] **Network Packets:** Verify packet integrity; drop unsigned or malformed network messages
+- [ ] **Rate Limiting:** Throttle client requests (RPCs); prevent spam attacks
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `transform.Find("Child")` in Update | Cache reference in Awake: `_child = transform.Find(...)` |
+| Allocate `new Vector3()` in FixedUpdate loop | Pre-allocate or use struct value types; avoid heap in hot paths |
+| One `PlayerMonoBehaviour` with 30 responsibilities | Split: PlayerMovement, PlayerCombat, PlayerInventory components |
+| No object pooling; Instantiate bullets each frame | Pre-allocate BulletPool; Get/Release from queue |
+| `CompareTag("Enemy")` via string: `tag == "Enemy"` | Use `CompareTag("Enemy")`; avoids string allocation |

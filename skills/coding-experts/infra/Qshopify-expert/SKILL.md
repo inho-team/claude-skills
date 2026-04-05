@@ -184,3 +184,46 @@ When implementing Shopify solutions, provide:
 ## Knowledge Reference
 
 Shopify CLI 3.x, Liquid 2.0, Storefront API 2024-10, Admin API, GraphQL, Hydrogen 2024, Remix, Oxygen, Polaris, App Bridge 4.0, Checkout UI Extensions, Shopify Functions, metafields, metaobjects, theme architecture, Shopify Plus features
+
+## Liquid Template Patterns (3 Core Examples)
+
+1. **Metafield Rendering** — Access via `product.metafields.namespace.key.value` with type guards (`if metafield.value`)
+2. **Loop with Asset Transforms** — Use `image | image_url: width=300` and `maxWidth, preferredContentType` for responsive images
+3. **Dynamic Section Schema** — Expose settings in `schema.json`; reference via `section.settings.setting_name` in template
+
+## Liquid Comment Template
+
+```liquid
+{% comment %}
+  @description: Renders product card with image, title, price
+  @param product: Product object {id, title, variants}
+  @param show_rating: Boolean to display star rating
+  @return: HTML card markup
+  @throws: Handles missing images gracefully with placeholder
+{% endcomment %}
+```
+
+## Theme Check Lint Rules
+
+Run: `shopify theme check`
+- **LiquidTag** — Syntax errors in Liquid tags (if/for/capture); fix immediately
+- **AssetSize** — Warn if single asset > 500KB; compress or lazy-load
+- **Unused** — Detect unused CSS classes; remove dead code
+
+## Security Checklist (5+ Items)
+
+- [ ] XSS Prevention: All user/metafield input escaped via `{{ product.title | escape }}` or `{{ value | json }}`
+- [ ] API Key Exposure: Never hardcode Storefront API keys; use Environment config in `shopify.app.toml`
+- [ ] Webhook Validation: Verify HMAC signature on incoming webhook payloads (X-Shopify-Hmac-SHA256 header)
+- [ ] CSRF Protection: Include CSRF token in forms; app-bridge handles automatically
+- [ ] Sensitive Data: Encrypt metafield data at rest if storing PII; never log customer payment info
+
+## Anti-patterns (5 Wrong/Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `<img src="{{ product.image }}" />` (no optimization) | `<img src="{{ product.image \| image_url: width=300 }}" />` with srcset |
+| Hardcode: `fetch('https://api-key.shopify.com/...')` in Liquid | Use `shopify.app.toml` env vars and fetch from server-side |
+| `{% for variant in product.variants %}` with nested AJAX calls | Prefetch all variants in initial query; iterate over client-side data |
+| `<link rel="stylesheet" href="/cdn/theme.css?v=123">` (cache bust every deploy) | Use Shopify's asset versioning: `{{ 'theme.css' \| asset_url }}` |
+| Store secret in `theme.json` settings (visible in code) | Use Shopify Private App credentials stored in environment |

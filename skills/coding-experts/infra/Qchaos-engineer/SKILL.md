@@ -66,119 +66,83 @@ When implementing chaos engineering, provide:
 4. Rollback procedures and safety controls
 5. Learning summary and improvement recommendations
 
-## Concrete Example: Pod Failure Experiment (Litmus Chaos)
+## Code Patterns: Chaos Experiment Definition
 
-The following shows a complete experiment — from hypothesis to rollback — using Litmus Chaos on Kubernetes.
-
-### Step 1 — Define steady state and apply the experiment
-
-```bash
-# Verify baseline: p99 latency < 200ms, error rate < 0.1%
-kubectl get deploy my-service -n production
-kubectl top pods -n production -l app=my-service
-```
-
-### Step 2 — Create and apply a Litmus ChaosEngine manifest
-
+### Litmus ChaosEngine Baseline
 ```yaml
-# chaos-pod-delete.yaml
 apiVersion: litmuschaos.io/v1alpha1
 kind: ChaosEngine
 metadata:
-  name: my-service-pod-delete
-  namespace: production
+  name: {{ experiment_name }}
+  namespace: {{ target_namespace }}
 spec:
   appinfo:
-    appns: production
-    applabel: "app=my-service"
+    appns: {{ namespace }}
+    applabel: "{{ selector }}"
     appkind: deployment
-  # Limit blast radius: only 1 replica at a time
   engineState: active
   chaosServiceAccount: litmus-admin
   experiments:
-    - name: pod-delete
+    - name: {{ chaos_type }}   # pod-delete, pod-network-latency, cpu-hog
       spec:
         components:
           env:
             - name: TOTAL_CHAOS_DURATION
-              value: "60"          # seconds
-            - name: CHAOS_INTERVAL
-              value: "20"          # delete one pod every 20s
-            - name: FORCE
-              value: "false"
+              value: "{{ duration_sec }}"
             - name: PODS_AFFECTED_PERC
-              value: "33"          # max 33% of replicas affected
+              value: "{{ max_percent }}"  # Never > 50% in production
+            - name: CHAOS_INTERVAL
+              value: "{{ interval_sec }}"
 ```
 
+### Gremlin Container Injection
 ```bash
-# Apply the experiment
-kubectl apply -f chaos-pod-delete.yaml
-
-# Watch experiment status
-kubectl describe chaosengine my-service-pod-delete -n production
-kubectl get chaosresult my-service-pod-delete-pod-delete -n production -w
+gremlin attack launch --type cpu \
+  --cpu-capacity 80 \
+  --source-gremlin-tag "app:myservice" \
+  --use-case resilience-test
 ```
 
-### Step 3 — Monitor during the experiment
+## Comment Template: Experiment Metadata
 
-```bash
-# Tail application logs for errors
-kubectl logs -l app=my-service -n production --since=2m -f
-
-# Check ChaosResult verdict when complete
-kubectl get chaosresult my-service-pod-delete-pod-delete \
-  -n production -o jsonpath='{.status.experimentStatus.verdict}'
+Every chaos experiment file must include:
+```yaml
+# Experiment: {{ name }}
+# Hypothesis: If {{ system }} experiences {{ failure mode }}, then {{ behavior }} with {{ metric threshold }}.
+# Steady State: {{ baseline_p99_latency }}ms p99, {{ baseline_error_rate }}% errors, {{ baseline_cpu }}% CPU.
+# Blast Radius: Max {{ max_percent }}% replicas | Blast timeout: {{ timeout }}s | Rollback: Automatic
+# Impact: {{ blast_scope }} (e.g., "one pod in us-east-1 only")
+# Approval: {{ approval_required | true/false }} | Lead: {{ contact }}
+# Metrics to Watch: {{ metric_1 }}, {{ metric_2 }}, {{ metric_3 }}
 ```
 
-### Step 4 — Rollback / abort if steady state is violated
+## Lint Rules: YAML Validation & Schema
 
-```bash
-# Immediately stop the experiment
-kubectl patch chaosengine my-service-pod-delete \
-  -n production --type merge -p '{"spec":{"engineState":"stop"}}'
+Validate every experiment manifest:
 
-# Confirm all pods are healthy
-kubectl rollout status deployment/my-service -n production
-```
+1. **Schema check**: `PODS_AFFECTED_PERC ≤ 50` (prod) or `≤ 80` (staging)
+2. **Duration cap**: `TOTAL_CHAOS_DURATION ≤ 300` seconds without explicit approval
+3. **Rollback defined**: Must have `CHAOS_KILL_COMMAND` or equivalent abort logic
+4. **Namespace isolation**: Experiments must target explicit namespace, never `--all-namespaces`
+5. **Resource limits**: Pod limits must be set; no unbounded chaos (e.g., CPU hog capped at 80%)
 
-## Concrete Example: Network Latency with toxiproxy
+**Tool**: Validate with `kubeconform` + custom YAML linter for blast radius rules.
 
-```bash
-# Install toxiproxy CLI
-brew install toxiproxy   # macOS; use the binary release on Linux
+## Security Checklist (5+ Items)
 
-# Start toxiproxy server (runs alongside your service)
-toxiproxy-server &
+Every experiment must pass before execution:
 
-# Create a proxy for your downstream dependency
-toxiproxy-cli create -l 0.0.0.0:22222 -u downstream-db:5432 db-proxy
+- [x] **Blast Radius Control**: Max affected resource % documented and ≤ 50% for production
+- [x] **Rollback Plan**: Automatic abort script tested; manual override procedure documented
+- [x] **Approval Gates**: Prod experiments require tech lead or SRE sign-off; staging auto-approved
+- [x] **No Prod Without Backup**: Production experiments require fresh DB backup and point-in-time recovery window
+- [x] **Audit Trail**: Experiment run logged with operator, start/end time, metrics, and verdict in experiment tracking system
+- [x] **Canary First**: Always test in staging/canary with same config before production
 
-# Inject 300ms latency with 10% jitter — blast radius: this proxy only
-toxiproxy-cli toxic add db-proxy -t latency -a latency=300 -a jitter=30
+## Anti-Patterns (5: To Avoid)
 
-# Run your load test / observe metrics here ...
-
-# Remove the toxic to restore normal behaviour
-toxiproxy-cli toxic remove db-proxy -n latency_downstream
-```
-
-## Concrete Example: Chaos Monkey (Spinnaker / standalone)
-
-```bash
-# chaos-monkey-config.yml — restrict to a single ASG
-deployment:
-  enabled: true
-  regionIndependence: false
-chaos:
-  enabled: true
-  meanTimeBetweenKillsInWorkDays: 2
-  minTimeBetweenKillsInWorkDays: 1
-  grouping: APP           # kill one instance per app, not per cluster
-  exceptions:
-    - account: production
-      region: us-east-1
-      detail: "*-canary"  # never kill canary instances
-
-# Apply and trigger a manual kill for testing
-chaos-monkey --app my-service --account staging --dry-run false
-```
+1. **Chaos Without Hypothesis** — Running random failures without a measurable prediction. *Leads to: surprises, unmapped failure modes, wasted time.*
+2. **No Rollback Strategy** — Assuming systems self-heal or relying on manual fixes. *Leads to: cascading failures, extended customer impact.*
+3. **Testing in Prod Without Safeguards** — Injecting failures during peak hours or without circuit breakers. *Leads to: real incidents blamed on "experiments".*
+4. **Random Failures vs Targeted** — Killing random pods instead of specific critical ones. *Leads to: missing weak links, false confidence.*
+5. **No Metrics During Experiment** — Assuming "no errors" means "resilient". *Leads to: latency spikes, resource exhaustion, undetected degradation.*

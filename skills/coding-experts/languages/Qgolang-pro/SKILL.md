@@ -90,6 +90,124 @@ func runPipeline(ctx context.Context, jobs []Job) error {
 
 Key properties demonstrated: bounded goroutine lifetime via `ctx`, error propagation with `%w`, no goroutine leak on cancellation.
 
+## Code Patterns
+
+### Basic: HTTP handler with error return
+```go
+// handleUser retrieves a user by ID and returns a JSON response.
+func handleUser(w http.ResponseWriter, r *http.Request) error {
+    id := r.URL.Query().Get("id")
+    if id == "" {
+        return fmt.Errorf("missing id parameter")
+    }
+    user, err := getUser(r.Context(), id)
+    if err != nil {
+        return fmt.Errorf("get user: %w", err)
+    }
+    w.Header().Set("Content-Type", "application/json")
+    return json.NewEncoder(w).Encode(user)
+}
+```
+
+### Error handling: custom error type + errors.Is/As
+```go
+// QueryError indicates a database query failure.
+type QueryError struct {
+    Query string
+    Err   error
+}
+
+func (e *QueryError) Error() string {
+    return fmt.Sprintf("query %q failed: %v", e.Query, e.Err)
+}
+
+func (e *QueryError) Unwrap() error { return e.Err }
+
+// Usage with errors.Is
+if err := db.Query(ctx, "SELECT..."); err != nil {
+    qe := &QueryError{Query: "SELECT...", Err: err}
+    if errors.Is(qe, sql.ErrNoRows) { /* handle */ }
+}
+```
+
+### Advanced: context cancellation + goroutine lifecycle
+```go
+// fanOut spawns N workers, each reading from jobs and writing to results.
+// Returns a done channel that closes when all workers exit.
+func fanOut(ctx context.Context, jobs <-chan Job, numWorkers int) <-chan Result {
+    results := make(chan Result, numWorkers)
+    var wg sync.WaitGroup
+    
+    for i := 0; i < numWorkers; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for {
+                select {
+                case <-ctx.Done():
+                    return
+                case job, ok := <-jobs:
+                    if !ok { return }
+                    results <- process(ctx, job)
+                }
+            }
+        }()
+    }
+    
+    go func() {
+        wg.Wait()
+        close(results)
+    }()
+    
+    return results
+}
+```
+
+## Comment Template
+
+**Function**: Starts with function name in plain English:
+```go
+// newDB initializes a database connection pool with the given DSN.
+func newDB(dsn string) (*sql.DB, error) { ... }
+```
+
+**Type**: Starts with type name:
+```go
+// User represents an authenticated user in the system.
+type User struct { ... }
+```
+
+**Package**: Add to doc.go:
+```go
+// Package payment handles billing and transaction processing.
+package payment
+```
+
+## Lint Rules
+
+- **golangci-lint**: `golangci-lint run ./...` (config: `.golangci.yml`)
+- **Format**: `gofmt -w {file}` / `goimports -w {file}` (run before commit)
+- **Vet**: `go vet ./...` (catches common mistakes)
+- **Threshold**: Zero lint warnings; 80%+ test coverage required
+
+## Security Checklist
+
+- **SQL Injection**: Always use `database/sql` with placeholders (`?`); never string-interpolate queries
+- **Path Traversal**: Use `filepath.Clean()` and validate relative paths before access
+- **Goroutine Leak**: Always cancel context; test with `pprof` or goroutine counter in tests
+- **Race Conditions**: Run all tests with `-race` flag; use `sync.Mutex`, channels, or atomic operations
+- **Hardcoded Secrets**: Never commit credentials; use environment variables, Viper config, or secret stores
+
+## Anti-patterns (Wrong → Correct)
+
+| Anti-pattern | Wrong | Correct |
+|---|---|---|
+| **Error Ignoring** | `_ = db.Close()` | `if err := db.Close(); err != nil { return err }` |
+| **Goroutine Leak** | `go fetch()` (no lifecycle) | `defer wg.Done(); go fetch()` with `wg.Wait()` |
+| **init() Abuse** | Global state in `init()` | Explicit `Setup()` function or NewXxx() constructor |
+| **Interface Pollution** | Return `*Concrete`; accept `*Concrete` | Accept `interface{Reader}`, return `*Concrete` |
+| **Deep Nesting** | `a/b/c/d/internal/e/f/g` | Flat layout: `internal/{feature,db,api}` |
+
 ## Constraints
 
 ### MUST DO

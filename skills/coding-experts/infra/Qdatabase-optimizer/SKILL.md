@@ -138,6 +138,67 @@ SELECT * FROM orders WHERE status = 'pending' AND created_at > NOW() - INTERVAL 
 - Ignore write amplification caused by new indexes
 - Neglect `VACUUM` / statistics maintenance
 
+## Code Patterns
+
+**Pattern 1: EXPLAIN ANALYZE Reading**
+```sql
+-- Baseline query: full scan detected
+EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'shipped' AND user_id = 42;
+-- Output: Seq Scan, cost=0..5000 rows=1200, buffers: shared read=450
+-- Remedy: CREATE INDEX idx_orders_user_status ON orders(user_id, status);
+```
+
+**Pattern 2: Index Creation Strategy**
+```sql
+-- Covering index eliminates heap fetches for frequent queries
+CREATE INDEX CONCURRENTLY idx_orders_covering
+    ON orders (user_id, status)
+    INCLUDE (total, created_at);
+-- After creation: verify with pg_stat_user_indexes (idx_scan > 0)
+```
+
+**Pattern 3: Query Rewrite for Performance**
+```sql
+-- Inefficient: correlated subquery (executes N times)
+SELECT u.id, (SELECT COUNT(*) FROM orders WHERE user_id = u.id) AS order_count FROM users u;
+-- Optimized: single join with aggregation
+SELECT u.id, COUNT(o.id) AS order_count FROM users u 
+LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.id;
+```
+
+## Comment Template
+
+```sql
+-- OPTIMIZATION: [name]
+-- Rationale: [why this change — e.g., "eliminates Seq Scan on large table"]
+-- Baseline: [before metric — e.g., "cost=5000 rows=50000, 320ms"]
+-- Expected: [after metric — e.g., "cost=50 rows=100, <5ms"]
+-- Date: [YYYY-MM-DD] | Author: [name]
+-- Validated: [yes/no] | Metrics: [actual after value if measured]
+```
+
+## Lint Rules
+
+- **sqlfluff**: Run `sqlfluff lint --dialect postgres <file>.sql` to catch missing indexes, N+1 patterns, missing WHERE clauses
+- **EXPLAIN Output Validation**: Seq Scans on large tables (>1M rows) without filters = violation; cost estimates differing >50% from actual = stale stats
+- **Slow Query Log Analysis**: Queries >1s in production require optimization; prioritize by (frequency × duration)
+
+## Security Checklist
+
+- [ ] **Parameterized Queries**: All user input via bind variables; no string concatenation in SQL
+- [ ] **Least Privilege DB Users**: App user lacks ALTER/DROP; read-only user for reporting; separate admin credentials
+- [ ] **Audit Logging**: `log_statement = 'all'` (PostgreSQL) or general log enabled; DML changes tracked
+- [ ] **Connection Encryption**: TLS 1.2+ for all client-DB connections; certificates validated
+- [ ] **Backup Testing**: Recovery drill monthly; verify encryption keys accessible; document RTO/RPO
+
+## Anti-patterns (Wrong → Correct)
+
+1. **SELECT * from large table**: Use explicit columns for query plan efficiency and schema stability
+2. **Missing WHERE clause indexes**: Every filter column should be indexed; validate with EXPLAIN
+3. **N+1 from ORM**: Batch queries or use JOIN; check generated SQL with `EXPLAIN` before shipping
+4. **Full table scans on large tables**: Add B-tree index on filter; use EXPLAIN to verify Seq Scan → Index Scan
+5. **No query plan review**: Always run `EXPLAIN ANALYZE` before & after; save baseline; document improvement
+
 ## Output Templates
 
 When optimizing database performance, provide:

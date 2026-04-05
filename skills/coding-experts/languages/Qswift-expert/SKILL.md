@@ -41,97 +41,186 @@ Load detailed guidance based on context:
 
 ## Code Patterns
 
-### async/await — Correct vs. Incorrect
+### 1. Struct + Protocol Conformance (Basic)
 
 ```swift
-// ✅ DO: async/await with structured error handling
-func fetchUser(id: String) async throws -> User {
-    let url = URL(string: "https://api.example.com/users/\(id)")!
-    let (data, _) = try await URLSession.shared.data(from: url)
-    return try JSONDecoder().decode(User.self, from: data)
+/// A protocol defining repository behavior for generic entity types.
+protocol DataRepository<T> {
+    /// The entity type this repository manages.
+    associatedtype T: Identifiable
+    
+    /// Fetches an entity by its identifier.
+    /// - Parameters:
+    ///   - id: The unique identifier of the entity.
+    /// - Returns: The fetched entity.
+    /// - Throws: `RepositoryError` if fetch fails.
+    func fetch(id: T.ID) async throws -> T
 }
 
-// ❌ DON'T: mixing completion handlers with async context
-func fetchUser(id: String) async throws -> User {
-    return try await withCheckedThrowingContinuation { continuation in
-        // Avoid wrapping existing async APIs this way when a native async version exists
-        legacyFetch(id: id) { result in
-            continuation.resume(with: result)
-        }
+/// A concrete repository implementation for User entities.
+struct UserRepository: DataRepository {
+    typealias T = User
+    
+    func fetch(id: UUID) async throws -> User {
+        // Implementation with proper error handling
+        return User(id: id, name: "John")
     }
 }
 ```
 
-### SwiftUI State Management
+### 2. Error Handling: Enum + Do-Catch + Typed Throws
 
 ```swift
-// ✅ DO: use @Observable (Swift 5.9+) for view models
-@Observable
-final class CounterViewModel {
-    var count = 0
-    func increment() { count += 1 }
-}
-
-struct CounterView: View {
-    @State private var vm = CounterViewModel()
-
-    var body: some View {
-        VStack {
-            Text("\(vm.count)")
-            Button("Increment", action: vm.increment)
+/// Errors that can occur during repository operations.
+enum RepositoryError: Error, LocalizedError {
+    case notFound
+    case networkTimeout
+    case invalidResponse
+    
+    var errorDescription: String? {
+        switch self {
+        case .notFound: return "Entity not found"
+        case .networkTimeout: return "Request timed out"
+        case .invalidResponse: return "Invalid server response"
         }
     }
 }
 
-// ❌ DON'T: reach for ObservableObject/Published when @Observable suffices
-class LegacyViewModel: ObservableObject {
-    @Published var count = 0  // Unnecessary boilerplate in Swift 5.9+
+/// Fetches data with comprehensive error handling.
+/// - Parameters:
+///   - url: The endpoint URL.
+/// - Returns: Decoded response data.
+/// - Throws: `RepositoryError` on network or parsing failure.
+func fetchData(from url: URL) async throws(RepositoryError) -> Data {
+    do {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+            throw .invalidResponse
+        }
+        return data
+    } catch {
+        throw .networkTimeout
+    }
 }
 ```
 
-### Protocol-Oriented Architecture
+### 3. Advanced: async/await + Actor Pattern
 
 ```swift
-// ✅ DO: define capability protocols with associated types
-protocol Repository<Entity> {
-    associatedtype Entity: Identifiable
-    func fetch(id: Entity.ID) async throws -> Entity
-    func save(_ entity: Entity) async throws
-}
-
-struct UserRepository: Repository {
-    typealias Entity = User
-    func fetch(id: UUID) async throws -> User { /* … */ }
-    func save(_ user: User) async throws { /* … */ }
-}
-
-// ❌ DON'T: use classes as base types when a protocol fits
-class BaseRepository {  // Avoid class inheritance for shared behavior
-    func fetch(id: UUID) async throws -> Any { fatalError("Override required") }
-}
-```
-
-### Actor for Thread Safety
-
-```swift
-// ✅ DO: isolate mutable shared state in an actor
+/// Thread-safe image cache using actor isolation.
 actor ImageCache {
-    private var cache: [URL: UIImage] = [:]
-
-    func image(for url: URL) -> UIImage? { cache[url] }
-    func store(_ image: UIImage, for url: URL) { cache[url] = image }
-}
-
-// ❌ DON'T: use a class with manual locking
-class UnsafeImageCache {
-    private var cache: [URL: UIImage] = [:]
-    private let lock = NSLock()  // Error-prone; prefer actor isolation
-    func image(for url: URL) -> UIImage? {
-        lock.lock(); defer { lock.unlock() }
-        return cache[url]
+    /// Stores cached images keyed by URL.
+    private var storage: [URL: UIImage] = [:]
+    
+    /// Retrieves a cached image.
+    /// - Parameters:
+    ///   - url: The image URL key.
+    /// - Returns: Cached image or nil.
+    nonisolated func image(for url: URL) -> UIImage? {
+        // Note: nonisolated read from stored property requires synchronization
+        return storage[url]
+    }
+    
+    /// Stores an image in the cache.
+    /// - Parameters:
+    ///   - image: The image to cache.
+    ///   - url: The key URL.
+    func store(_ image: UIImage, for url: URL) async {
+        storage[url] = image
     }
 }
+
+/// Example async/await usage with error handling.
+func fetchAndCache(url: URL, cache: ImageCache) async throws -> UIImage {
+    let (data, _) = try await URLSession.shared.data(from: url)
+    guard let image = UIImage(data: data) else {
+        throw RepositoryError.invalidResponse
+    }
+    await cache.store(image, for: url)
+    return image
+}
 ```
+
+## Comment Template
+
+### Function Documentation
+```swift
+/// Performs a specific task with documented parameters and return value.
+///
+/// - Parameters:
+///   - param1: Description of the first parameter and its constraints.
+///   - param2: Description of the second parameter and expected type.
+/// - Returns: Description of the return value and when it's nil/empty.
+/// - Throws: `ErrorType` when specific failure conditions occur.
+/// - Complexity: O(n) where n is the size of the input collection.
+func exampleFunction(param1: String, param2: Int) async throws -> Result {
+    // Implementation
+}
+```
+
+### Type Documentation
+```swift
+/// A view model managing user state and interactions.
+///
+/// This type centralizes business logic for user-facing features,
+/// reducing code duplication across views. It uses @Observable for
+/// automatic change propagation in SwiftUI.
+@Observable
+final class UserViewModel {
+    var user: User?
+    var isLoading = false
+}
+```
+
+### File Header
+```swift
+//
+// UserRepository.swift
+// MyApp
+//
+// Created by [Name] on [Date].
+// Copyright [Year] [Company]. All rights reserved.
+//
+// Responsibilities:
+// - Fetch and save user data from network
+// - Cache responses to reduce network calls
+// - Map API responses to model types
+```
+
+## Lint Rules
+
+**Commands:**
+- `swiftlint lint` — Check for style violations
+- `swiftlint --fix` — Auto-correct fixable issues
+- `swiftc -typecheck` — Verify type safety without building
+
+**Configuration** (.swiftlint.yml):
+```yaml
+disabled_rules:
+  - trailing_whitespace
+opt_in_rules:
+  - force_unwrapping
+  - missing_docs
+line_length: 120
+```
+
+## Security Checklist
+
+1. **Keychain Storage** — Never hardcode secrets; use `SecureEnclave` or `Keychain` APIs
+2. **ATS Enforcement** — Require HTTPS via `NSSecureTransportRequired = true`
+3. **Input Validation** — Validate all network responses and user inputs before use
+4. **Biometric Auth Bypass** — Implement PIN/password fallback for Face/Touch ID failures
+5. **Jailbreak Detection** — Check filesystem access and code signature integrity before accessing sensitive data
+
+## Anti-Patterns (Wrong vs. Correct)
+
+| Anti-Pattern | ❌ Wrong | ✅ Correct |
+|---|---|---|
+| Force Unwrap | `let value = optionalValue!` | `guard let value = optionalValue else { return }` |
+| Massive View Controller | 500+ line UIViewController with all logic | Split into smaller views + ViewModel |
+| Retain Cycles | `[weak self] in { self?.property }` without guard | Use `guard let self else { return }` pattern |
+| Stringly-Typed APIs | `userDefaults.string(forKey: "userName")` | Define typed `@UserDefault` property wrapper |
+| Not Using Value Types | `class Model { var name: String }` | Use `struct Model { var name: String }` |
 
 ## Constraints
 

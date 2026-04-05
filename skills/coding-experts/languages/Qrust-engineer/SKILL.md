@@ -133,6 +133,150 @@ cargo test --doc                           # doctests
 cargo bench                                # criterion benchmarks (if present)
 ```
 
+## Code Patterns with Rustdoc
+
+### Basic: Struct with Documentation
+```rust
+/// A configuration holder for database connections.
+/// 
+/// # Examples
+/// ```
+/// let config = DbConfig::new("localhost", 5432);
+/// assert_eq!(config.host, "localhost");
+/// ```
+pub struct DbConfig {
+    /// Database server hostname
+    pub host: String,
+    /// Port number for connection
+    pub port: u16,
+}
+
+impl DbConfig {
+    /// Creates a new database configuration.
+    pub fn new(host: &str, port: u16) -> Self {
+        Self { host: host.to_string(), port }
+    }
+}
+```
+
+### Error Handling: Custom Error + thiserror
+```rust
+use thiserror::Error;
+
+/// Custom error type for validation failures.
+#[derive(Debug, Error)]
+pub enum ValidationError {
+    #[error("invalid email: {0}")]
+    InvalidEmail(String),
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+}
+
+/// Validates input and returns Result with custom error.
+/// 
+/// # Examples
+/// ```
+/// assert!(validate_email("user@example.com").is_ok());
+/// assert!(validate_email("invalid").is_err());
+/// ```
+pub fn validate_email(email: &str) -> Result<(), ValidationError> {
+    if email.contains('@') { Ok(()) } else {
+        Err(ValidationError::InvalidEmail(email.to_string()))
+    }
+}
+```
+
+### Advanced: Async Trait with Tokio
+```rust
+use tokio::sync::Mutex;
+use std::sync::Arc;
+
+/// Async trait for data processing.
+#[async_trait::async_trait]
+pub trait DataProcessor {
+    /// Processes data asynchronously.
+    /// # Examples
+    /// ```ignore
+    /// let processor = MyProcessor::new();
+    /// processor.process(&data).await?;
+    /// ```
+    async fn process(&self, data: &[u8]) -> Result<String, Box<dyn std::error::Error>>;
+}
+
+pub struct ConcurrentProcessor {
+    cache: Arc<Mutex<Vec<String>>>,
+}
+
+#[async_trait::async_trait]
+impl DataProcessor for ConcurrentProcessor {
+    async fn process(&self, data: &[u8]) -> Result<String, Box<dyn std::error::Error>> {
+        let result = tokio::task::spawn_blocking(|| {
+            String::from_utf8_lossy(data).to_string()
+        }).await?;
+        self.cache.lock().await.push(result.clone());
+        Ok(result)
+    }
+}
+```
+
+## Comment Template (Rustdoc)
+
+- **Function**: Use `///` with `# Examples` code block
+  ```rust
+  /// Computes factorial of n.
+  /// # Examples
+  /// ```
+  /// assert_eq!(factorial(5), 120);
+  /// ```
+  pub fn factorial(n: u32) -> u32 { ... }
+  ```
+
+- **Struct/Fields**: Document each field
+  ```rust
+  /// Represents a user account.
+  pub struct User {
+      /// User's unique identifier
+      pub id: u64,
+      /// User's email address
+      pub email: String,
+  }
+  ```
+
+- **Module**: Use `//!` at file top
+  ```rust
+  //! Module for user account management and authentication.
+  ```
+
+## Lint Rules
+
+**Primary Checks**:
+- `cargo clippy -- -D warnings` — enforce all warnings as errors
+- `cargo clippy --fix` — auto-fix common issues
+- `rustfmt {file}` or `cargo fmt` — apply formatting
+- `cargo check` — fast type checking without building
+
+**Config Files**:
+- `clippy.toml` — configure clippy behavior
+- `rustfmt.toml` — set formatting rules (edition, max_width, etc.)
+
+## Security Checklist
+
+- **unsafe blocks**: Minimize usage; document safety invariants with `// SAFETY:` comments explaining why invariants hold
+- **Integer overflow**: Use `checked_add()`, `saturating_add()`, or wrapping variants; never assume arithmetic is safe
+- **Buffer overflow**: Always bounds-check; use slice methods (`get()`, iterators) instead of raw indexing
+- **Untrusted deserialization**: Validate serde input with custom deserializers; set size limits on recursive types
+- **Panics in libraries**: Never `unwrap()`/`panic!()`; return `Result` to let caller decide error handling
+
+## Anti-patterns: Wrong vs. Correct
+
+| Wrong | Correct |
+|-------|---------|
+| `let x = value.unwrap();` | `let x = value?;` or `value.expect("reason")` |
+| `let copy = data.clone();` | `let ref = &data;` or pass reference |
+| `fn process(s: String)` | `fn process(s: &str)` for owned data |
+| Ignore clippy lint warnings | Run and fix: `cargo clippy --fix` |
+| `let mut lock = m.lock().unwrap(); async { ... }` | Use `tokio::sync::Mutex` in async code |
+
 ## Constraints
 
 ### MUST DO

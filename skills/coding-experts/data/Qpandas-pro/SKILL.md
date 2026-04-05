@@ -21,160 +21,92 @@ Expert pandas developer specializing in efficient data manipulation, analysis, a
 
 ## Core Workflow
 
-1. **Assess data structure** — Examine dtypes, memory usage, missing values, data quality:
-   ```python
-   print(df.dtypes)
-   print(df.memory_usage(deep=True).sum() / 1e6, "MB")
-   print(df.isna().sum())
-   print(df.describe(include="all"))
-   ```
-2. **Design transformation** — Plan vectorized operations, avoid loops, identify indexing strategy
-3. **Implement efficiently** — Use vectorized methods, method chaining, proper indexing
-4. **Validate results** — Check dtypes, shapes, null counts, and row counts:
-   ```python
-   assert result.shape[0] == expected_rows, f"Row count mismatch: {result.shape[0]}"
-   assert result.isna().sum().sum() == 0, "Unexpected nulls after transform"
-   assert set(result.columns) == expected_cols
-   ```
-5. **Optimize** — Profile memory, apply categorical types, use chunking if needed
+1. **Assess** — Check dtypes, memory, missing values: `df.dtypes`, `df.memory_usage(deep=True).sum()`, `df.isna().sum()`
+2. **Design** — Plan vectorized ops, avoid loops, identify indexing strategy
+3. **Implement** — Use vectorized methods, method chaining, proper `.loc[]`/`.iloc[]` indexing
+4. **Validate** — Assert shapes, null counts, dtypes: `assert result.shape[0] == expected_rows`
+5. **Optimize** — Profile memory, apply categorical types, chunk if needed
 
-## Reference Guide
-
-Load detailed guidance based on context:
-
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| DataFrame Operations | `references/dataframe-operations.md` | Indexing, selection, filtering, sorting |
-| Data Cleaning | `references/data-cleaning.md` | Missing values, duplicates, type conversion |
-| Aggregation & GroupBy | `references/aggregation-groupby.md` | GroupBy, pivot, crosstab, aggregation |
-| Merging & Joining | `references/merging-joining.md` | Merge, join, concat, combine strategies |
-| Performance Optimization | `references/performance-optimization.md` | Memory usage, vectorization, chunking |
-
-## Code Patterns
-
-### Vectorized Operations (before/after)
+## Code Patterns (3 Examples with Docstrings)
 
 ```python
-# ❌ AVOID: row-by-row iteration
-for i, row in df.iterrows():
-    df.at[i, 'tax'] = row['price'] * 0.2
+# Pattern 1: Safe subset update
+def safe_subset_update(df: pd.DataFrame, mask: pd.Series, col: str, value):
+    """Update column subset without SettingWithCopyWarning."""
+    result = df.copy()
+    result.loc[mask, col] = value
+    return result
 
-# ✅ USE: vectorized assignment
-df['tax'] = df['price'] * 0.2
+# Pattern 2: Grouped aggregation
+def grouped_summary(df: pd.DataFrame, group_cols: list, agg_dict: dict):
+    """Multi-column groupby with named outputs."""
+    return df.groupby(group_cols, observed=True).agg(agg_dict).reset_index()
+
+# Pattern 3: Merge with validation
+def validated_merge(left, right, on: list, validate="m:1"):
+    """Merge with cardinality check; raises AssertionError on mismatch."""
+    result = pd.merge(left, right, on=on, how="left", validate=validate)
+    assert result.shape[0] == left.shape[0], "Row count mismatch"
+    return result
 ```
 
-### Safe Subsetting with `.copy()`
+## Comment Template (Google-style)
 
 ```python
-# ❌ AVOID: chained indexing triggers SettingWithCopyWarning
-df['A']['B'] = 1
-
-# ✅ USE: .loc[] with explicit copy when mutating a subset
-subset = df.loc[df['status'] == 'active', :].copy()
-subset['score'] = subset['score'].fillna(0)
+def process_dataframe(df: pd.DataFrame, threshold: float) -> pd.DataFrame:
+    """One-line summary of function purpose.
+    
+    Longer description: transformation logic, edge cases, assumptions.
+    
+    Args:
+        df: Input DataFrame with columns [col1, col2]
+        threshold: Minimum value for filtering
+    
+    Returns:
+        Transformed DataFrame of shape (n_rows, n_cols)
+    
+    Raises:
+        ValueError: If df is empty or threshold < 0
+    """
 ```
 
-### GroupBy Aggregation
+## Lint Rules (ruff/mypy/black)
 
-```python
-summary = (
-    df.groupby(['region', 'category'], observed=True)
-    .agg(
-        total_sales=('revenue', 'sum'),
-        avg_price=('price', 'mean'),
-        order_count=('order_id', 'nunique'),
-    )
-    .reset_index()
-)
+```toml
+[tool.ruff]
+line-length = 100
+select = ["E4", "E7", "E9", "F", "W", "UP"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.mypy]
+python_version = "3.9"
+disallow_untyped_defs = true
 ```
 
-### Merge with Validation
+Violations: F841 (unused vars), E501 (line length), W293 (trailing space)
 
-```python
-merged = pd.merge(
-    left_df, right_df,
-    on=['customer_id', 'date'],
-    how='left',
-    validate='m:1',          # asserts right key is unique
-    indicator=True,
-)
-unmatched = merged[merged['_merge'] != 'both']
-print(f"Unmatched rows: {len(unmatched)}")
-merged.drop(columns=['_merge'], inplace=True)
-```
+## Security Checklist (5+)
 
-### Missing Value Handling
+1. **Pickle deserialization** — Never unpickle untrusted data; use `read_parquet()`, `read_csv()`
+2. **SQL injection** — Use parameterized: `pd.read_sql("... WHERE id = ?", params=[id])`
+3. **Data leakage** — Mask PII before export: `df['email'].str.replace(r'@.*', '@***', regex=True)`
+4. **Memory exhaustion** — Validate file size; chunk reads: `pd.read_csv(path, chunksize=10000)`
+5. **Type confusion** — Cast untrusted columns: `pd.to_numeric(df['user_id'], errors='coerce')`
 
-```python
-# Forward-fill then interpolate numeric gaps
-df['price'] = df['price'].ffill().interpolate(method='linear')
+## Anti-patterns (5 Wrong/Correct)
 
-# Fill categoricals with mode, numerics with median
-for col in df.select_dtypes(include='object'):
-    df[col] = df[col].fillna(df[col].mode()[0])
-for col in df.select_dtypes(include='number'):
-    df[col] = df[col].fillna(df[col].median())
-```
+| Anti-pattern | Fix |
+|--------------|-----|
+| `for i, row in df.iterrows()` | Use vectorized `.loc[]`, `.apply()`, or `.assign()` |
+| `df['A']['B'] = 1` | Use `.loc[:, 'B'] = 1` or `.copy()` first |
+| `df.copy()` in loops | Copy once before loop; use `.copy(deep=False)` if needed |
+| `.merge(...).reset_index()` chained | Use `validate` param; assert index match |
+| `pd.concat([df1, df2], axis=1)` without index check | Verify `df1.index.equals(df2.index)` first |
 
-### Time Series Resampling
+## MUST DO / MUST NOT DO
 
-```python
-daily = (
-    df.set_index('timestamp')
-    .resample('D')
-    .agg({'revenue': 'sum', 'sessions': 'count'})
-    .fillna(0)
-)
-```
-
-### Pivot Table
-
-```python
-pivot = df.pivot_table(
-    values='revenue',
-    index='region',
-    columns='product_line',
-    aggfunc='sum',
-    fill_value=0,
-    margins=True,
-)
-```
-
-### Memory Optimization
-
-```python
-# Downcast numerics and convert low-cardinality strings to categorical
-df['category'] = df['category'].astype('category')
-df['count'] = pd.to_numeric(df['count'], downcast='integer')
-df['score'] = pd.to_numeric(df['score'], downcast='float')
-print(df.memory_usage(deep=True).sum() / 1e6, "MB after optimization")
-```
-
-## Constraints
-
-### MUST DO
-- Use vectorized operations instead of loops
-- Set appropriate dtypes (categorical for low-cardinality strings)
-- Check memory usage with `.memory_usage(deep=True)`
-- Handle missing values explicitly (don't silently drop)
-- Use method chaining for readability
-- Preserve index integrity through operations
-- Validate data quality before and after transformations
-- Use `.copy()` when modifying subsets to avoid SettingWithCopyWarning
-
-### MUST NOT DO
-- Iterate over DataFrame rows with `.iterrows()` unless absolutely necessary
-- Use chained indexing (`df['A']['B']`) — use `.loc[]` or `.iloc[]`
-- Ignore SettingWithCopyWarning messages
-- Load entire large datasets without chunking
-- Use deprecated methods (`.ix`, `.append()` — use `pd.concat()`)
-- Convert to Python lists for operations possible in pandas
-- Assume data is clean without validation
-
-## Output Templates
-
-When implementing pandas solutions, provide:
-1. Code with vectorized operations and proper indexing
-2. Comments explaining complex transformations
-3. Memory/performance considerations if dataset is large
-4. Data validation checks (dtypes, nulls, shapes)
+**MUST:** Vectorized ops, proper dtypes, explicit `.copy()` when mutating, data validation checks  
+**MUST NOT:** Iterate rows with `.iterrows()`, use chained indexing, assume clean data, ignore SettingWithCopyWarning

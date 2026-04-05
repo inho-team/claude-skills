@@ -123,6 +123,69 @@ Reference these guidelines when:
 - `advanced-init-once` - Initialize app once per app load
 - `advanced-use-latest` - useLatest for stable callback refs
 
+## Code Patterns
+
+Essential React optimization patterns (3 levels):
+
+**Basic: Memo + useMemo** — Cache expensive computations
+```tsx
+const Avatar = memo(({ user }) => {
+  const id = useMemo(() => computeAvatarId(user), [user])
+  return <Avatar id={id} />
+})
+```
+
+**Error Handling: Suspense + ErrorBoundary** — Resilient async rendering
+```tsx
+<ErrorBoundary fallback={<ErrorUI />}>
+  <Suspense fallback={<Skeleton />}>
+    <AsyncData />
+  </Suspense>
+</ErrorBoundary>
+```
+
+**Advanced: useTransition** — Non-blocking updates
+```tsx
+const handler = () => startTransition(() => setScrollY(window.scrollY))
+```
+
+## Comment Template
+
+JSDoc for React components: `@param`, `@returns`, `@since` (internal). Example:
+```tsx
+/**
+ * Paginated user list with lazy rendering.
+ * @param {User[]} users
+ * @returns {ReactNode} List with controls
+ */
+```
+
+## Lint Rules
+
+**ESLint:** `plugin:react/recommended`, `plugin:react-hooks/recommended`
+**Key rules:** `react-hooks/rules-of-hooks` (error), `exhaustive-deps` (warn), `jsx-no-target-blank` (error)
+**TypeScript:** `tsc --noEmit` before commit
+
+## Security Checklist
+
+1. **XSS** — Never use `dangerouslySetInnerHTML`; sanitize with DOMPurify
+2. **innerHTML** — Grep; use React declarative rendering instead
+3. **Audit** — Run `npm audit` monthly, enable `dependabot`
+4. **Sensitive Data** — No passwords/tokens/PII in state; use secure httpOnly cookies
+5. **URL Validation** — Validate user URLs before href assignment
+
+## Anti-patterns Summary
+
+Reference `rules/` for full details. These 5 pairs highlight common mistakes:
+
+| Wrong | Correct | Rule |
+|-------|---------|------|
+| `if (loading && <Component />)` | `{loading ? <Skeleton /> : <Component />}` | rendering-conditional-render |
+| `const Avatar = () => { ... }` inside component | Extract to module scope | rerender-no-inline-components |
+| `setState(old => old + 1)` in effect loop | Use functional setState in callbacks | rerender-functional-setstate |
+| `await data; return jsx;` blocking entire page | Use Suspense boundaries per section | async-suspense-boundaries |
+| `import { a, b, c } from './utils'` barrel | `import { a } from './utils/a'` | bundle-barrel-imports |
+
 ## How to Use
 
 Read individual rule files for detailed explanations and code examples:
@@ -130,6 +193,9 @@ Read individual rule files for detailed explanations and code examples:
 ```
 rules/async-parallel.md
 rules/bundle-barrel-imports.md
+rules/rerender-memo.md
+rules/async-suspense-boundaries.md
+rules/rerender-transitions.md
 ```
 
 Each rule file contains:

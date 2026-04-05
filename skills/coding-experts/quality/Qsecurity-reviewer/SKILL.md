@@ -100,6 +100,111 @@ Remediation: Use parameterized queries or an ORM. Replace `cursor.execute(f"SELE
 References: CWE-89, OWASP A03:2021
 ```
 
+## Code Patterns (3 Examples)
+
+### Pattern 1: SAST Scan Output Parsing
+```bash
+# Example: Semgrep finding with severity and remediation
+semgrep --config=auto --json src/ | jq '.results[] | {path: .path, line: .start.line, rule: .check_id, message: .extra.message}'
+
+# Output structure (JSON):
+{
+  "path": "src/auth.js",
+  "line": 42,
+  "rule": "sql-injection",
+  "message": "User input concatenated into SQL query"
+}
+```
+
+### Pattern 2: Dependency Vulnerability Report
+```bash
+# Audit with detailed output
+npm audit --json | jq '.vulnerabilities[] | {package: .name, severity: .severity, cve: .via[0].cve}'
+
+# Output:
+{
+  "package": "lodash",
+  "severity": "high",
+  "cve": "CVE-2021-23337"
+}
+```
+
+### Pattern 3: Secrets Detection with Gitleaks
+```bash
+# Detect hardcoded secrets (API keys, tokens, passwords)
+gitleaks detect --source=. --report-path=findings.json
+
+# Remediation: Rotate exposed credentials immediately, move to .env
+export DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id prod/db-password)
+```
+
+## Comment Template
+
+Security findings should follow CVSS + remediation format:
+
+```markdown
+**ID:** FIND-[###]
+**Severity:** CRITICAL (CVSS 9.8) | HIGH | MEDIUM | LOW | INFO
+**Title:** [Vulnerability title]
+**CWE:** CWE-###, OWASP A##:####
+
+**File:** path/to/file.ts, lines 42-50
+**Description:** [What is vulnerable and why]
+
+**Proof of Concept:**
+  [Minimal exploit demonstrating the issue]
+
+**Impact:** [Business/technical impact]
+**Remediation:** 
+  1. [Fix #1 with code example]
+  2. [Fix #2 alternative]
+
+**References:** [Links to OWASP, CWE, patch notes]
+```
+
+## Lint Rules
+
+Automate security scanning in CI:
+
+```bash
+# SAST scanning
+semgrep --config=auto --error .
+
+# Dependency auditing
+npm audit --audit-level=moderate
+
+# Secrets detection
+gitleaks detect --verbose --exit-code 1
+
+# Infrastructure scanning
+trivy fs . --exit-code 1 --severity HIGH,CRITICAL
+
+# Container images
+trivy image --severity CRITICAL,HIGH myregistry.azurecr.io/app:latest
+```
+
+## Security Checklist (5+)
+
+- [ ] All user inputs validated (length, type, format)
+- [ ] SQL queries use parameterized statements (no string concatenation)
+- [ ] API endpoints enforce authentication & authorization
+- [ ] Sensitive data encrypted at rest and in transit (TLS 1.2+)
+- [ ] No hardcoded secrets, credentials, or API keys in code
+- [ ] Dependencies audited for CVEs; vulnerable packages patched or removed
+- [ ] Error messages don't expose system internals (stack traces logged, not displayed to users)
+- [ ] CSRF tokens present in state-changing endpoints
+- [ ] Password hashing uses bcrypt/Argon2 (not MD5/SHA1)
+
+## Anti-Patterns (5 Wrong/Correct)
+
+| Anti-Pattern | Wrong | Correct |
+|---|---|---|
+| **False Positive Overload** | Report every tool finding without verification | Manually verify SAST results; log false positives in config to suppress |
+| **No Severity Ranking** | List 50 findings in random order | Prioritize CRITICAL/HIGH first; group by CWE/OWASP category |
+| **Manual-Only Scanning** | Run semgrep once, never again | Integrate SAST into CI/CD; run on every commit |
+| **Ignoring Dependencies** | Only audit code, skip `node_modules/` | Run `npm audit` + `trivy fs` in every pipeline |
+| **No Remediation Guidance** | "This is vulnerable" (no fix provided) | Include specific code examples and tool commands to fix each issue |
+
 ## Knowledge Reference
 
 OWASP Top 10, CWE, Semgrep, Bandit, ESLint Security, gosec, npm audit, gitleaks, trufflehog, CVSS scoring, nmap, Burp Suite, sqlmap, Trivy, Checkov, HashiCorp Vault, AWS Security Hub, CIS benchmarks, SOC2, ISO27001

@@ -54,3 +54,37 @@
 3. **프로젝트 관례 준수** — 기존 코드의 네이밍, 포맷, 구조를 따른다
 4. **타입 안전성** — 타입이 있는 언어에서는 `any` 사용을 최소화한다
 5. **에러 핸들링** — 시스템 경계(사용자 입력, 외부 API)에서만 검증한다
+
+## Code Quality Enforcement
+
+Every coding-expert SKILL.md MUST include or reference these 5 sections. If the SKILL.md exceeds 250 lines, move detailed content to `references/` and keep only summaries in the main file.
+
+### 1. Code Patterns (Required)
+- Concrete, copy-pasteable code examples with inline comments
+- At least 3 patterns per expert: basic usage, error handling, advanced pattern
+- Comments must follow the language's standard format (see references/comment-formats.md)
+
+### 2. Comment Template (Required)
+- The standard documentation format for the expert's language/framework
+- Function-level: parameter types, return type, description, example
+- Class-level: purpose, usage example, key methods
+- Module-level: file header with purpose and exports
+
+### 3. Lint Rules (Required)
+- Exact CLI commands to validate code (e.g., `eslint .`, `mypy --strict`, `go vet ./...`)
+- Auto-fix commands where available (e.g., `eslint --fix`, `black .`, `ruff --fix`)
+- Minimum quality thresholds (e.g., coverage > 80%, no `any` types)
+- Project config file paths to detect (e.g., `.eslintrc`, `pyproject.toml`)
+
+### 4. Security Checklist (Required)
+- OWASP Top 10 mapping specific to the framework
+- Input validation patterns for the language
+- Authentication/authorization best practices
+- Common vulnerability patterns and prevention code
+- Reference: `references/security-baseline.md` for cross-language baseline
+
+### 5. Anti-patterns (Required)
+- At least 5 anti-patterns with "Wrong" and "Correct" code pairs
+- Framework-specific pitfalls (e.g., React: prop drilling, Python: mutable defaults)
+- Performance anti-patterns for the specific runtime
+- Reference: `references/anti-patterns.md` for cross-language baseline

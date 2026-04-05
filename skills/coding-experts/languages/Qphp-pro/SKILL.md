@@ -194,6 +194,84 @@ enum UserStatus: string
 }
 ```
 
+## Comment Template
+
+**PHPDoc Header** (file):
+```php
+<?php
+/**
+ * @file User service for account management
+ * @package App\Services
+ * @author Kim Jinseong
+ * @since 1.0.0
+ */
+```
+
+**Function**:
+```php
+/**
+ * Create a new user account.
+ *
+ * @param CreateUserDTO $dto User creation data
+ * @return User The created user
+ * @throws \InvalidArgumentException If email is invalid
+ */
+public function create(CreateUserDTO $dto): User
+```
+
+**Class**:
+```php
+/**
+ * Manages user operations.
+ *
+ * @package App\Services
+ * @author Kim Jinseong
+ * @since 1.0.0
+ */
+final class UserService
+```
+
+## Lint Rules
+
+| Tool | Command | Config | Purpose |
+|------|---------|--------|---------|
+| **PHPCS** | `phpcs {file}` | `phpcs.xml` | PSR-12 compliance |
+| **PHPCBF** | `phpcbf {file}` | `phpcs.xml` | Auto-fix violations |
+| **PHPStan** | `phpstan analyse --level=9` | `phpstan.neon` | Static type analysis |
+
+**phpcs.xml**:
+```xml
+<rule ref="PSR12"/>
+<rule ref="Generic.Files.LineLength"><arg name="lineLimit" value="120"/></rule>
+```
+
+**phpstan.neon**:
+```yaml
+level: 9
+paths: [src, tests]
+strictMixedPropertyFetching: true
+disableFunctionNameVariableDeprecation: false
+```
+
+## Security Checklist
+
+- [ ] **SQL Injection** — Use PDO prepared statements: `$pdo->prepare('SELECT * FROM users WHERE id = ?')`
+- [ ] **XSS** — Escape output: `echo htmlspecialchars($user->name, ENT_QUOTES, 'UTF-8')`
+- [ ] **CSRF** — Validate tokens: `$request->validate(['_token' => 'required|token'])`
+- [ ] **File Upload** — Validate MIME/extension: `$file->storeSecurely()`; never trust `$_FILES['type']`
+- [ ] **Session Fixation** — Regenerate ID on login: `session_regenerate_id(true)`
+- [ ] **Deserialization** — Never unserialize untrusted data; use JSON instead
+
+## Anti-patterns
+
+| Wrong | Correct |
+|-------|---------|
+| `@$var ?? default` (suppress errors) | `isset($var) ? $var : default` |
+| `$data: mixed` (type abuse) | `$data: array\|stdClass` (specific types) |
+| `global $config; $config->get()` | Inject via constructor: `new Service($config)` |
+| `function getName() { return $this->name; }` | `public function getName(): string { return $this->name; }` |
+| `"SELECT * FROM users WHERE id = $id"` | `$pdo->prepare('SELECT * FROM users WHERE id = ?')` |
+
 ## Output Templates
 
 When implementing a feature, deliver in this order:

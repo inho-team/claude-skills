@@ -103,6 +103,24 @@ Quality loops (Eqa-orchestrator), remediation iterations, and inter-task progres
 
 ---
 
+## Comment Enforcement
+
+All code written through the QE Framework must include documentation comments on public functions and classes.
+
+### Rules
+1. **Public functions/classes require documentation**: Every public function, method, class, struct, trait, or interface must have a documentation comment in the language's standard format
+2. **Automatic detection**: The `post-tool-use` hook runs `comment-checker` after every Write/Edit operation and reports missing documentation
+3. **Language-standard format**: Use the language's canonical documentation format (JSDoc for JS/TS, docstring for Python, Javadoc for Java, GoDoc for Go, rustdoc for Rust, etc.) — see `skills/coding-experts/references/comment-formats.md`
+4. **Coverage threshold**: 80% minimum comment coverage for public API in verification (Qcode-run-task)
+5. **Private/internal exempt**: Functions/methods prefixed with `_`, `#`, or marked `private` are exempt
+
+### Why
+- Undocumented code is untransferable. If a function has no description, the next developer (or AI agent) must read the implementation to understand intent — burning tokens and time.
+- Documentation comments enable IDE tooltips, auto-generated API docs, and AI context efficiency.
+- The 80% threshold allows pragmatic exceptions (simple getters, one-line helpers) without requiring documentation on every single function.
+
+---
+
 ## Task Principles
 
 - **Check `.qe/analysis/` first**: Before exploring project structure, tech stack, entry points, or architecture via Glob/Grep/Read, read `.qe/analysis/` files first. This saves tokens and improves context efficiency.

@@ -85,128 +85,116 @@ Load detailed guidance based on context:
 - Ignore compliance requirements
 - Skip disaster recovery testing
 
-## Common Patterns with Examples
+## Code Patterns
 
-### Least-Privilege IAM (Zero-Trust)
-
-Rather than broad policies, scope permissions to specific resources and actions:
-
-```bash
-# AWS: create a scoped role for an application
-aws iam create-role \
-  --role-name AppRole \
-  --assume-role-policy-document file://trust-policy.json
-
-aws iam put-role-policy \
-  --role-name AppRole \
-  --policy-name AppInlinePolicy \
-  --policy-document '{
-    "Version": "2012-10-17",
-    "Statement": [{
-      "Effect": "Allow",
-      "Action": ["s3:GetObject", "s3:PutObject"],
-      "Resource": "arn:aws:s3:::my-app-bucket/*"
-    }]
-  }'
-```
+### 1. IaC Resource Definition (Multi-Cloud Agnostic)
 
 ```hcl
-# Terraform equivalent
-resource "aws_iam_role" "app_role" {
-  name               = "AppRole"
-  assume_role_policy = data.aws_iam_policy_document.trust.json
+# Terraform: compute resource with tagging strategy
+resource "aws_instance" "app_server" {
+  ami                    = data.aws_ami.latest.id
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.private.id
+  vpc_security_group_ids = [aws_security_group.app.id]
+  tags = merge(var.common_tags, {
+    Name = "app-server"
+    Environment = var.environment
+  })
 }
 
-resource "aws_iam_role_policy" "app_policy" {
-  role = aws_iam_role.app_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["s3:GetObject", "s3:PutObject"]
-      Resource = "${aws_s3_bucket.app.arn}/*"
-    }]
+# Azure equivalent
+resource "azurerm_virtual_machine" "app_server" {
+  name = "app-vm"
+  tags = merge(var.common_tags, {
+    Environment = var.environment
+  })
+}
+
+# GCP equivalent
+resource "google_compute_instance" "app_server" {
+  name  = "app-instance"
+  labels = merge(var.common_labels, {
+    environment = var.environment
   })
 }
 ```
 
-### VPC with Public/Private Subnets (Terraform)
+### 2. Cost Tagging Strategy
 
 ```hcl
-resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  tags = { Name = "main", CostCenter = var.cost_center }
+variable "common_tags" {
+  type = map(string)
+  default = {
+    CostCenter = "engineering"
+    Project = "platform"
+    Owner = "devops-team"
+    Environment = "production"
+    ManagedBy = "terraform"
+  }
 }
-
-resource "aws_subnet" "private" {
-  count             = 2
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = cidrsubnet("10.0.0.0/16", 8, count.index)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-}
-
-resource "aws_subnet" "public" {
-  count                   = 2
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = cidrsubnet("10.0.0.0/16", 8, count.index + 10)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
-  map_public_ip_on_launch = true
-}
+# Apply to all resources for cost allocation and chargeback
 ```
 
-### Auto-Scaling Group (Terraform)
+### 3. Multi-Region Setup
 
 ```hcl
-resource "aws_autoscaling_group" "app" {
-  desired_capacity    = 2
-  min_size            = 1
-  max_size            = 10
-  vpc_zone_identifier = aws_subnet.private[*].id
+# Primary region
+provider "aws" { region = "us-east-1" }
 
-  launch_template {
-    id      = aws_launch_template.app.id
-    version = "$Latest"
-  }
+# DR region
+provider "aws" { alias = "dr"; region = "us-west-2" }
 
-  tag {
-    key                 = "CostCenter"
-    value               = var.cost_center
-    propagate_at_launch = true
-  }
+resource "aws_rds_cluster" "primary" {
+  cluster_identifier = "app-db"
+  engine = "aurora-mysql"
 }
 
-resource "aws_autoscaling_policy" "cpu_target" {
-  autoscaling_group_name = aws_autoscaling_group.app.name
-  policy_type            = "TargetTrackingScaling"
-  target_tracking_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ASGAverageCPUUtilization"
-    }
-    target_value = 60.0
-  }
+resource "aws_rds_cluster" "dr" {
+  provider = aws.dr
+  # Cross-region replica via engine native replication
 }
 ```
 
-### Cost Analysis CLI
+## Comment Template
 
-```bash
-# AWS: identify top cost drivers for the last 30 days
-aws ce get-cost-and-usage \
-  --time-period Start=$(date -d '30 days ago' +%Y-%m-%d),End=$(date +%Y-%m-%d) \
-  --granularity MONTHLY \
-  --metrics "UnblendedCost" \
-  --group-by Type=DIMENSION,Key=SERVICE \
-  --query 'ResultsByTime[0].Groups[*].{Service:Keys[0],Cost:Metrics.UnblendedCost.Amount}' \
-  --output table
+```hcl
+# Architecture decision: 3-tier VPC with public/private/data subnets
+# Rationale: isolate compute from databases, use NAT gateway for egress
+# Alt. considered: single subnet (simpler, less secure), VPN-only (complex)
+# Trade-off: +$0.045/hr NAT costs for enhanced network isolation
 
-# Azure: review spend by resource group
-az consumption usage list \
-  --start-date $(date -d '30 days ago' +%Y-%m-%d) \
-  --end-date $(date +%Y-%m-%d) \
-  --query "[].{ResourceGroup:resourceGroup,Cost:pretaxCost,Currency:currency}" \
-  --output table
+resource "aws_subnet" "private_compute" {
+  # This subnet hosts application tier; no direct internet access
+  # All outbound traffic routes through NAT gateway (aws_nat_gateway.main)
+}
 ```
+
+## Lint Rules
+
+- **AWS**: `aws cloudformation validate-template --template-body file://template.json`
+- **Azure**: `az deployment group validate --resource-group myRG --template-file template.json`
+- **GCP**: `gcloud deployment-manager deployments create my-deployment --config config.yaml --preview`
+- **Terraform**: `tfsec . --minimum-severity HIGH`
+- **Checkov**: `checkov -d . --framework cloudformation`
+
+## Security Checklist
+
+1. **IAM Least Privilege**: No wildcards in policies; scope to specific resources and actions
+2. **Encryption at Rest**: KMS key rotation enabled; database encryption mandatory
+3. **Encryption in Transit**: TLS 1.2+; VPC endpoints for AWS services (no public internet)
+4. **VPC/Network Isolation**: Public/private subnet separation; Security Groups restrict ingress
+5. **Logging & Audit**: CloudTrail, flow logs enabled; centralized SIEM ingestion
+6. **Compliance**: SOC2 controls mapped; HIPAA tagging if applicable; annual DR test documented
+
+## Anti-Patterns: Wrong vs. Correct
+
+| Wrong | Correct |
+|-------|---------|
+| No tagging strategy | Auto-apply tags via Terraform; require CostCenter tag |
+| Public S3/GCS buckets | Default deny; explicit bucket policy for access |
+| Hardcoded AWS_SECRET_KEY in code | Use IAM roles; rotate via Secrets Manager |
+| Single AZ deployment | Multi-AZ with Auto Scaling Group; test failover quarterly |
+| No disaster recovery plan | Document RTO/RPO; test restore weekly; cross-region replica ready |
 
 ## Output Templates
 

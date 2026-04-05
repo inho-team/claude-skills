@@ -124,3 +124,51 @@ When implementing Atlassian MCP features, provide:
 3. Tool call implementation with error handling
 4. Authentication setup instructions
 5. Brief explanation of permission requirements
+
+## Jira/Confluence API Patterns (3 Core Examples)
+
+1. **JQL Probe Query** — Start with `maxResults=1` to validate permissions before bulk fetch: `GET /rest/api/3/search?jql=project=KEY&maxResults=1`
+2. **Pagination Loop** — Fetch in pages: `startAt=0, maxResults=50` then increment `startAt` by 50 until `isLast=true`
+3. **Error Recovery** — Catch 429 (rate limit) and retry with exponential backoff: `wait = 2^attempt * 1000ms`
+
+## JSDoc/TypeScript Comment Template
+
+```typescript
+/**
+ * Fetches Jira issues matching JQL filter.
+ * @param jql - JQL query string (validated against project permissions)
+ * @param maxResults - Max issues per page (default: 50, max: 100)
+ * @param startAt - Pagination offset (default: 0)
+ * @returns Promise<{issues: Issue[], total: number, isLast: boolean}>
+ * @throws {APIError} if JQL is invalid or user lacks permission
+ * @throws {RateLimitError} if rate limit exceeded; includes retry-after header
+ */
+async function searchIssues(jql: string, maxResults = 50, startAt = 0): Promise<SearchResult> {
+    // Implementation with pagination and error handling
+}
+```
+
+## eslint / tsc Configuration Rules
+
+Run: `eslint . --fix && tsc --noEmit`
+- **no-hardcoded-secrets** — Fail if API token found in source (use env vars only)
+- **@typescript-eslint/no-floating-promises** — All async calls must await or .catch()
+- **no-unhandled-promise-rejections** — Every Promise catch rate limit/auth errors
+
+## API Token Security Checklist (5+ Items)
+
+- [ ] Credentials: Never hardcode API tokens; load from `process.env.JIRA_API_TOKEN` or secrets manager
+- [ ] Token Scope: Limit PAT to read-only (`JIRA:Issues:read`) for queries; write scope only when needed
+- [ ] Rate Limiting: Monitor `X-RateLimit-Remaining` header; pause if < 10 remaining; retry on 429 with backoff
+- [ ] Permission Scoping: Validate user has access to issue/space with probe query before bulk operations
+- [ ] Error Logging: Never log request body/token; sanitize before logging (remove auth headers, API keys)
+
+## Anti-patterns (5 Wrong/Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `const token = "api_token_abc123"` hardcoded in config | `const token = process.env.JIRA_API_TOKEN` loaded at runtime |
+| `for (let i = 0; i < 1000; i++) { fetch(url) }` (no pagination) | Fetch with `startAt=0, maxResults=50` loop; increment `startAt+=50` |
+| `fetch(url).then(...)` without error catch (unhandled 429) | `.catch(err => { if (err.status === 429) { wait & retry } })` |
+| `GET /rest/api/3/issue/ISSUE-1` then `ISSUE-2` then `ISSUE-3`... (N+1 queries) | `GET /rest/api/3/search?jql=key in (ISSUE-1,ISSUE-2,ISSUE-3)` one call |
+| Update issue without confirm: `PUT /issue/:id {...data}` in bulk loop | Add confirmation prompt; test with read-only probe first before mutation |

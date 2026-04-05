@@ -19,117 +19,126 @@ recommendedModel: haiku
 
 Expert prompt engineer specializing in designing, optimizing, and evaluating prompts that maximize LLM performance across diverse use cases.
 
-## When to Use This Skill
-
-- Designing prompts for new LLM applications
-- Optimizing existing prompts for better accuracy or efficiency
-- Implementing chain-of-thought or few-shot learning
-- Creating system prompts with personas and guardrails
-- Building structured output schemas (JSON mode, function calling)
-- Developing prompt evaluation and testing frameworks
-- Debugging inconsistent or poor-quality LLM outputs
-- Migrating prompts between different models or providers
-
 ## Core Workflow
 
-1. **Understand requirements** — Define task, success criteria, constraints, and edge cases
-2. **Design initial prompt** — Choose pattern (zero-shot, few-shot, CoT), write clear instructions
-3. **Test and evaluate** — Run diverse test cases, measure quality metrics
-   - **Validation checkpoint:** If accuracy < 80% on the test set, identify failure patterns before iterating (e.g., ambiguous instructions, missing examples, edge case gaps)
-4. **Iterate and optimize** — Make one change at a time; refine based on failures, reduce tokens, improve reliability
-5. **Document and deploy** — Version prompts, document behavior, monitor production
+1. **Understand** — Define task, success criteria, constraints, edge cases
+2. **Design** — Choose pattern (zero-shot, few-shot, CoT), write clear instructions
+3. **Test & Evaluate** — Run diverse test cases, measure quality metrics
+   - **Checkpoint:** If accuracy < 80%, identify failure patterns before iterating
+4. **Iterate** — Make one change at a time; refine based on failures, reduce tokens
+5. **Document & Deploy** — Version prompts, document behavior, monitor production
 
-## Reference Guide
+## Code Patterns (3 Examples with Docstrings)
 
-Load detailed guidance based on context:
+```python
+# Pattern 1: Few-shot template with format validation
+def few_shot_prompt_with_validation(user_input: str, examples: list[dict]) -> str:
+    """Build few-shot prompt with automatic format validation."""
+    prompt = "Classify sentiment as Positive, Negative, or Neutral.\n\n"
+    for ex in examples:
+        prompt += f"Input: {ex['input']}\nOutput: {ex['output']}\n\n"
+    prompt += f"Input: {user_input}\nOutput:"
+    assert len(prompt) < 4000, "Prompt exceeds token limit"
+    return prompt
 
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| Prompt Patterns | `references/prompt-patterns.md` | Zero-shot, few-shot, chain-of-thought, ReAct |
-| Optimization | `references/prompt-optimization.md` | Iterative refinement, A/B testing, token reduction |
-| Evaluation | `references/evaluation-frameworks.md` | Metrics, test suites, automated evaluation |
-| Structured Outputs | `references/structured-outputs.md` | JSON mode, function calling, schema design |
-| System Prompts | `references/system-prompts.md` | Persona design, guardrails, context management |
+# Pattern 2: Chain-of-thought with step validation
+def cot_prompt_template(problem: str, step_count: int = 5) -> str:
+    """Generate CoT prompt enforcing explicit step decomposition."""
+    prompt = f"{problem}\n\nSolve step-by-step:\n"
+    for i in range(1, step_count + 1):
+        prompt += f"Step {i}: [reasoning]\n"
+    prompt += "Final Answer: [answer]\n"
+    return prompt
 
-## Prompt Examples
-
-### Zero-shot vs. Few-shot
-
-**Zero-shot (baseline):**
+# Pattern 3: Structured output with JSON schema validation
+def structured_output_prompt(task: str, schema: dict) -> tuple[str, str]:
+    """Generate prompt enforcing JSON output with schema validation."""
+    import json
+    prompt = f"{task}\n\nRespond in valid JSON matching this schema:\n{json.dumps(schema)}"
+    return prompt, json.dumps(schema)
 ```
-Classify the sentiment of the following review as Positive, Negative, or Neutral.
+
+## Comment Template (Google-style)
+
+```python
+def design_system_prompt(role: str, task: str, constraints: list):
+    """One-line prompt design objective.
+    
+    Longer: task context, target model version, output format, evaluation criteria.
+    
+    Args:
+        role: Role/persona (e.g., 'helpful assistant')
+        task: Task description (e.g., 'summarize articles')
+        constraints: List of constraints (e.g., ['max 100 words', 'bullet format'])
+    
+    Returns:
+        System prompt string
+    """
+```
+
+## Lint Rules (ruff/mypy/black)
+
+```toml
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+```
+
+Violations: F841 (unused test cases), E501 (long prompts), W291 (trailing space)
+
+## Security Checklist (5+)
+
+1. **Prompt injection via user input** — Validate & sanitize inputs; use delimiters, guardrails
+2. **Data exfiltration** — Set output length limits; prevent enumeration attacks
+3. **Jailbreak via prompt override** — Use clear delimiters, refusal patterns, integrity checks
+4. **PII in examples** — Use synthetic/anonymized examples; never include real emails, SSNs, keys
+5. **Model-specific output exploitation** — Version-pin prompts; test across model versions before rollout
+
+## Anti-patterns (5 Wrong/Correct)
+
+| Anti-pattern | Fix |
+|--------------|-----|
+| "Summarize this." (vague) | "Summarize in 3 bullets, ≤15 words each, start with action verb" |
+| Few-shot examples contradicting instructions | Align examples to instructions; test examples before deploy |
+| No output format specification | Specify: "Respond in JSON: {`category`: string, `confidence`: 0–1}" |
+| Single prompt version; no A/B testing | Version in Git; test across GPT-4, Claude, Gemini before rollout |
+| No evaluation on test cases before prod | Build test suite (≥20 cases); require ≥85% accuracy before deploy |
+
+## Quick Patterns
+
+**Zero-shot baseline:**
+```
+Classify sentiment: Positive, Negative, or Neutral.
+Review: {{review}}
+Sentiment:
+```
+
+**Few-shot improved:**
+```
+Classify sentiment: Positive, Negative, or Neutral.
+
+Example 1: "Great product!" → Positive
+Example 2: "Broken on arrival" → Negative
+Example 3: "It's okay" → Neutral
 
 Review: {{review}}
 Sentiment:
 ```
 
-**Few-shot (improved reliability):**
+**Chain-of-thought:**
 ```
-Classify the sentiment of the following review as Positive, Negative, or Neutral.
-
-Review: "The battery life is incredible, lasts all day."
-Sentiment: Positive
-
-Review: "Stopped working after two weeks. Very disappointed."
-Sentiment: Negative
-
-Review: "It arrived on time and matches the description."
-Sentiment: Neutral
-
-Review: {{review}}
-Sentiment:
+Solve step-by-step, explaining your reasoning at each step.
+Problem: {{problem}}
+Step 1: ...
+Step 2: ...
+Final Answer:
 ```
 
-### Before/After Optimization
+## MUST DO / MUST NOT DO
 
-**Before (vague, inconsistent outputs):**
-```
-Summarize this document.
-
-{{document}}
-```
-
-**After (structured, token-efficient):**
-```
-Summarize the document below in exactly 3 bullet points. Each bullet must be one sentence and start with an action verb. Do not include opinions or information not present in the document.
-
-Document:
-{{document}}
-
-Summary:
-```
-
-## Constraints
-
-### MUST DO
-- Test prompts with diverse, realistic inputs including edge cases
-- Measure performance with quantitative metrics (accuracy, consistency)
-- Version prompts and track changes systematically
-- Document expected behavior and known limitations
-- Use few-shot examples that match target distribution
-- Validate structured outputs against schemas
-- Consider token costs and latency in design
-- Test across model versions before production deployment
-
-### MUST NOT DO
-- Deploy prompts without systematic evaluation on test cases
-- Use few-shot examples that contradict instructions
-- Ignore model-specific capabilities and limitations
-- Skip edge case testing (empty inputs, unusual formats)
-- Make multiple changes simultaneously when debugging
-- Hardcode sensitive data in prompts or examples
-- Assume prompts transfer perfectly between models
-- Neglect monitoring for prompt degradation in production
-
-## Output Templates
-
-When delivering prompt work, provide:
-1. Final prompt with clear sections (role, task, constraints, format)
-2. Test cases and evaluation results
-3. Usage instructions (temperature, max tokens, model version)
-4. Performance metrics and comparison with baselines
-5. Known limitations and edge cases
-
-## Coverage Note
-
-Reference files cover major prompting techniques (zero-shot, few-shot, CoT, ReAct, tree-of-thoughts), structured output patterns (JSON mode, function calling), and model-specific guidance for GPT-4, Claude, and Gemini families. Consult the relevant reference before designing for a specific model or pattern.
+**MUST:** Test with diverse inputs, measure accuracy, version prompts, document limitations, validate output formats  
+**MUST NOT:** Deploy unvetted prompts, use contradictory examples, hardcode secrets in prompts, ignore edge cases, assume perfect transfer across models

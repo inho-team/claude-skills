@@ -161,6 +161,88 @@ Load detailed guidance based on context:
 | Profiling | `references/application-profiling.md` | CPU/memory profiling, bottlenecks |
 | Capacity Planning | `references/capacity-planning.md` | Scaling, forecasting, budgets |
 
+## Code Patterns
+
+**Pattern 1: Prometheus Metric Definition**
+```yaml
+- name: database_query_duration_seconds
+  help: Database query execution time
+  type: histogram
+  labels: [query_type, status]
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 5]
+```
+
+**Pattern 2: Grafana Dashboard JSON (RED method)**
+```json
+{
+  "title": "API Service",
+  "panels": [
+    {"title": "Request Rate", "expr": "rate(http_requests_total[5m])"},
+    {"title": "Error Rate", "expr": "rate(http_requests_total{status=~'5..'}[5m])"},
+    {"title": "P95 Latency", "expr": "histogram_quantile(0.95, http_request_duration_seconds_bucket)"}
+  ]
+}
+```
+
+**Pattern 3: Alert Rule (PromQL)**
+```yaml
+- alert: HighLatencyP99
+  expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 1
+  for: 3m
+  labels: {severity: warning}
+  annotations: {summary: "P99 latency above 1s"}
+```
+
+## Comment Template
+
+```yaml
+# Metric naming: {namespace}_{subsystem}_{name}_{unit}
+# Labels (low cardinality): job, instance, method, status
+# Avoid: user_id, request_id, session_token (high cardinality)
+# Config example:
+scrape_configs:
+  - job_name: 'api'
+    static_configs:
+      - targets: ['localhost:8080']  # Single instance
+    scrape_interval: 15s              # Adjust per load; avoid <5s
+```
+
+## Lint Rules
+
+**promtool check**
+```bash
+promtool check rules alerting_rules.yml
+promtool check config prometheus.yml
+```
+
+**yamllint for configs**
+```bash
+yamllint -d '{rules: {line-length: {max: 120}}}' *.yml
+```
+
+**jsonnet lint for dashboards**
+```bash
+jsonnetfmt --check dashboards/*.jsonnet
+```
+
+## Security Checklist
+
+1. **Cardinality Control**: Audit label combinations; set `metric_relabel_configs` to drop high-cardinality labels (e.g., user_id).
+2. **Dashboard Access**: Restrict Grafana admin panel; enforce RBAC per team.
+3. **No Sensitive Data in Labels**: Never emit passwords, API keys, or PII; mask IDs if needed.
+4. **TLS for Scrape**: Use `scheme: https` and `tls_config` in Prometheus scrape configs.
+5. **Alert Routing Security**: Require auth on Alertmanager routes; validate webhook receivers (no open POST endpoints).
+
+## Anti-patterns
+
+| Wrong | Correct |
+|-------|---------|
+| Label: `user_id=12345` (high cardinality) | Label: `user_type=premium` (low cardinality) |
+| Alert: `up{instance=...} == 0` (symptom) | Alert: `rate(errors_total[5m]) > threshold` (root cause) |
+| Alert with no runbook link | Alert with `annotations.runbook_url` pointing to on-call guide |
+| 50+ dashboards per team (sprawl) | 1 service dashboard + shared platform dashboard |
+| Scrape every second (storage overhead) | Scrape 30s–60s (adjust per SLA, not per moment) |
+
 ## Constraints
 
 ### MUST DO
@@ -170,9 +252,11 @@ Load detailed guidance based on context:
 - Monitor business metrics, not just technical
 - Use appropriate metric types (counter/gauge/histogram)
 - Implement health check endpoints
+- Control metric cardinality; audit before shipping
 
 ### MUST NOT DO
 - Log sensitive data (passwords, tokens, PII)
 - Alert on every error (alert fatigue)
 - Use string interpolation in logs (use structured fields)
 - Skip correlation IDs in distributed systems
+- Emit unbounded high-cardinality labels (user IDs, session tokens)

@@ -105,6 +105,62 @@ def test_order_status_golden_master(order_id, expected_status):
     )
 ```
 
+## Code Patterns — Modernization Examples
+
+1. **Strangler Fig Wrapper** — Introduce a facade that routes traffic between legacy and new implementations based on feature flags. Allows gradual traffic shift without big-bang rewrite.
+2. **Anti-Corruption Layer** — Isolate old domain model from new one via explicit translation layer. Prevents legacy paradigms from infecting new codebase.
+3. **Feature Toggle for Gradual Migration** — Expose environment flags to enable/disable new code path per deployment. Enables rollback without code changes.
+
+## Comment Template — Migration Boundaries
+
+Use language-appropriate documentation at every legacy↔new boundary:
+
+**JSDoc (JavaScript/TypeScript)**
+```javascript
+/**
+ * @deprecated Use newPaymentService() instead.
+ * @migration Started 2026-Q2, target completion Q3.
+ * Wrapped by anti-corruption layer in `paymentFacade.js`.
+ * @see {@link paymentFacade.js} for routing logic.
+ */
+function legacyChargeCard(cardToken) { ... }
+```
+
+**Python docstring**
+```python
+def charge_legacy_card(card_token: str) -> Dict:
+    """Charge card via legacy gateway (DEPRECATED).
+    
+    Migration: Anti-corruption layer in payment_facade.py routes new requests
+    to new_gateway. Keep until 2026-Q3 for backward compatibility.
+    See: MIGRATION_LOG.md for timeline.
+    """
+```
+
+## Lint Rules — Legacy Code Analysis
+
+- **SonarQube** — Enable legacy-code profile: high cyclomatic complexity, dead code, code duplication detection.
+- **Language-specific linters** — New code enforces strict rules (ESLint/strict, mypy/strict); legacy code flagged but not enforced (report-only mode).
+- **Dependency scanning** — Run monthly vulnerability audits; flag deprecated dependencies with remediation timeline.
+
+## Security Checklist (5+ items)
+
+- [ ] **Legacy auth migration** — Document all auth schemes in legacy system; design gradual migration to modern auth (OAuth, OIDC) with dual validation during transition.
+- [ ] **Data encryption at rest** — Sensitive data in legacy storage must be encrypted; use envelope encryption if key rotation is required.
+- [ ] **Dependency vulnerability scan** — Audit all legacy dependencies; create remediation roadmap (upgrade, vendor patch, isolate via network).
+- [ ] **API backward compatibility** — Verify all facade contracts maintain version compatibility; document deprecation timelines in API docs.
+- [ ] **Audit logging during migration** — Log all requests routed via facade with timestamp, source, and path (legacy vs. new); enables canary monitoring.
+
+## Anti-patterns (Wrong ✗ / Correct ✓)
+
+| Anti-pattern | ✗ Wrong | ✓ Correct |
+|---|---|---|
+| **Rewrite Strategy** | Big bang rewrite of entire system | Incremental strangler fig with feature flags |
+| **Testing** | Deploy new code before covering legacy behavior | Write characterization tests first; then refactor against golden master |
+| **API Contracts** | Break existing endpoints during migration | Dual-write to old+new; maintain backward compatibility until 100% traffic proven stable |
+| **Monitoring** | Deploy without metrics; check logs manually | Instrument facade with latency/error/traffic splits; automated alerts on anomalies |
+| **Shared State** | Share mutable state between old+new code | Use facade as state boundary; new code owns its state; legacy data is read-only reference |
+
 ## Constraints
 
 ### MUST DO

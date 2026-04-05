@@ -45,97 +45,93 @@ Load detailed guidance based on context:
 
 ## Code Patterns
 
-### Component with JSDoc-typed props and emits
-
+**Basic: Component with JSDoc-typed props and emits**
 ```vue
 <script setup>
 /**
  * @typedef {Object} UserCardProps
- * @property {string} name - Display name of the user
+ * @property {string} name - Display name
  * @property {number} age - User's age
- * @property {boolean} [isAdmin=false] - Whether the user has admin rights
  */
-
-/** @type {UserCardProps} */
-const props = defineProps({
-  name:    { type: String,  required: true },
-  age:     { type: Number,  required: true },
-  isAdmin: { type: Boolean, default: false },
-})
-
-/**
- * @typedef {Object} UserCardEmits
- * @property {(id: string) => void} select - Emitted when the card is selected
- */
+const props = defineProps({ name: { type: String, required: true }, age: { type: Number, required: true } })
 const emit = defineEmits(['select'])
 
 /** @param {string} id */
-function handleSelect(id) {
-  emit('select', id)
-}
+function handleSelect(id) { emit('select', id) }
 </script>
+<template><div @click="handleSelect(props.name)">{{ props.name }} ({{ props.age }})</div></template>
+```
 
+**Error Handling: Composable with error state**
+```js
+import { ref } from 'vue'
+/**
+ * @typedef {Object} AsyncState
+ * @property {import('vue').Ref<?any>} data
+ * @property {import('vue').Ref<?Error>} error
+ * @property {() => Promise<void>} fetch
+ */
+export function useAsync(url) {
+  const data = ref(null), error = ref(null)
+  async function fetch() {
+    try { data.value = await (await window.fetch(url)).json() } 
+    catch (e) { error.value = e }
+  }
+  return { data, error, fetch }
+}
+```
+
+**Advanced: Renderless component pattern**
+```vue
+<script setup>
+const props = defineProps({ items: Array, onSelect: Function })
+const selected = ref(null)
+</script>
 <template>
-  <div @click="handleSelect(props.name)">
-    {{ props.name }} ({{ props.age }})
-  </div>
+  <slot :items="items" :selected="selected" :select="(item) => { selected = item; props.onSelect?.(item) }" />
 </template>
 ```
 
-### Composable with @typedef, @param, and @returns
+## Comment Template
 
+All public functions must use JSDoc with `@type` annotations:
 ```js
-// composables/useCounter.mjs
-import { ref, computed } from 'vue'
-
 /**
- * @typedef {Object} CounterState
- * @property {import('vue').Ref<number>} count - Reactive count value
- * @property {import('vue').ComputedRef<boolean>} isPositive - True when count > 0
- * @property {() => void} increment - Increases count by step
- * @property {() => void} reset - Resets count to initial value
+ * Brief description.
+ * @param {string} name - Parameter description
+ * @param {number} [count=1] - Optional parameter
+ * @returns {Promise<Object>} Returns description
+ * @throws {Error} When condition occurs
  */
-
-/**
- * Composable for a simple counter with configurable step.
- * @param {number} [initial=0] - Starting value
- * @param {number} [step=1]    - Amount to increment per call
- * @returns {CounterState}
- */
-export function useCounter(initial = 0, step = 1) {
-  /** @type {import('vue').Ref<number>} */
-  const count = ref(initial)
-
-  const isPositive = computed(() => count.value > 0)
-
-  function increment() {
-    count.value += step
-  }
-
-  function reset() {
-    count.value = initial
-  }
-
-  return { count, isPositive, increment, reset }
-}
+export function myFunction(name, count = 1) { ... }
 ```
 
-### @typedef for a complex object used across files
+## Lint Rules
 
-```js
-// types/user.mjs
+- **ESLint**: `eslint` with `parserOptions.ecmaVersion: 2022`
+- **Vue plugin**: `eslint-plugin-vue` with `vue/multi-word-component-names`, `vue/no-unused-vars`
+- **JSDoc plugin**: `eslint-plugin-jsdoc` with `requireParamType: true`, `requireReturnType: true`
+- **Formatter**: `prettier` with `semi: false`, `singleQuote: true`
+- **Check**: Run `eslint . && eslint-plugin-jsdoc --check` before commit
 
-/**
- * @typedef {Object} User
- * @property {string}   id       - UUID
- * @property {string}   name     - Full display name
- * @property {string}   email    - Contact email
- * @property {'admin'|'viewer'} role - Access level
- */
+## Security Checklist
 
-// Import in other files with:
-// /** @type {import('./types/user.mjs').User} */
-```
+1. **Never use `v-html`** — Parse user input; use `v-text` or text content
+2. **CSRF tokens** — Include in headers for POST/PUT/DELETE; store in memory, not localStorage
+3. **Dependency audit** — Run `npm audit` weekly; pin versions in lockfile
+4. **Environment variables** — Use `.env.local` for secrets; never commit API keys
+5. **Auth token handling** — Store tokens in httpOnly cookies or memory; clear on logout
+6. **XSS prevention** — Sanitize external URLs before `href`; use `DOMPurify` if rendering HTML
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `const userData = {}`; no JSDoc | `/** @type {import('./types').User} */ const userData = {}` |
+| Options API with `data()`, `methods` | `<script setup>` + `ref()`, functions |
+| `el.addEventListener('click', ...)` in Vue | `@click="handler"` binding |
+| Global event bus for state | Pinia store or provide/inject |
+| `props.name = 'new'` mutation | `emit('update:name', 'new')` |
 
 ## Constraints
 

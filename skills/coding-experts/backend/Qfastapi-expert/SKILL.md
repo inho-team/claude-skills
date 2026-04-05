@@ -34,112 +34,96 @@ Deep expertise in async Python, Pydantic V2, and production-grade API developmen
 2. **Design schemas** — Create Pydantic V2 models for validation
 3. **Implement** — Write async endpoints with proper dependency injection
 4. **Secure** — Add authentication, authorization, rate limiting
-5. **Test** — Write async tests with pytest and httpx; run `pytest` after each endpoint group and verify OpenAPI docs at `/docs`
+5. **Test** — Run `pytest` after each endpoint group; verify `/docs` before proceeding
 
-> **Checkpoint after each step:** confirm schemas validate correctly, endpoints return expected HTTP status codes, and `/docs` reflects the intended API surface before proceeding.
+## Code Patterns
 
-## Minimal Complete Example
-
-Schema + endpoint + dependency injection in one cohesive unit:
-
+**Basic: Route with Pydantic Model + Docstring**
 ```python
-# schemas.py
-from pydantic import BaseModel, EmailStr, field_validator, model_config
-
-class UserCreate(BaseModel):
-    model_config = model_config(str_strip_whitespace=True)
-
-    email: EmailStr
-    password: str
-    name: str | None = None
-
-    @field_validator("password")
-    @classmethod
-    def password_strength(cls, v: str) -> str:
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters")
-        return v
-
-class UserResponse(BaseModel):
-    model_config = model_config(from_attributes=True)
-
-    id: int
-    email: EmailStr
-    name: str | None = None
-```
-
-```python
-# routers/users.py
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Annotated
-
-from app.database import get_db
-from app.schemas import UserCreate, UserResponse
-from app import crud
-
-router = APIRouter(prefix="/users", tags=["users"])
-
-DbDep = Annotated[AsyncSession, Depends(get_db)]
-
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(payload: UserCreate, db: DbDep) -> UserResponse:
-    existing = await crud.get_user_by_email(db, payload.email)
-    if existing:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
-    return await crud.create_user(db, payload)
-```
-
-```python
-# crud.py
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import User
-from app.schemas import UserCreate
-from app.security import hash_password
-
-async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
-    result = await db.execute(select(User).where(User.email == email))
-    return result.scalar_one_or_none()
-
-async def create_user(db: AsyncSession, payload: UserCreate) -> User:
-    user = User(email=payload.email, hashed_password=hash_password(payload.password), name=payload.name)
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+@router.get("/users/{user_id}", response_model=UserResponse)
+async def get_user(user_id: int, db: DbDep) -> UserResponse:
+    """Retrieve a user by ID. Returns 404 if not found."""
+    user = await crud.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     return user
 ```
 
-## JWT Authentication Snippet
-
+**Error Handling: Custom Exception + HTTPException**
 ```python
-# security.py
-from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from typing import Annotated
+class DuplicateEmailError(Exception):
+    pass
 
-SECRET_KEY = "read-from-env"  # use os.environ / settings
-ALGORITHM = "HS256"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-
-def create_access_token(subject: str, expires_delta: timedelta = timedelta(minutes=30)) -> str:
-    payload = {"sub": subject, "exp": datetime.now(timezone.utc) + expires_delta}
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> str:
-    try:
-        data = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        subject: str | None = data.get("sub")
-        if subject is None:
-            raise ValueError
-        return subject
-    except (JWTError, ValueError):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
-CurrentUser = Annotated[str, Depends(get_current_user)]
+@router.exception_handler(DuplicateEmailError)
+async def duplicate_email_handler(req, exc):
+    return JSONResponse(status_code=409, content={"detail": "Email already exists"})
 ```
+
+**Advanced: Dependency Injection + Async SQLAlchemy**
+```python
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: DbDep) -> User:
+    """Verify JWT and return authenticated user."""
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    user = await crud.get_user(db, int(payload["sub"]))
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return user
+```
+
+## Comment Template
+
+Use Google-style Python docstrings:
+```python
+def process_payment(amount: float, user_id: int) -> dict[str, str]:
+    """Process a payment transaction.
+    
+    Args:
+        amount: Payment amount in USD.
+        user_id: ID of the user making payment.
+        
+    Returns:
+        Transaction confirmation with status and ID.
+        
+    Raises:
+        ValueError: If amount is negative.
+        HTTPException: If user not found (status 404).
+    """
+```
+
+## Lint Rules
+
+Apply in order:
+- **ruff** (linter, imports, complexity): `ruff check .`
+- **mypy --strict** (type safety): `mypy . --strict`
+- **black** (formatter): `black .`
+
+Config in `pyproject.toml`:
+```toml
+[tool.ruff]
+line-length = 100
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+```
+
+## Security Checklist
+
+1. **Input Validation** — Use Pydantic for all request bodies; validate min/max lengths, enums, email format
+2. **Authentication** — OAuth2/JWT with signed tokens; never store passwords plaintext; use bcrypt hash
+3. **Rate Limiting** — Apply SlowAPI or FastAPI-Limiter to prevent abuse
+4. **CORS Misconfiguration** — Whitelist specific origins; never use `allow_origins=["*"]` with credentials
+5. **SQL Injection** — Use SQLAlchemy ORM; never interpolate user input into raw SQL
+6. **Sensitive Data** — Exclude passwords, tokens, secrets from response models; use `exclude_fields`
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `def get_user(db: Session)` (sync) | `async def get_user(db: AsyncSession)` |
+| No validation: `email: str` | Pydantic validation: `email: EmailStr` |
+| Global state: `DB = create_engine()` | Dependency injection: `Depends(get_db)` |
+| Fat route: 50-line endpoint logic | Extract to service layer: `await UserService.create(...)` |
+| Manual parsing: `try/except` json | Pydantic auto-validation + auto-docs |
 
 ## Reference Guide
 

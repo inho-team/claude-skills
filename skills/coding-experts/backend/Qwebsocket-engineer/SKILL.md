@@ -142,6 +142,81 @@ function sendMessage(roomId, text) {
 }
 ```
 
+## Code Patterns
+
+### 1. Basic WebSocket Server with Connection Handling
+```js
+import { WebSocketServer } from "ws";
+const wss = new WebSocketServer({ port: 8080 });
+wss.on("connection", (ws) => {
+  ws.on("message", (data) => wss.clients.forEach(c => c.send(data)));
+  ws.on("close", () => console.log("client disconnected"));
+});
+```
+
+### 2. Heartbeat/Ping-Pong Pattern
+```js
+setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (ws.isAlive === false) return ws.terminate();
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30000);
+ws.on("pong", () => { ws.isAlive = true; });
+```
+
+### 3. Room/Channel Broadcasting (Socket.IO)
+```js
+socket.on("subscribe", (room) => {
+  socket.join(room);
+  io.to(room).emit("joined", { user: socket.id });
+});
+socket.on("publish", (room, msg) => {
+  io.to(room).emit("message", msg); // only room members receive
+});
+```
+
+## Comment Template
+
+```js
+/**
+ * Handles incoming message event
+ * @event message
+ * @param {Object} data - message payload { roomId, text, ts }
+ * @emits message - broadcasts to all clients in room
+ * @throws {Error} if roomId missing or not authorized
+ */
+socket.on("message", ({ roomId, text }) => {
+  // validate and broadcast
+});
+```
+
+## Lint Rules
+
+- **eslint**: no-unused-vars, consistent-async-await
+- **tsc --noEmit**: Enable for ws/@types/ws and socket.io type checking; catch missing event handlers and type mismatches
+- Run `npm run lint:types` before committing WebSocket code
+
+## Security Checklist
+
+- [ ] **Origin validation**: `CORS` config restricts handshake to allowed domains
+- [ ] **Auth on connection**: Token validation via `handshake.auth` or query params before emitting events
+- [ ] **Rate limiting per connection**: Implement token bucket or sliding window per socket.id
+- [ ] **Message size limits**: Set `maxPayload` in WebSocket config; reject oversized messages
+- [ ] **TLS (wss://)**: Use secure WebSocket in production; set `secure: true` for Socket.IO over HTTPS
+- [ ] **Input sanitization**: Validate/sanitize all message fields before storing or broadcasting
+
+## Anti-patterns (Wrong vs. Correct)
+
+| ❌ Wrong | ✅ Correct |
+|---------|----------|
+| No heartbeat; stale connections linger | Implement ping/pong every 30s; terminate isAlive === false |
+| `io.emit()` broadcasts to all clients | Use `io.to(room).emit()` to scope by room/channel |
+| Blocking event loop in handler (sync I/O) | Use `async/await`; query DB outside event handler |
+| Client reconnects without backoff strategy | Exponential backoff + jitter in Socket.IO client config |
+| Store all state in server memory | Use Redis for presence, rooms, and persistent data |
+
 ## Constraints
 
 ### MUST DO
@@ -156,14 +231,6 @@ function sendMessage(roomId, text) {
 - Mix WebSocket and HTTP on the same port without explicit upgrade handling
 - Forget to handle connection cleanup (presence records, room membership, in-flight timers)
 - Skip load testing before production — connection-count spikes behave differently from HTTP traffic spikes
-
-## Output Templates
-
-When implementing WebSocket features, provide:
-1. Server setup (Socket.IO/ws configuration)
-2. Event handlers (connection, message, disconnect)
-3. Client library (connection, events, reconnection)
-4. Brief explanation of scaling strategy
 
 ## Knowledge Reference
 

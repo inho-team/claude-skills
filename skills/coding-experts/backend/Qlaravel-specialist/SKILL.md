@@ -173,6 +173,188 @@ it('returns a published post for authenticated users', function (): void {
 });
 ```
 
+## Code Patterns
+
+### Basic: Controller + FormRequest with PHPDoc
+
+```php
+<?php
+declare(strict_types=1);
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StorePostRequest;
+use App\Http\Resources\PostResource;
+use App\Models\Post;
+use Illuminate\Http\JsonResponse;
+
+final class PostController extends Controller {
+    /**
+     * Store a newly created post.
+     * @param StorePostRequest $request Validated request containing post data
+     * @return JsonResponse The created post resource
+     */
+    public function store(StorePostRequest $request): JsonResponse {
+        $post = Post::create($request->validated());
+        return response()->json(new PostResource($post), 201);
+    }
+}
+
+// FormRequest with validation rules and authorization
+final class StorePostRequest extends FormRequest {
+    /** @return bool User authorization check */
+    public function authorize(): bool { return auth()->check(); }
+    
+    /** @return array Validation rules */
+    public function rules(): array {
+        return ['title' => 'required|string|max:255', 'body' => 'required|string'];
+    }
+}
+```
+
+### Error Handling: Custom Exception + Handler
+
+```php
+<?php
+namespace App\Exceptions;
+
+use Exception;
+use Illuminate\Http\JsonResponse;
+
+final class InvalidPostException extends Exception {
+    public static function unpublishable(int $postId): self {
+        return new self("Post {$postId} cannot be published");
+    }
+    public function render(): JsonResponse {
+        return response()->json(['error' => $this->message], 422);
+    }
+}
+```
+
+### Advanced: Eloquent Scope + Relationship + Event
+
+```php
+<?php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\{Builder, Relations\BelongsTo};
+use App\Events\PostPublished;
+
+final class Post extends Model {
+    protected $dispatchesEvents = ['updated' => PostPublished::class];
+    
+    /** Scope: filter published posts with author eagerly loaded */
+    public function scopePublishedWithAuthor(Builder $query): Builder {
+        return $query->where('status', 'published')->with('author');
+    }
+    
+    public function author(): BelongsTo { return $this->belongsTo(User::class); }
+}
+
+// Listener fires after post is updated
+final class PostPublished {
+    public function __construct(public Post $post) {}
+}
+```
+
+## Comment Template (PHPDoc)
+
+```php
+/**
+ * Brief description (imperative, one line).
+ *
+ * Detailed explanation if needed. Reference related classes/methods.
+ *
+ * @param string $title Post title, max 255 chars
+ * @param int $userId Foreign key to users table
+ * @return array Status with 'published_at' timestamp
+ * @throws InvalidPostException If post cannot transition to published state
+ * @see PostPublished Event triggered on publish
+ */
+public function publish(string $title, int $userId): array { }
+```
+
+## Lint Rules
+
+**PHPCodeSniffer (phpcs/phpcbf)** — PSR-12 code style
+**PHPStan** — Static analysis, strict types, null safety
+**Config files:**
+```
+// phpcs.xml: PSR-12 + no unused imports
+<rule ref="PSR12"/>
+<rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+  <exclude-pattern>*/config/*</exclude-pattern>
+</rule>
+
+// phpstan.neon: Level 9, strict mode
+includes:
+  - phpstan-strict-rules.neon
+parameters:
+  level: 9
+  checkMissingIterableValueType: true
+```
+
+## Security Checklist
+
+1. **SQL Injection** — Use Eloquent query builder (safe) or DB::prepare() with placeholders. Never use DB::raw() with user input.
+2. **XSS** — Blade auto-escapes `{{ $var }}`. Use `{!! $html !!}` only for trusted HTML; sanitize with Purify.
+3. **CSRF** — Include `@csrf` in all POST/PUT/DELETE forms; middleware checks X-CSRF-TOKEN header.
+4. **Mass Assignment** — Define `$fillable` or `$guarded` on models. Use `request()->validate()` before `Model::create()`.
+5. **File Upload** — Validate MIME types (`mimetypes:image/jpeg`), store in `/storage/`, never in web root.
+6. **Authentication** — Use `auth()->check()` in controllers/middleware; Sanctum for APIs with token rotation.
+
+## Anti-patterns (Wrong vs Correct)
+
+**1. Fat Controllers**
+```php
+// WRONG: Business logic in controller
+public function store(Request $request) {
+    $validated = $request->validate([...]);
+    $post = Post::create($validated);
+    // Payment, notifications, cache invalidation HERE
+}
+
+// CORRECT: Delegate to service
+public function store(StorePostRequest $request, PostService $service) {
+    return response()->json($service->create($request->validated()), 201);
+}
+```
+
+**2. N+1 Query Problem**
+```php
+// WRONG: Loop loads author for each post
+foreach(Post::all() as $post) { echo $post->author->name; }
+
+// CORRECT: Eager load author
+foreach(Post::with('author')->get() as $post) { echo $post->author->name; }
+```
+
+**3. Raw Queries**
+```php
+// WRONG: SQL injection risk
+$posts = DB::select("SELECT * FROM posts WHERE user_id = {$userId}");
+
+// CORRECT: Use parameterized query or Eloquent
+$posts = Post::where('user_id', $userId)->get();
+```
+
+**4. No Input Validation**
+```php
+// WRONG: Unvalidated input
+public function store(Request $request) { Post::create($request->all()); }
+
+// CORRECT: Validate before store
+public function store(StorePostRequest $request) { Post::create($request->validated()); }
+```
+
+**5. Business Logic in Routes**
+```php
+// WRONG: Logic in route closure
+Route::post('/publish', fn() => Post::find(request('id'))->update(['status' => 'published']));
+
+// CORRECT: Use controller method
+Route::post('/posts/{post}/publish', [PostController::class, 'publish']);
+```
+
 ## Validation Checkpoints
 
 | Stage | Command | Expected |

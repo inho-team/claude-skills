@@ -57,84 +57,112 @@ Load detailed guidance based on context:
 - Mix concerns across architectural layers
 - Use deprecated EF Core patterns
 
-## Code Examples
+## Code Patterns
 
-### Minimal API Endpoint
+### Basic: Minimal API Endpoint with XML Doc
 ```csharp
-// Program.cs
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-
-var app = builder.Build();
-app.UseSwagger();
-app.UseSwaggerUI();
-
+/// <summary>
+/// Retrieves a user by ID.
+/// </summary>
+/// <param name="id">The user identifier.</param>
+/// <param name="sender">MediatR mediator.</param>
+/// <param name="ct">Cancellation token.</param>
+/// <returns>UserDto if found; NotFound otherwise.</returns>
 app.MapGet("/users/{id}", async (int id, ISender sender, CancellationToken ct) =>
 {
     var result = await sender.Send(new GetUserQuery(id), ct);
     return result is null ? Results.NotFound() : Results.Ok(result);
 })
 .WithName("GetUser")
-.Produces<UserDto>()
+.Produces<UserDto>(200)
 .ProducesProblem(404);
-
-app.Run();
 ```
 
-### MediatR Query Handler
+### Error Handling: ProblemDetails + Result Pattern
 ```csharp
-// Application/Users/GetUserQuery.cs
-public record GetUserQuery(int Id) : IRequest<UserDto?>;
+public sealed record Result<T>(bool Success, T? Value, string? Error)
+{
+    public static Result<T> Ok(T value) => new(true, value, null);
+    public static Result<T> Fail(string error) => new(false, default, error);
+}
 
-public sealed class GetUserQueryHandler : IRequestHandler<GetUserQuery, UserDto?>
+public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<UserDto>>
 {
     private readonly AppDbContext _db;
+    private readonly IValidator<CreateUserCommand> _validator;
 
-    public GetUserQueryHandler(AppDbContext db) => _db = db;
-
-    public async Task<UserDto?> Handle(GetUserQuery request, CancellationToken ct) =>
-        await _db.Users
-            .AsNoTracking()
-            .Where(u => u.Id == request.Id)
-            .Select(u => new UserDto(u.Id, u.Name))
-            .FirstOrDefaultAsync(ct);
+    public async Task<Result<UserDto>> Handle(CreateUserCommand req, CancellationToken ct)
+    {
+        var validation = await _validator.ValidateAsync(req, ct);
+        if (!validation.IsValid)
+            return Result<UserDto>.Fail(string.Join("; ", validation.Errors));
+        
+        var user = new User { Name = req.Name, Email = req.Email };
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync(ct);
+        return Result<UserDto>.Ok(new UserDto(user.Id, user.Name));
+    }
 }
 ```
 
-### EF Core DbContext with Async Query
+### Advanced: MediatR + FluentValidation
 ```csharp
-// Infrastructure/AppDbContext.cs
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {
-    public DbSet<User> Users => Set<User>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public CreateUserCommandValidator()
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        RuleFor(x => x.Name).NotEmpty().Length(2, 100);
+        RuleFor(x => x.Email).EmailAddress().NotEmpty();
     }
 }
 
-// Usage in a service
-public async Task<IReadOnlyList<UserDto>> GetAllAsync(CancellationToken ct) =>
-    await _db.Users
-        .AsNoTracking()
-        .Select(u => new UserDto(u.Id, u.Name))
-        .ToListAsync(ct);
+app.MapPost("/users", async (CreateUserRequest req, ISender sender, CancellationToken ct) =>
+{
+    var result = await sender.Send(new CreateUserCommand(req.Name, req.Email), ct);
+    return result.Success 
+        ? Results.Created($"/users/{result.Value?.Id}", result.Value)
+        : Results.BadRequest(new ProblemDetails { Detail = result.Error });
+})
+.Produces<UserDto>(201)
+.ProducesProblem(400);
 ```
 
-### DTO with Record Type
+## Comment Template
+
+Use XML documentation (///) for all public members:
 ```csharp
-public record UserDto(int Id, string Name);
-public record CreateUserRequest(string Name, string Email);
+/// <summary>
+/// Brief description.
+/// </summary>
+/// <param name="paramName">Parameter description.</param>
+/// <returns>Return value description.</returns>
+/// <exception cref="ExceptionType">When this exception is thrown.</exception>
+public async Task<UserDto> GetUserAsync(int id)
 ```
 
-## Output Templates
+## Lint Rules
 
-When implementing .NET features, provide:
-1. Project structure (solution/project files)
-2. Domain models and DTOs
-3. API endpoints or service implementations
-4. Database context and migrations if applicable
-5. Brief explanation of architectural decisions
+- **dotnet format**: Run `dotnet format` before commits; enforce with CI
+- **Build warnings**: Use `dotnet build -warnaserror` to fail on warnings
+- **StyleCop**: Add `<PropertyGroup><GenerateDocumentationFile>true</GenerateDocumentationFile></PropertyGroup>` to .csproj
+- **Roslynator**: Install via NuGet; configure `.editorconfig` for rule sets
+- **Pragma sparingly**: Never use `#pragma warning disable` without justification
+
+## Security Checklist
+
+1. **SQL Injection**: Use parameterized EF Core queries; never string interpolation in LINQ
+2. **XSS**: Razor auto-encodes by default; trust HTML only from trusted sources
+3. **CSRF**: Include `[ValidateAntiForgeryToken]` on POST/PUT/DELETE; use `asp-antiforgery="true"` in forms
+4. **Authentication/Authorization**: Use `[Authorize]` attributes; enforce JWT validation in middleware
+5. **HTTPS Enforcement**: Set `app.UseHsts()` and `app.UseHttpsRedirection()`
+6. **Secrets**: Never commit connection strings; use User Secrets in dev, Azure Key Vault in production
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `async void DoWork()` | `async Task DoWork()` |
+| `var handler = serviceProvider.GetService(...)` | Inject dependencies via constructor |
+| `catch (Exception ex)` | Catch specific exceptions; log and re-throw |
+| `StreamReader sr = File.OpenText(path)` | `using var sr = File.OpenText(path)` |
+| `Task.Result; Task.Wait()` | Always `await` async operations |

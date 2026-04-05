@@ -110,6 +110,82 @@ When implementing CLI features, provide:
 4. Shell completion scripts if applicable
 5. Brief explanation of UX decisions
 
+## Code Patterns
+
+### Argument Parser Setup
+- Define program metadata first (name, version, description).
+- Register all flags/options before parsing user input.
+- Use consistent naming: `--flag-name` (kebab-case) across all languages.
+- Group related options logically.
+
+### Subcommand Pattern
+- Each subcommand is a discrete entry point with its own options.
+- Root program provides global flags; subcommands inherit them.
+- Example: `mytool config get KEY` → root handles verbosity, `config` subcommand owns `get`, `set`, `list`.
+
+### Interactive Prompt
+- Detect TTY before prompting; provide fallback flags for CI/CD.
+- Use libraries: Node.js (inquirer), Python (typer/rich), Go (bubbletea/survey).
+- Always allow opt-out via `--non-interactive` or env var.
+
+## Comment Template
+
+**JavaScript/TypeScript (JSDoc)**
+```js
+/**
+ * Validates and parses user input.
+ * @param {string} input - Raw user input to validate
+ * @returns {Object} Parsed config object
+ * @throws {Error} If input is malformed
+ */
+```
+
+**Python (Docstring)**
+```python
+def parse_config(input_str: str) -> dict:
+    """Validate and parse user input.
+    
+    Args:
+        input_str: Raw user input to validate
+    
+    Returns:
+        Parsed config object
+    
+    Raises:
+        ValueError: If input is malformed
+    """
+```
+
+**Go (GoDoc)**
+```go
+// ParseConfig validates and parses user input.
+// It returns a parsed config object or an error if input is malformed.
+func ParseConfig(input string) (map[string]interface{}, error) {
+```
+
+## Lint Rules
+
+- **JavaScript/TypeScript**: `eslint` with plugin:commander or plugin:yargs. Enforce consistent option definitions.
+- **Python**: `flake8` + `black`. Verify 2 spaces for groups, consistent docstrings.
+- **Go**: `golangci-lint` with rules for error handling and naming.
+- **Shell scripts**: `shellcheck` (mandatory for completion scripts). Address SC2086 (quote expansion), SC2181 (check exit codes).
+
+## Security Checklist
+
+1. **Input Sanitization** — Validate and trim all user input; reject null bytes, path traversal sequences (`../`, `..\\`).
+2. **No Eval on User Input** — Never pass flags/arguments to `eval()`, `exec()`, or `shell=True` interpreters without strict validation.
+3. **Secure Credential Storage** — Store secrets in OS credential store (Keychain, pass, 1Password CLI) or encrypted config files; never log credentials.
+4. **Path Traversal Prevention** — Resolve all file paths with `path.resolve()` or `os.path.abspath()`; compare against allowed directory prefix.
+5. **Dependency Pinning** — Lock all transitive dependencies in `package-lock.json`, `poetry.lock`, or `go.sum`.
+
+## Anti-patterns (Avoid)
+
+1. **No Help Text** — Every command and flag must have a description. Users should understand usage from `--help` alone.
+2. **Cryptic Error Messages** — Always explain what went wrong and suggest a fix. Bad: `Error: Invalid`. Good: `Error: Config file not found at ~/.myapp/config.yml. Create one with 'myapp init'.`
+3. **Blocking on Input Without Timeout** — Interactive prompts must have a timeout in CI/CD or non-TTY contexts. Provide fallback flags.
+4. **Hardcoded Paths** — Use `os.homedir()`, `Path.home()`, or env vars instead of `/home/user` or `C:\Users\User`.
+5. **No Exit Codes** — Always exit with non-zero status on error. Define meaningful codes: 1 = generic, 2 = usage, 126 = permission denied.
+
 ## Knowledge Reference
 
 CLI frameworks (commander, yargs, oclif, click, typer, argparse, cobra, viper), terminal UI (chalk, inquirer, rich, bubbletea), testing (snapshot testing, E2E), distribution (npm, pip, homebrew, releases), performance optimization

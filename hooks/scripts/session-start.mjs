@@ -149,6 +149,30 @@ try {
   // Fault tolerance — ignore project memory errors
 }
 
+// --- GC (Garbage Collection) Freshness Check ---
+try {
+  const gcHistoryPath = join(cwd, '.qe', 'gc', 'gc-history.jsonl');
+  if (existsSync(gcHistoryPath)) {
+    const lines = readFileSync(gcHistoryPath, 'utf8').trim().split('\n').filter(Boolean);
+    if (lines.length > 0) {
+      const lastEntry = JSON.parse(lines[lines.length - 1]);
+      const lastDate = new Date(lastEntry.timestamp);
+      const daysSince = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysSince >= 7) {
+        messages.push(`[GC] Last garbage collection was ${daysSince} days ago. Run /Qgc to scan for code quality issues.`);
+      }
+    }
+  } else {
+    // Only suggest if project has source files (not a fresh init)
+    const hasSources = existsSync(join(cwd, 'package.json')) || existsSync(join(cwd, 'go.mod')) || existsSync(join(cwd, 'Cargo.toml')) || existsSync(join(cwd, 'pyproject.toml'));
+    if (hasSources) {
+      messages.push('[GC] No garbage collection history found. Run /Qgc to scan for code quality debt.');
+    }
+  }
+} catch {
+  // Fault tolerance
+}
+
 // --- Mistake Registry: inject recorded mistakes so they are not repeated ---
 try {
   const mistakePath = join(cwd, '.qe', 'MISTAKE.md');

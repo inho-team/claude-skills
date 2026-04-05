@@ -149,6 +149,86 @@ When implementing PostgreSQL solutions, provide:
 4. Monitoring queries for ongoing health checks
 5. Brief explanation of performance impact
 
+## Code Patterns
+
+### 1. Index Strategy with EXPLAIN
+```sql
+-- Bad: Sequential scan on large table
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM users WHERE created_at > '2025-01-01' AND status = 'active';
+
+-- Good: Create composite index, verify with EXPLAIN
+CREATE INDEX CONCURRENTLY idx_users_created_status 
+  ON users (created_at DESC, status) 
+  WHERE status = 'active';
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM users WHERE created_at > '2025-01-01' AND status = 'active';
+-- Expect: Index Scan, lower Buffers, reduced planning time
+```
+
+### 2. Migration with Transaction & Rollback Safety
+```sql
+BEGIN;
+ALTER TABLE orders ADD COLUMN shipping_cost NUMERIC(10,2) DEFAULT 0;
+UPDATE orders SET shipping_cost = 5.00 WHERE order_date > '2025-01-01';
+CREATE INDEX idx_orders_shipping ON orders (shipping_cost) WHERE shipping_cost > 0;
+COMMIT;
+-- Wraps all changes atomically; explicit rollback on error
+```
+
+### 3. JSONB Query Optimization
+```sql
+-- GIN index for fast containment
+CREATE INDEX idx_events_payload ON events USING GIN (payload jsonb_path_ops);
+
+-- Query with index: containment operator
+SELECT id, payload->>'user_id' FROM events 
+WHERE payload @> '{"event": "login"}' 
+  AND (payload->'meta'->>'ip')::inet << '192.168.0.0/16'::inet;
+```
+
+## Comment Template
+
+```sql
+-- Purpose: Identify slow queries exceeding 100ms avg execution time
+-- Author: DBA Team | Date: 2025-04-04 | Ticket: PERF-1234
+SELECT query, mean_exec_time, calls FROM pg_stat_statements 
+WHERE mean_exec_time > 100 ORDER BY mean_exec_time DESC;
+
+/* Migration: Add email uniqueness constraint
+   Reason: Prevent duplicate accounts; backward-compatible via DEFERRABLE
+   Rollback: ALTER TABLE users DROP CONSTRAINT uk_email;
+   Impact: ~2s on 5M rows, no blocking with CONCURRENTLY
+*/
+CREATE UNIQUE INDEX CONCURRENTLY uk_email ON users(email);
+ALTER TABLE users ADD CONSTRAINT uk_email UNIQUE USING INDEX uk_email;
+```
+
+## Lint Rules
+
+- **sqlfluff**: `sqlfluff lint --dialect postgres` — enforce lowercase keywords, no trailing commas
+- **pg_format**: `pg_format -i file.sql` — auto-format DDL/DML
+- **pgTAP**: Unit test framework for SQL functions via `SELECT * FROM runtests();`
+
+## Security Checklist
+
+- [ ] **Role-Based Access**: Non-superuser apps use `CREATE ROLE app_user; GRANT SELECT,INSERT ON schema.table TO app_user;`
+- [ ] **Row-Level Security**: `ALTER TABLE orders ENABLE ROW LEVEL SECURITY; CREATE POLICY ...`
+- [ ] **Connection Encryption**: `sslmode=require` in connection strings; `ssl = on` in postgresql.conf
+- [ ] **pg_hba.conf Review**: Reject `trust` for network; enforce `md5` or `scram-sha-256`
+- [ ] **Extension Audit**: `SELECT extname FROM pg_extension;` — vet all installed extensions for CVEs
+- [ ] **Backup Encryption**: pg_dump with GPG: `pg_dump | gpg -e > backup.sql.gpg`
+
+## Anti-Patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| Direct connection per query | Use pgBouncer/pgPool for connection pooling |
+| Missing indexes on FK columns | `CREATE INDEX idx_orders_customer_id ON orders(customer_id);` |
+| `VACUUM` disabled via `autovacuum = off` | Enable autovacuum; tune `autovacuum_vacuum_scale_factor` per table |
+| Storing 100MB BLOBs in BYTEA | Use S3/MinIO; store object_key UUID in JSONB metadata |
+| No partitioning for 10GB+ tables | `PARTITION BY RANGE (date_column)` on high-churn tables |
+
 ## Knowledge Reference
 
 PostgreSQL 12-16, EXPLAIN ANALYZE, B-tree/GIN/GiST/BRIN indexes, JSONB operators, streaming replication, logical replication, VACUUM/ANALYZE, pg_stat views, PostGIS, pgvector, pg_trgm, WAL archiving, PITR

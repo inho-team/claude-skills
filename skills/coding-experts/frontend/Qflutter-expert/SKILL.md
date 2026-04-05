@@ -103,6 +103,134 @@ class GoodCounter extends ConsumerWidget {
 }
 ```
 
+## Code Patterns
+
+### Basic: StatelessWidget with Dartdoc
+```dart
+/// A simple counter display widget.
+/// 
+/// Shows an integer value with formatted text.
+/// 
+/// Example:
+/// ```dart
+/// CounterDisplay(value: 42)
+/// ```
+class CounterDisplay extends StatelessWidget {
+  /// The count to display
+  final int value;
+  
+  const CounterDisplay({super.key, required this.value});
+
+  @override
+  Widget build(BuildContext context) => Text('Count: $value');
+}
+```
+
+### Error Handling: Try/Catch + Result Pattern
+```dart
+/// Fetches user data with error handling.
+/// Returns a Result<User> for safe error propagation.
+Future<Result<User>> fetchUser(String id) async {
+  try {
+    final response = await http.get(Uri.parse('/api/users/$id'));
+    if (response.statusCode == 200) {
+      return Success(User.fromJson(jsonDecode(response.body)));
+    }
+    return Failure(Exception('HTTP ${response.statusCode}'));
+  } catch (e) {
+    return Failure(e as Exception);
+  }
+}
+```
+
+### Advanced: Riverpod Provider + AsyncValue
+```dart
+/// Provides async user data with caching and error handling.
+/// 
+/// Usage:
+/// ```dart
+/// ref.watch(userProvider('123'))
+/// ```
+final userProvider = FutureProvider.family<User, String>((ref, id) async {
+  return fetchUser(id).then((result) => result.when(
+    success: (user) => user,
+    failure: (e) => throw e,
+  ));
+});
+```
+
+## Comment Template
+
+**Widget Dartdoc**:
+```dart
+/// Displays [title] with optional [subtitle].
+/// 
+/// Renders a Material-style card with elevation [elevation].
+/// 
+/// Example:
+/// ```dart
+/// MyCard(title: 'Hello', elevation: 4)
+/// ```
+```
+
+**Function Dartdoc**:
+```dart
+/// Builds a greeting message from [firstName] and [lastName].
+/// 
+/// Throws [ArgumentError] if either param is empty.
+/// Returns formatted String like "John Doe".
+String greetUser(String firstName, String lastName) => '$firstName $lastName';
+```
+
+**Class Dartdoc**:
+```dart
+/// State notifier for managing counter logic.
+/// 
+/// ```dart
+/// final c = CounterNotifier();
+/// c.increment(); // state = 1
+/// ```
+class CounterNotifier extends StateNotifier<int> { ... }
+```
+
+## Lint Rules
+
+**Commands**:
+- `dart analyze` — check all lints, run before commit
+- `dart fix --apply` — auto-fix fixable issues
+- `dart format` — format code to style guide
+- `flutter analyze` — Flutter-specific lints
+
+**Config** (`analysis_options.yaml`):
+```yaml
+include: package:flutter_lints/flutter.yaml
+linter:
+  rules:
+    - avoid_empty_else
+    - constant_identifier_names
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - avoid_print
+```
+
+## Security Checklist
+
+- [ ] No credentials/API keys hardcoded; use environment variables or secure storage
+- [ ] Use `flutter_secure_storage` for tokens, passwords, sensitive data
+- [ ] Implement certificate pinning for HTTPS (use `dio` + custom `HttpClient`)
+- [ ] Enable code obfuscation: `flutter build apk --obfuscate --split-debug-info`
+- [ ] Validate deep links; prevent hijacking via URL scheme validation
+- [ ] Sanitize user input before passing to native code
+- [ ] Don't log sensitive data in debug/release builds
+
+## Anti-patterns
+
+- **setState in complex apps** → Use Riverpod/Bloc (precise reactivity, avoids tree thrashing)
+- **Deeply nested widgets** → Extract to methods/classes (improves readability, enables const)
+- **Rebuild entire tree** → Use `const` constructors, scoped providers (reduces jank)
+- **No dispose() on controllers** → Always `dispose()` TextEditingController (prevents memory leaks)
+- **Hardcoded strings** → Use `AppLocalizations` for i18n (centralizes localization)
+
 ## Constraints
 
 ### MUST DO
@@ -131,10 +259,6 @@ class GoodCounter extends ConsumerWidget {
 | Jank / dropped frames | Expensive `build()` calls, uncached widgets, heavy main-thread work | Use `RepaintBoundary`, move heavy work to `compute()`, add `const` |
 | Hot reload not reflecting changes | State held in `StateNotifier` not reset | Use hot restart (`R` in terminal) to reset full app state |
 
-## Output Templates
+## Output Requirements
 
-When implementing Flutter features, provide:
-1. Widget code with proper `const` usage
-2. Provider/Bloc definitions
-3. Route configuration if needed
-4. Test file structure
+Provide widget code with `const` usage, provider/Bloc definitions, route config if needed, and test structure.

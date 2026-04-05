@@ -26,172 +26,133 @@ recommendedModel: haiku
 5. **Test** — Write unit, integration, and slice tests; run `./mvnw test` (or `./gradlew test`) and confirm all pass before proceeding. If tests fail: review the stack trace, isolate the failing assertion or component, fix the issue, and re-run the full suite
 6. **Deploy** — Configure health checks and observability via Actuator; validate `/actuator/health` returns `UP`. If health is `DOWN`: check the `components` detail in the response, resolve the failing component (e.g., datasource, broker), and re-validate
 
-## Reference Guide
+## References
 
-Load detailed guidance based on context:
+For detailed patterns, see: `references/{web,data,security,cloud,testing}.md`
 
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| Web Layer | `references/web.md` | Controllers, REST APIs, validation, exception handling |
-| Data Access | `references/data.md` | Spring Data JPA, repositories, transactions, projections |
-| Security | `references/security.md` | Spring Security 6, OAuth2, JWT, method security |
-| Cloud Native | `references/cloud.md` | Spring Cloud, Config, Discovery, Gateway, resilience |
-| Testing | `references/testing.md` | @SpringBootTest, MockMvc, Testcontainers, test slices |
+## Code Patterns — Spring Boot Examples with Javadoc
 
-## Quick Start — Minimal Working Structure
-
-A standard Spring Boot feature consists of these layers. Use these as copy-paste starting points.
-
-### Entity
+### Basic: @RestController + @Service
 
 ```java
-@Entity
-@Table(name = "products")
-public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @NotBlank
-    private String name;
-
-    @DecimalMin("0.0")
-    private BigDecimal price;
-
-    // getters / setters or use @Data (Lombok)
-}
-```
-
-### Repository
-
-```java
-public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findByNameContainingIgnoreCase(String name);
-}
-```
-
-### Service (constructor injection)
-
-```java
-@Service
-public class ProductService {
-    private final ProductRepository repo;
-
-    public ProductService(ProductRepository repo) { // constructor injection — no @Autowired
-        this.repo = repo;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Product> search(String name) {
-        return repo.findByNameContainingIgnoreCase(name);
-    }
-
-    @Transactional
-    public Product create(ProductRequest request) {
-        var product = new Product();
-        product.setName(request.name());
-        product.setPrice(request.price());
-        return repo.save(product);
-    }
-}
-```
-
-### REST Controller
-
-```java
-@RestController
-@RequestMapping("/api/v1/products")
-@Validated
+/** REST endpoint delegating to ProductService. */
+@RestController @RequestMapping("/api/v1/products")
 public class ProductController {
     private final ProductService service;
-
-    public ProductController(ProductService service) {
-        this.service = service;
-    }
-
+    public ProductController(ProductService service) { this.service = service; }
+    /** @param name search term; @return matching products */
     @GetMapping
     public List<Product> search(@RequestParam(defaultValue = "") String name) {
         return service.search(name);
     }
+}
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Product create(@Valid @RequestBody ProductRequest request) {
-        return service.create(request);
+/** Business logic managing transactions and repository calls. */
+@Service
+public class ProductService {
+    private final ProductRepository repo;
+    public ProductService(ProductRepository repo) { this.repo = repo; }
+    /** @param name filter; @return matching products */
+    @Transactional(readOnly = true)
+    public List<Product> search(String name) {
+        return repo.findByNameContainingIgnoreCase(name);
     }
 }
 ```
 
-### DTO (record)
+### Error Handling: @ControllerAdvice + ResponseEntity
 
 ```java
-public record ProductRequest(
-    @NotBlank String name,
-    @DecimalMin("0.0") BigDecimal price
-) {}
-```
-
-### Global Exception Handler
-
-```java
+/** Centralized REST exception handler. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    /** @param ex binding error; @return 400 with field errors */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleValidation(MethodArgumentNotValidException ex) {
-        return ex.getBindingResult().getFieldErrors().stream()
+    public ResponseEntity<Map<String,String>> handleValidation(
+            MethodArgumentNotValidException ex) {
+        var errors = ex.getBindingResult().getFieldErrors().stream()
             .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
-
+    /** @param ex not found; @return 404 with message */
     @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleNotFound(EntityNotFoundException ex) {
-        return Map.of("error", ex.getMessage());
+    public ResponseEntity<Map<String,String>> handleNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
     }
 }
 ```
 
-### Test Slice
+### Advanced: WebFlux Reactive Endpoint
 
 ```java
-@WebMvcTest(ProductController.class)
-class ProductControllerTest {
-    @Autowired MockMvc mockMvc;
-    @MockBean ProductService service;
-
-    @Test
-    void createProduct_validRequest_returns201() throws Exception {
-        var product = new Product(); product.setName("Widget"); product.setPrice(BigDecimal.TEN);
-        when(service.create(any())).thenReturn(product);
-
-        mockMvc.perform(post("/api/v1/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"name":"Widget","price":10.0}"""))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.name").value("Widget"));
+/** Reactive REST endpoint returning Mono/Flux. */
+@RestController @RequestMapping("/api/v1/reactive/orders")
+public class OrderFluxController {
+    private final OrderService service;
+    public OrderFluxController(OrderService service) { this.service = service; }
+    /** @param id order id; @return Mono<Order> or empty */
+    @GetMapping("/{id}")
+    public Mono<ResponseEntity<Order>> getOrder(@PathVariable Long id) {
+        return service.findById(id).map(ResponseEntity::ok)
+            .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+    /** @return Flux of all orders */
+    @GetMapping
+    public Flux<Order> listOrders() { return service.findAll(); }
 }
 ```
+
+## Comment Template — Javadoc
+
+```java
+/** [One-line purpose]. [Optional: additional context].
+ * @param paramName [description]
+ * @return [description]
+ * @throws ExceptionType [when/why]
+ */
+```
+
+## Lint Rules
+
+```bash
+./mvnw checkstyle:check  # Google style; fail on violations
+./mvnw spotbugs:check     # Null, resource leaks, bugs
+./mvnw clean verify       # Full build + JaCoCo ≥ 85% coverage
+```
+
+## Security Checklist
+
+- [ ] Spring Security: `@EnableWebSecurity` + `@Bean SecurityFilterChain`
+- [ ] CSRF enabled (Spring Security default; verify WebFlux)
+- [ ] SQL injection prevented: JPA parameterized queries (no JPQL concatenation)
+- [ ] XSS mitigated: Content Security Policy headers; escape template output
+- [ ] CORS explicit: `@CrossOrigin` or `WebMvcConfigurer`; never `allowCredentials=true` with `*`
+- [ ] Actuator secured: `/actuator/health` public, others require `ACTUATOR` role
+- [ ] Dependency scan: `./mvnw dependency-check:check` monthly; pin/upgrade patches
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `@Autowired private Repo r;` | `public Service(Repo r) { this.r = r; }` |
+| `catch (Exception e) {}` | `catch (SpecificException e)` or propagate to @ControllerAdvice |
+| 50-method God Service | Split: AuthService, CacheService, ProductService |
+| No `@Transactional` on writes | Add `@Transactional`; use `readOnly=true` for reads |
+| `System.getenv("DB_PW")` hardcoded | Use `@Value` or `@ConfigurationProperties` + env vars |
 
 ## Constraints
 
 ### MUST DO
-
-| Rule | Correct Pattern |
-|------|----------------|
-| Constructor injection | `public MyService(Dep dep) { this.dep = dep; }` |
-| Validate API input | `@Valid @RequestBody MyRequest req` on every mutating endpoint |
-| Type-safe config | `@ConfigurationProperties(prefix = "app")` bound to a record/class |
-| Appropriate stereotype | `@Service` for business logic, `@Repository` for data, `@RestController` for HTTP |
-| Transaction scope | `@Transactional` on multi-step writes; `@Transactional(readOnly = true)` on reads |
-| Hide internals | Catch domain exceptions in `@RestControllerAdvice`; return problem details, not stack traces |
-| Externalize secrets | Use environment variables or Spring Cloud Config — never `application.properties` |
+- Constructor injection (no `@Autowired` on fields)
+- `@Valid` + `@RequestBody` on every mutating endpoint
+- `@Transactional` on multi-step writes; `@Transactional(readOnly = true)` on reads
+- Use `@Service`/`@Repository`/`@RestController` (not generic `@Component`)
+- Global exception handler (`@RestControllerAdvice`) for API errors
+- Externalize secrets via environment variables or Spring Cloud Config
 
 ### MUST NOT DO
-- Use field injection (`@Autowired` on fields)
-- Skip input validation on API endpoints
-- Use `@Component` when `@Service`/`@Repository`/`@Controller` applies
-- Mix blocking and reactive code (e.g., calling `.block()` inside a WebFlux chain)
-- Store secrets or credentials in `application.properties`/`application.yml`
-- Hardcode URLs, credentials, or environment-specific values
-- Use deprecated Spring Boot 2.x patterns (e.g., `WebSecurityConfigurerAdapter`)
+- Field injection (`@Autowired` on fields)
+- Hardcode credentials, URLs, or profile-specific values
+- Mix blocking and reactive code (e.g., `.block()` in WebFlux)
+- Store secrets in `application.properties`/`application.yml`
+- Use deprecated Spring Boot 2.x patterns (`WebSecurityConfigurerAdapter`)

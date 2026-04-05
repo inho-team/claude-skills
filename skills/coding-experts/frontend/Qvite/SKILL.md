@@ -41,34 +41,108 @@ Vite is a next-generation frontend build tool with fast dev server (native ESM +
 | Environment API | Vite 6+ multi-environment support, custom runtimes | [environment-api](references/environment-api.md) |
 | Rolldown Migration | Vite 8 changes: Rolldown bundler, Oxc transformer, config migration | [rolldown-migration](references/rolldown-migration.md) |
 
-## Quick Reference
+## Code Patterns
 
-### CLI Commands
-
-```bash
-vite              # Start dev server
-vite build        # Production build
-vite preview      # Preview production build
-vite build --ssr  # SSR build
-```
-
-### Common Config
-
+### Basic Config with Plugins
 ```ts
-import { defineConfig } from 'vite'
+/**
+ * @description Standard Vite config with Vue + common plugins
+ * @param env - Environment variables from loadEnv
+ * @returns {import('vite').UserConfig} Vite configuration object
+ */
+import { defineConfig, loadEnv } from 'vite'
+import vue from '@vitejs/plugin-vue'
 
-export default defineConfig({
-  plugins: [],
-  resolve: { alias: { '@': '/src' } },
-  server: { port: 3000, proxy: { '/api': 'http://localhost:8080' } },
-  build: { target: 'esnext', outDir: 'dist' },
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  return {
+    plugins: [vue()],
+    resolve: { alias: { '@': '/src' } },
+    server: { port: 3000 },
+    build: { target: 'esnext', outDir: 'dist' },
+  }
 })
 ```
 
-### Official Plugins
+### Custom Plugin with Error Handling
+```ts
+/**
+ * @description Virtual module plugin with error boundary
+ */
+function virtualModulePlugin() {
+  const moduleId = 'virtual-module'
+  const resolvedId = '\0' + moduleId
+  
+  return {
+    name: 'virtual-module',
+    resolveId(id) { return id === moduleId ? resolvedId : null },
+    load(id) { 
+      try {
+        if (id === resolvedId) return `export const value = 'data'`
+      } catch (e) { this.error(`Failed to load virtual module: ${e.message}`) }
+    },
+    handleHotUpdate({ file }) { if (file.includes('virtual')) console.log(`Updated: ${file}`) },
+  }
+}
+```
 
-- `@vitejs/plugin-vue` - Vue 3 SFC support
-- `@vitejs/plugin-vue-jsx` - Vue 3 JSX
-- `@vitejs/plugin-react` - React with Oxc/Babel
-- `@vitejs/plugin-react-swc` - React with SWC
-- `@vitejs/plugin-legacy` - Legacy browser support
+### Advanced SSR Config
+```ts
+export default defineConfig({
+  ssr: { 
+    target: 'node',
+    noExternal: ['vue-router'],
+  },
+  build: { 
+    ssr: 'src/entry-server.ts',
+    ssrManifest: true,
+  },
+  define: {
+    __SSR__: true,
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+  },
+})
+```
+
+## Comment Template
+
+Use JSDoc for all Vite config exports and plugin functions:
+```ts
+/**
+ * @description What this config/plugin does
+ * @param {Object} options - Configuration options
+ * @param {string} options.name - Plugin name
+ * @returns {import('vite').Plugin | import('vite').UserConfig}
+ */
+```
+
+## Lint Rules
+
+**Required checks** (run in CI/pre-commit):
+- `eslint --ext .ts,.tsx,.js,.jsx src/`
+- `tsc --noEmit` (TypeScript verification)
+- `prettier --check .`
+
+Vite-specific rules:
+- No `require()` or `module.exports` (ESM only)
+- No glob patterns in dynamic imports without query (use `import.meta.glob`)
+- Environment variables must be accessed via `import.meta.env`
+
+## Security Checklist
+
+1. **Environment Variables**: Only expose `VITE_*` prefix; others require explicit `envPrefix` in config
+2. **Dependency Supply Chain**: Audit `package-lock.json`; use `npm audit` regularly
+3. **CSP Headers**: Set in `vite.config.ts` via server middleware or SSR template
+4. **Source Maps**: Disable in production build (`sourcemap: false` in build config)
+5. **CORS Config**: Strict `server.cors` and `server.proxy` rules; avoid `{ origin: '*' }`
+6. **API URLs**: Use `import.meta.env.VITE_API_URL`, never hardcode in code
+
+## Anti-patterns
+
+| Wrong ❌ | Correct ✅ | Why |
+|---------|-----------|-----|
+| `import * as _ from 'lodash'` | `import { debounce } from 'lodash-es'` | Enable tree-shaking |
+| All code in single bundle | Use `rollupOptions.output.manualChunks` | Smaller chunks = faster load |
+| `devDependencies` in prod | Conditional imports: `if (process.env.NODE_ENV === 'development')` | Reduce bundle size |
+| `const API = 'https://api.prod.com'` | `const API = import.meta.env.VITE_API_URL` | Env config, not code |
+| Magic strings in config | `define: { '__VERSION__': JSON.stringify(pkg.version) }` | Single source of truth |

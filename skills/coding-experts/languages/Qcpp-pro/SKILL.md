@@ -115,3 +115,144 @@ When implementing C++ features, provide:
 3. CMakeLists.txt updates (if applicable)
 4. Test file demonstrating usage
 5. Brief explanation of design decisions and performance characteristics
+
+---
+
+## Code Patterns (C++20 Examples with Doxygen)
+
+### Basic: RAII Class
+```cpp
+/// @file container.hpp
+/// @brief Simple dynamic container with RAII semantics
+/// @author QE Framework
+
+/// Manages a dynamically allocated array with automatic cleanup.
+/// @tparam T Element type
+template<typename T>
+class DynamicArray {
+public:
+    /// Construct with capacity.
+    /// @param capacity Initial capacity
+    /// @throws std::bad_alloc if allocation fails
+    explicit DynamicArray(std::size_t capacity)
+        : data_(std::make_unique<T[]>(capacity)), size_(0), capacity_(capacity) {}
+
+    /// Get element at index with bounds checking.
+    /// @param idx Index
+    /// @return Reference to element
+    /// @throws std::out_of_range if idx >= size
+    T& at(std::size_t idx) {
+        if (idx >= size_) throw std::out_of_range("Index out of bounds");
+        return data_[idx];
+    }
+
+private:
+    std::unique_ptr<T[]> data_;
+    std::size_t size_, capacity_;
+};
+```
+
+### Error Handling: std::expected
+```cpp
+/// Parse integer from string with detailed error reporting.
+/// @param str Input string
+/// @return Value on success, error message on failure
+template<typename T>
+requires std::integral<T>
+[[nodiscard]] std::expected<T, std::string> parse_int(std::string_view str) noexcept {
+    try {
+        return static_cast<T>(std::stoll(std::string(str)));
+    } catch (const std::invalid_argument& e) {
+        return std::unexpected(std::string(e.what()));
+    }
+}
+```
+
+### Advanced: Concepts + Smart Pointers
+```cpp
+/// Type that can be serialized to JSON.
+template<typename T>
+concept Serializable = requires(const T& t) {
+    { t.to_json() } -> std::convertible_to<std::string>;
+};
+
+/// Polymorphic serializer with concept enforcement.
+template<Serializable T>
+class Serializer {
+    std::shared_ptr<T> resource_;
+public:
+    explicit Serializer(std::shared_ptr<T> res) : resource_(res) {}
+    std::string serialize() const noexcept { return resource_->to_json(); }
+};
+```
+
+---
+
+## Comment Template (Doxygen)
+
+### Function:
+```cpp
+/// Brief description (one line, ends with period).
+/// @param param1 Description of first parameter
+/// @param param2 Description of second parameter
+/// @return Description of return value
+/// @throws std::exception If specific error occurs
+/// @note Optional implementation notes or warnings
+/// @see Related_function, RelatedClass
+```
+
+### Class:
+```cpp
+/// @brief Brief one-line description.
+/// @details Extended explanation with context and usage examples.
+/// @tparam T Template parameter description
+/// @warning Any critical usage warnings
+/// @see RelatedClass, RelatedConcept
+```
+
+### File Header:
+```cpp
+/// @file filename.hpp
+/// @brief Module purpose in one sentence.
+/// @author QE Framework
+/// @date YYYY-MM-DD
+```
+
+---
+
+## Lint Rules
+
+**Static Analysis:**
+```bash
+clang-tidy {file} -checks='*,-modernize-*,-readability-magic-numbers'
+clang-tidy {file} -checks='*' --fix
+clang-format -i {file}
+cppcheck {file} --enable=all --suppress=missingIncludeSystem
+```
+
+**Config Files** (place in project root):
+- `.clang-tidy` — Static analysis rules (readability, performance, safety)
+- `.clang-format` — Indentation (2 spaces), line length (100), LLVM style
+- `.cppcheck` — Enable all checks, suppress system includes
+
+---
+
+## Security Checklist
+
+1. **Buffer Overflow** — Always use `std::vector<T>`, `std::array<T, N>`, or `std::string`; never `char*` for unbounded data
+2. **Use-After-Free** — Use `std::unique_ptr<T>` and `std::shared_ptr<T>`; never manually delete
+3. **Integer Overflow** — Use `std::numeric_limits<T>::max()`; validate arithmetic operations
+4. **Format String Attacks** — Never pass user input directly to `printf()`, `sprintf()`, or `format()` as format string
+5. **Uninitialized Memory** — Always initialize members in constructor; avoid `= {}` for non-trivial types unless intentional
+
+---
+
+## Anti-patterns (Wrong → Correct)
+
+| Anti-pattern | Why Bad | Correct Approach |
+|--------------|---------|------------------|
+| `new T()` / `delete ptr` | Manual memory management, leak-prone | Use `std::make_unique<T>()` / `std::make_shared<T>()` |
+| `(MyType*)ptr` | Unsafe cast, bypasses type system | Use `static_cast<>()` or `dynamic_cast<>()` with error handling |
+| `using namespace std;` in headers | Name pollution, breaks downstream code | `std::` prefix or targeted `using std::vector;` in .cpp only |
+| Magic numbers (e.g., `if (x > 100)`) | Unmaintainable, no context | Define `constexpr auto MAX_RETRIES = 100;` |
+| Deep inheritance chains (3+ levels) | Brittle, tight coupling, hard to reason about | Prefer composition: `class Has-A { std::unique_ptr<Base> impl_; }` |

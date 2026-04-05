@@ -129,6 +129,121 @@ public class SecurityConfig {
 }
 ```
 
+## Code Patterns
+
+**Basic: Spring Service with @Service + Javadoc**
+```java
+/**
+ * Order service providing business logic for order management.
+ * 
+ * @author Architecture Team
+ * @since 1.0.0
+ */
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+    private final OrderRepository repository;
+    
+    /**
+     * Retrieves an order by its unique identifier.
+     * 
+     * @param id the order ID
+     * @return order if found
+     * @throws OrderNotFoundException if order does not exist
+     * @see OrderRepository#findById(Object)
+     */
+    public Order getOrder(UUID id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+    }
+}
+```
+
+**Error Handling: Custom Exception Hierarchy + @ExceptionHandler**
+```java
+public abstract class DomainException extends RuntimeException {}
+public class OrderNotFoundException extends DomainException {}
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(OrderNotFoundException ex) {
+        return ResponseEntity.notFound().build();
+    }
+}
+```
+
+**Advanced: Stream API + Optional Chaining**
+```java
+public List<OrderDto> getActiveOrders(UUID customerId) {
+    return repository.findByCustomerId(customerId).stream()
+            .filter(o -> o.getStatus() == OrderStatus.ACTIVE)
+            .map(this::toDto)
+            .toList();
+}
+```
+
+## Comment Template
+
+**Method Javadoc Format:**
+```java
+/**
+ * Brief description.
+ * 
+ * @param paramName parameter description
+ * @return return value description
+ * @throws ExceptionType when this occurs
+ * @see RelatedClass#method()
+ */
+```
+
+**Class Javadoc Format:**
+```java
+/**
+ * Purpose and responsibility of this class.
+ * 
+ * @author Team Name
+ * @since 1.0.0
+ */
+```
+
+**Package Javadoc:** Create `package-info.java`:
+```java
+/**
+ * Order management domain package containing entities, repositories, and services.
+ */
+package com.example.order;
+```
+
+## Lint Rules
+
+**Tools & Commands:**
+- Checkstyle: `checkstyle -c /sun_checks.xml {file}` (config: `.checkstyle.xml`)
+- SpotBugs: `./mvnw spotbugs:check` (config: `spotbugs-exclude.xml`)
+- Full verification: `./mvnw verify` (includes tests + coverage)
+- JaCoCo threshold: **85%+ code coverage** minimum
+
+**Verify coverage:** `target/site/jacoco/index.html`
+
+## Security Checklist
+
+- **SQL Injection:** Use JPA/prepared statements; never concatenate user input into queries
+- **XSS in Templates:** Enable auto-escaping in Thymeleaf/JSP; validate user input
+- **Deserialization Attacks:** Avoid ObjectInputStream on untrusted data; use Jackson with `@JsonTypeInfo` whitelisting
+- **CSRF Protection:** Spring Security enables by default; validate tokens on state-changing requests
+- **Logging Secrets:** Mask sensitive fields (passwords, tokens, SSNs); use annotation-based redaction
+- **Dependency Vulnerabilities:** Run `./mvnw org.owasp:dependency-check-maven:check` quarterly
+
+## Anti-patterns
+
+| **Wrong** | **Correct** |
+|-----------|-----------|
+| God service class (handles multiple domains) | Split by domain: OrderService, PaymentService, ShippingService |
+| Checked exception abuse (`throws Exception`) | Use runtime exceptions; catch and wrap at boundaries |
+| Field injection (`@Autowired private X x;`) | Constructor injection; enables testing and immutability |
+| Raw types (`List list = new ArrayList();`) | Use generics: `List<Order> orders = new ArrayList<>();` |
+| Synchronized methods everywhere | Use concurrent collections: `ConcurrentHashMap`, `CopyOnWriteArrayList` |
+
 ## Knowledge Reference
 
 Spring Boot 3.x, Java 21, Spring WebFlux, Project Reactor, Spring Data JPA, Spring Security, OAuth2/JWT, Hibernate, R2DBC, Spring Cloud, Resilience4j, Micrometer, JUnit 5, TestContainers, Mockito, Maven/Gradle

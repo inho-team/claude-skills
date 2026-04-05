@@ -144,6 +144,127 @@ When implementing Kotlin features, provide:
 3. Test file with coroutine test support
 4. Brief explanation of Kotlin-specific patterns used
 
+## Code Patterns
+
+### Basic: Data Class + Extension Function
+
+```kotlin
+/** User profile model. @property id unique identifier @property email contact */
+data class User(val id: String, val email: String, val name: String)
+
+/** Validates email format. @return true if well-formed */
+fun User.isValidEmail(): Boolean =
+    email.matches(Regex("^[\\w.-]+@[\\w.-]+\\.\\w+$"))
+```
+
+### Error Handling: Sealed Class Result + runCatching
+
+```kotlin
+/**
+ * Represents the outcome of an operation.
+ * Use exhaustive `when` to handle success and failure.
+ */
+sealed class Result<out T> {
+    data class Success<T>(val data: T) : Result<T>()
+    data class Failure(val error: Throwable) : Result<Nothing>()
+}
+
+/**
+ * Safely executes a suspend function, wrapping result or error.
+ *
+ * @param block Suspend operation to execute
+ * @return Result containing success data or error exception
+ */
+suspend inline fun <T> safeCall(block: suspend () -> T): Result<T> =
+    runCatching { block() }.fold(
+        onSuccess = { Result.Success(it) },
+        onFailure = { Result.Failure(it) }
+    )
+```
+
+### Advanced: Coroutine Flow + StateFlow
+
+```kotlin
+/** Repository with reactive state management. @property api service client */
+class UserRepository(private val api: UserApi) {
+    private val _state = MutableStateFlow<UiState<List<User>>>(UiState.Loading)
+    
+    /** StateFlow emitting Loading/Success/Error states. @throws IOException on network failure */
+    val state: StateFlow<UiState<List<User>>> = _state.asStateFlow()
+}
+```
+
+## Comment Template
+
+### KDoc Structure
+
+**Function:**
+```kotlin
+/**
+ * Brief one-liner describing what the function does.
+ *
+ * Detailed explanation of behavior, edge cases, or caveats.
+ *
+ * @param paramName Description of parameter purpose
+ * @return Description of return value
+ * @throws ExceptionType When this exception is thrown
+ * @sample exampleCode()
+ */
+```
+
+**Class:**
+```kotlin
+/**
+ * Purpose: What problem does this class solve?
+ *
+ * @property fieldName Role of this property in the class
+ * @constructor Initializes with these dependencies
+ */
+```
+
+**File:**
+```kotlin
+/**
+ * @file Package documentation describing module purpose.
+ */
+package com.example.domain
+```
+
+## Lint Rules
+
+**ktlint** — Kotlin code formatter enforcing style consistency:
+```bash
+ktlint {file}           # Check formatting violations
+ktlint -F {file}        # Auto-fix formatting (trailing commas, spacing, etc.)
+```
+
+**detekt** — Static analysis detecting bugs, code smells, performance issues:
+```bash
+detekt --input {file}   # Analyze for issues
+```
+
+**Configuration:**
+- `.editorconfig` — IDE settings (indentation, line length)
+- `detekt.yml` — Custom detekt rules, complexity thresholds, suppression patterns
+
+## Security Checklist
+
+- **SQL Injection**: Use parameterized queries; never concatenate user input into SQL strings
+- **Serialization**: Validate deserialized objects; avoid untrusted JSON unmarshaling without schema
+- **Coroutine Cancellation**: Always cancel child scopes on teardown; never use GlobalScope in lifecycle-aware code
+- **Reflection Abuse**: Limit reflection to plugin loading; validate reflected class/method existence before invocation
+- **Hardcoded Secrets**: Use environment variables or secure config; never commit API keys, tokens, or passwords
+
+## Anti-patterns
+
+| Wrong | Correct | Why |
+|-------|---------|-----|
+| `val x = obj!!.property` | `val x = obj?.property ?: default` | !! silently crashes; safe-call handles null gracefully |
+| `var x = 5; x = 10` | `val x = 5; val y = 10` (or mutable when truly necessary) | val is immutable; prevents accidental state changes |
+| `callback { result -> callback { data -> ... } }` | `result.flatMap { data -> ... }` or `coroutineScope { ... }` | Callback hell is hard to read/cancel; Flow + coroutines are composable |
+| Activity holds entire UI state; no separation | ViewModel + StateFlow manages state, Activity renders | God activities leak memory; ViewModel survives config changes |
+| `when (obj) { is TypeA -> ... else -> ... }` | `sealed class State { class TypeA, class TypeB } when (obj) { ... }` | sealed forces exhaustiveness; prevents runtime bugs |
+
 ## Knowledge Reference
 
 Kotlin 1.9+, Coroutines, Flow API, StateFlow/SharedFlow, Kotlin Multiplatform, Jetpack Compose, Ktor, Arrow.kt, kotlinx.serialization, Detekt, ktlint, Gradle Kotlin DSL, JUnit 5, MockK, Turbine

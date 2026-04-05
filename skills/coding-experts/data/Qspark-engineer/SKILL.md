@@ -21,130 +21,100 @@ Senior Apache Spark engineer specializing in high-performance distributed data p
 
 ## Core Workflow
 
-1. **Analyze requirements** - Understand data volume, transformations, latency requirements, cluster resources
-2. **Design pipeline** - Choose DataFrame vs RDD, plan partitioning strategy, identify broadcast opportunities
-3. **Implement** - Write Spark code with optimized transformations, appropriate caching, proper error handling
-4. **Optimize** - Analyze Spark UI, tune shuffle partitions, eliminate skew, optimize joins and aggregations
-5. **Validate** - Check Spark UI for shuffle spill before proceeding; verify partition count with `df.rdd.getNumPartitions()`; if spill or skew detected, return to step 4; test with production-scale data, monitor resource usage, verify performance targets
+1. **Analyze** — Understand data volume, transformations, latency, cluster resources
+2. **Design** — Choose DataFrame vs RDD, plan partitioning, identify broadcast opportunities
+3. **Implement** — Write Spark code with optimized transforms, caching, error handling
+4. **Optimize** — Analyze Spark UI; tune shuffle partitions, eliminate skew, optimize joins
+5. **Validate** — Check Spark UI for spill; verify partitions with `df.rdd.getNumPartitions()`
 
-## Reference Guide
-
-Load detailed guidance based on context:
-
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| Spark SQL & DataFrames | `references/spark-sql-dataframes.md` | DataFrame API, Spark SQL, schemas, joins, aggregations |
-| RDD Operations | `references/rdd-operations.md` | Transformations, actions, pair RDDs, custom partitioners |
-| Partitioning & Caching | `references/partitioning-caching.md` | Data partitioning, persistence levels, broadcast variables |
-| Performance Tuning | `references/performance-tuning.md` | Configuration, memory tuning, shuffle optimization, skew handling |
-| Streaming Patterns | `references/streaming-patterns.md` | Structured Streaming, watermarks, stateful operations, sinks |
-
-## Code Examples
-
-### Quick-Start Mini-Pipeline (PySpark)
+## Code Patterns (3 Examples with Docstrings)
 
 ```python
-from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
-from pyspark.sql.types import StructType, StructField, StringType, LongType, DoubleType
+# Pattern 1: Schema-driven DataFrame creation
+def create_typed_dataframe(spark, data: list, schema_dict: dict):
+    """Create DataFrame with explicit schema and type safety."""
+    from pyspark.sql.types import StructType, StructField
+    schema = StructType([StructField(k, v, True) for k, v in schema_dict.items()])
+    return spark.createDataFrame(data, schema=schema)
 
+# Pattern 2: Broadcast dimension join
+def broadcast_dimension_join(large_df, dim_df, join_key: str):
+    """Join large fact table with small dimension (<200MB) using broadcast."""
+    from pyspark.sql.functions import broadcast
+    return large_df.join(broadcast(dim_df), on=join_key, how="left")
+
+# Pattern 3: Safe caching with validation
+def cache_with_validation(df, operation_name: str):
+    """Cache DataFrame and materialize immediately to detect spill."""
+    cached = df.cache()
+    row_count = cached.count()  # Materialize now, not later
+    print(f"{operation_name}: cached {row_count} rows")
+    return cached
+```
+
+## Comment Template (Google-style)
+
+```python
+def transform_spark_data(df, threshold: float):
+    """One-line transformation summary.
+    
+    Longer: explain Spark strategy, partition assumptions, performance implications.
+    
+    Args:
+        df: Input Spark DataFrame
+        threshold: Filtering threshold
+    
+    Returns:
+        Transformed Spark DataFrame
+    
+    Raises:
+        ValueError: If threshold < 0
+    """
+```
+
+## Lint Rules (ruff/mypy/black)
+
+```toml
+[tool.ruff]
+line-length = 120
+select = ["E", "F", "W", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+disallow_untyped_defs = true
+ignore_missing_imports = true
+```
+
+## Security Checklist (5+)
+
+1. **Credential exposure** — Use Kubernetes secrets, IAM roles; never hardcode passwords
+2. **Data at rest encryption** — Enable Parquet/Delta encryption; verify storage-level encryption
+3. **Access control** — Enforce table/database ACLs; implement row-level security (RLS)
+4. **UDF injection** — Never execute user-supplied code; use `pandas_udf` with schema validation
+5. **Broadcast secrets** — Don't broadcast PII; validate payload < 2GB; no credentials in broadcast
+
+## Anti-patterns (5 Wrong/Correct)
+
+| Anti-pattern | Fix |
+|--------------|-----|
+| `df.collect()` on large DataFrame | Use `.limit()`, write to storage, or `.sample(0.1)` |
+| No partitioning in ETL | Set `spark.sql.shuffle.partitions = 400` or `repartition(400)` |
+| Python UDFs without vectorization | Use `pandas_udf` or Spark SQL `F.col()` functions |
+| Caching every intermediate DataFrame | Cache only reused DataFrames; use `.unpersist()` |
+| Ignoring Spark UI shuffle metrics | Check UI; if shuffle spill > 10%, adjust partitions/joins |
+
+## Quick Config
+
+```python
 spark = SparkSession.builder \
-    .appName("example-pipeline") \
     .config("spark.sql.shuffle.partitions", "400") \
     .config("spark.sql.adaptive.enabled", "true") \
+    .config("spark.memory.fraction", "0.8") \
     .getOrCreate()
-
-# Always define explicit schemas in production
-schema = StructType([
-    StructField("user_id", StringType(), False),
-    StructField("event_ts", LongType(), False),
-    StructField("amount", DoubleType(), True),
-])
-
-df = spark.read.schema(schema).parquet("s3://bucket/events/")
-
-result = df \
-    .filter(F.col("amount").isNotNull()) \
-    .groupBy("user_id") \
-    .agg(F.sum("amount").alias("total_amount"), F.count("*").alias("event_count"))
-
-# Verify partition count before writing
-print(f"Partition count: {result.rdd.getNumPartitions()}")
-
-result.write.mode("overwrite").parquet("s3://bucket/output/")
 ```
 
-### Broadcast Join (small dimension table < 200 MB)
+## MUST DO / MUST NOT DO
 
-```python
-from pyspark.sql.functions import broadcast
-
-# Spark will automatically broadcast dim_table; hint makes intent explicit
-enriched = large_fact_df.join(broadcast(dim_df), on="product_id", how="left")
-```
-
-### Handling Data Skew with Salting
-
-```python
-import pyspark.sql.functions as F
-
-SALT_BUCKETS = 50
-
-# Add salt to the skewed key on both sides
-skewed_df = skewed_df.withColumn("salt", (F.rand() * SALT_BUCKETS).cast("int")) \
-    .withColumn("salted_key", F.concat(F.col("skewed_key"), F.lit("_"), F.col("salt")))
-
-other_df = other_df.withColumn("salt", F.explode(F.array([F.lit(i) for i in range(SALT_BUCKETS)]))) \
-    .withColumn("salted_key", F.concat(F.col("skewed_key"), F.lit("_"), F.col("salt")))
-
-result = skewed_df.join(other_df, on="salted_key", how="inner") \
-    .drop("salt", "salted_key")
-```
-
-### Correct Caching Pattern
-
-```python
-# Cache ONLY when the DataFrame is reused multiple times
-df_cleaned = df.filter(...).withColumn(...).cache()
-df_cleaned.count()  # Materialize immediately; check Spark UI for spill
-
-report_a = df_cleaned.groupBy("region").agg(...)
-report_b = df_cleaned.groupBy("product").agg(...)
-
-df_cleaned.unpersist()  # Release when done
-```
-
-## Constraints
-
-### MUST DO
-- Use DataFrame API over RDD for structured data processing
-- Define explicit schemas for production pipelines
-- Partition data appropriately (200-1000 partitions per executor core)
-- Cache intermediate results only when reused multiple times
-- Use broadcast joins for small dimension tables (<200MB)
-- Handle data skew with salting or custom partitioning
-- Monitor Spark UI for shuffle, spill, and GC metrics
-- Test with production-scale data volumes
-
-### MUST NOT DO
-- Use collect() on large datasets (causes OOM)
-- Skip schema definition and rely on inference in production
-- Cache every DataFrame without measuring benefit
-- Ignore shuffle partition tuning (default 200 often wrong)
-- Use UDFs when built-in functions available (10-100x slower)
-- Process small files without coalescing (small file problem)
-- Run transformations without understanding lazy evaluation
-- Ignore data skew warnings in Spark UI
-
-## Output Templates
-
-When implementing Spark solutions, provide:
-1. Complete Spark code (PySpark or Scala) with type hints/types
-2. Configuration recommendations (executors, memory, shuffle partitions)
-3. Partitioning strategy explanation
-4. Performance analysis (expected shuffle size, memory usage)
-5. Monitoring recommendations (key Spark UI metrics to watch)
-
-## Knowledge Reference
-
-Spark DataFrame API, Spark SQL, RDD transformations/actions, catalyst optimizer, tungsten execution engine, partitioning strategies, broadcast variables, accumulators, structured streaming, watermarks, checkpointing, Spark UI analysis, memory management, shuffle optimization
+**MUST:** Define schemas, partition data (200-1000 per core), broadcast small dims, monitor Spark UI, test with prod scale  
+**MUST NOT:** Collect large data, skip schema definition, cache everything, ignore shuffle, use plain UDFs on big data

@@ -62,6 +62,59 @@ Load detailed guidance based on context:
 - Create breaking changes without a migration path
 - Omit rate limiting considerations
 
+## Code Patterns
+
+### 1. RESTful Resource with OpenAPI Spec
+Resource CRUD with versioning and timestamps. Use `/v1/users/{id}` URIs with snake_case fields.
+
+### 2. Error Response Schema
+All errors return RFC 7807 Problem Details with stable `type` URI, actionable `detail`, and field-level `errors[]`.
+
+### 3. Cursor Pagination Pattern
+Large collections use opaque cursor + `has_more` boolean. Limit max 100, default 20. Never expose internal IDs in cursors.
+
+## Comment Template
+
+**OpenAPI descriptions** must include:
+- Human-readable summary (1-2 sentences)
+- Prerequisites (authentication, required scopes)
+- Failure modes (list 4xx/5xx scenarios with recovery actions)
+
+**JSDoc for route handlers**:
+```javascript
+/**
+ * GET /v1/users/{id} - Retrieve user by ID
+ * @param {string} id - UUID required
+ * @throws {404} User not found
+ * @throws {401} Missing bearer token
+ * @returns {User} User object with audit timestamps
+ */
+```
+
+## Lint Rules
+
+- **OpenAPI**: `npx @redocly/cli lint openapi.yaml` (no errors, only warnings allowed)
+- **Route handlers**: `eslint --rule "no-hardcoded-secrets: error"` + require JSDoc on all endpoints
+- **Swagger**: `npx @apidevtools/swagger-cli validate openapi.yaml`
+
+## Security Checklist
+
+1. **Authentication**: Require JWT or API key in `Authorization: Bearer` header; reject unauth with 401
+2. **Input validation**: Parse + validate all query, path, body params; reject invalid with 422 + field-level errors
+3. **Rate limiting**: Enforce per-user rate limits; return 429 with `Retry-After` header
+4. **CORS**: Explicitly whitelist origins; never use `*` in production
+5. **Versioning security**: Only 2 major versions live simultaneously; deprecate older versions with 90-day notice
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `GET /getUser/{id}` (verb in URL) | `GET /users/{id}` (resource-oriented) |
+| `{ status: "ok", result: {...} }` (inconsistent envelope) | `{ data: {...}, pagination: {...} }` (consistent shape) |
+| `GET /users` returns all 10K records | `GET /users?limit=20&cursor=...` (paginated always) |
+| `/v1/users/{id}` → `/v2/users/{userId}` without deprecation | Maintain `/v1/users/{id}` for 90 days, add `/v2/users/{id}` in parallel |
+| `GET /users?email=user@example.com` in query string | Use `POST /users/search` with encrypted body or `X-Query: base64` header |
+
 ## Templates
 
 ### OpenAPI 3.1 Resource Endpoint (copy-paste starter)

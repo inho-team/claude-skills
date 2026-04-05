@@ -63,116 +63,98 @@ Load detailed guidance based on context:
 - Skip platform-specific testing
 - Use waitFor/setTimeout for animations (use Reanimated)
 
-## Code Examples
+## Code Patterns (with JSDoc)
 
-### Optimized FlatList with memo + useCallback
-
+### Basic: Screen Component with Navigation Props
 ```tsx
-import React, { memo, useCallback } from 'react';
-import { FlatList, View, Text, StyleSheet } from 'react-native';
+/**
+ * HomeScreen - Main navigation entry point
+ * @param {NavigationProp<RootStackParamList>} navigation - React Navigation instance
+ * @param {RouteProp<RootStackParamList, 'Home'>} route - Route params including refresh trigger
+ * @returns {React.ReactElement} Rendered screen
+ */
+export function HomeScreen({ navigation, route }: {
+  navigation: NavigationProp<RootStackParamList>;
+  route: RouteProp<RootStackParamList, 'Home'>;
+}): React.ReactElement {
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      console.log('Screen focused, refresh data if route.params?.refresh === true');
+    });
+    return unsubscribe;
+  }, [navigation, route.params?.refresh]);
+  return <View><Text>Home</Text></View>;
+}
+```
 
-type Item = { id: string; title: string };
+### Error Handling: ErrorBoundary + Crash Reporting
+```tsx
+/**
+ * CrashBoundary wraps screens to catch unhandled exceptions
+ * @param {React.ReactNode} children - Child components to protect
+ * @param {(err: Error) => void} onError - Callback to report to Sentry/Bugsnag
+ */
+class CrashBoundary extends React.Component<{ children: React.ReactNode; onError: (e: Error) => void }, { hasError: boolean }> {
+  componentDidCatch(error: Error) {
+    this.props.onError(error);
+    this.setState({ hasError: true });
+  }
+  render() {
+    return this.state.hasError ? <ErrorFallback /> : this.props.children;
+  }
+}
+```
 
-const ListItem = memo(({ title, onPress }: { title: string; onPress: () => void }) => (
-  <View style={styles.item}>
-    <Text onPress={onPress}>{title}</Text>
-  </View>
+### Advanced: Optimized FlatList with memo + getItemLayout
+```tsx
+/**
+ * ItemList - Virtualized list for 1000+ items
+ * @param {Item[]} data - Array of items to render
+ * @param {(id: string) => void} onItemPress - Press handler
+ * @returns {React.ReactElement} FlatList with memoized items
+ */
+export const ItemList = memo(({ data, onItemPress }: { data: Item[]; onItemPress: (id: string) => void }) => (
+  <FlatList
+    data={data}
+    keyExtractor={(item) => item.id}
+    renderItem={({ item }) => <MemoItem item={item} onPress={onItemPress} />}
+    getItemLayout={(data, index) => ({ length: 60, offset: 60 * index, index })}
+    removeClippedSubviews
+    maxToRenderPerBatch={10}
+  />
 ));
-
-export function ItemList({ data }: { data: Item[] }) {
-  const handlePress = useCallback((id: string) => {
-    console.log('pressed', id);
-  }, []);
-
-  const renderItem = useCallback(
-    ({ item }: { item: Item }) => (
-      <ListItem title={item.title} onPress={() => handlePress(item.id)} />
-    ),
-    [handlePress]
-  );
-
-  return (
-    <FlatList
-      data={data}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      removeClippedSubviews
-      maxToRenderPerBatch={10}
-      windowSize={5}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  item: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth },
-});
 ```
 
-### KeyboardAvoidingView Form
+## Comment Template
 
-```tsx
-import React from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TextInput,
-  StyleSheet,
-  SafeAreaView,
-} from 'react-native';
+All React Native code must include JSDoc headers:
+- **Screen**: Document `navigation` (NavigationProp), `route` (RouteProp with param type), params via route.params
+- **Hook**: `@param` for dependencies, `@returns` for state/side-effect result
+- **Native Module**: Bridge method signature with type hints, callback/promise return
 
-export function LoginForm() {
-  return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <TextInput style={styles.input} placeholder="Email" autoCapitalize="none" />
-          <TextInput style={styles.input} placeholder="Password" secureTextEntry />
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-}
+## Lint Rules
 
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  flex: { flex: 1 },
-  content: { padding: 16, gap: 12 },
-  input: { borderWidth: 1, borderRadius: 8, padding: 12, fontSize: 16 },
-});
-```
+- **eslint**: @react-native/eslint-config + no-inline-styles, no-hardcoded-colors
+- **TypeScript**: `tsc --noEmit` before commit
+- **Formatter**: prettier with `--write` on all `.tsx` files
 
-### Platform-Specific Component
+## Security Checklist
 
-```tsx
-import { Platform, StyleSheet, View, Text } from 'react-native';
+1. **Secure Storage** — Use react-native-keychain (not AsyncStorage) for tokens/passwords
+2. **SSL Pinning** — Configure native layer with certificate pinning for API calls
+3. **Jailbreak Detection** — Use react-native-jailbreak-monkey on startup
+4. **Code Obfuscation** — Run metro with `--minify=true` in production builds
+5. **Deep Link Validation** — Whitelist deep link routes; validate URL params before navigation
 
-export function StatusChip({ label }: { label: string }) {
-  return (
-    <View style={styles.chip}>
-      <Text style={styles.label}>{label}</Text>
-    </View>
-  );
-}
+## Anti-Patterns
 
-const styles = StyleSheet.create({
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: '#0a7ea4',
-    // Platform-specific shadow
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
-      android: { elevation: 3 },
-    }),
-  },
-  label: { color: '#fff', fontSize: 13, fontWeight: '600' },
-});
-```
+| ❌ Wrong | ✅ Correct |
+|---------|----------|
+| Inline styles in render/loop: `<View style={{ padding: 16 }} />` | Use StyleSheet.create outside component |
+| ScrollView for 100+ items | Use FlatList with getItemLayout for virtualization |
+| Synchronous bridge calls blocking JS thread | Use async bridge methods with callbacks/promises |
+| TextInput without KeyboardAvoidingView | Wrap forms in KeyboardAvoidingView per platform |
+| Storing secrets in AsyncStorage | Use react-native-keychain for sensitive data |
 
 ## Output Format
 

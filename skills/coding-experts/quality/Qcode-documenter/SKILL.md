@@ -36,72 +36,6 @@ Applies to any task involving code documentation, API specs, or developer-facing
    - If validation fails: fix examples and re-validate before proceeding to the Report step
 6. **Report** - Generate coverage summary
 
-## Quick-Reference Examples
-
-### Google-style Docstring (Python)
-```python
-def fetch_user(user_id: int, active_only: bool = True) -> dict:
-    """Fetch a single user record by ID.
-
-    Args:
-        user_id: Unique identifier for the user.
-        active_only: When True, raise an error for inactive users.
-
-    Returns:
-        A dict containing user fields (id, name, email, created_at).
-
-    Raises:
-        ValueError: If user_id is not a positive integer.
-        UserNotFoundError: If no matching user exists.
-    """
-```
-
-### NumPy-style Docstring (Python)
-```python
-def compute_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
-    """Compute cosine similarity between two vectors.
-
-    Parameters
-    ----------
-    vec_a : np.ndarray
-        First input vector, shape (n,).
-    vec_b : np.ndarray
-        Second input vector, shape (n,).
-
-    Returns
-    -------
-    float
-        Cosine similarity in the range [-1, 1].
-
-    Raises
-    ------
-    ValueError
-        If vectors have different lengths.
-    """
-```
-
-### JSDoc (TypeScript)
-```typescript
-/**
- * Fetches a paginated list of products from the catalog.
- *
- * @param {string} categoryId - The category to filter by.
- * @param {number} [page=1] - Page number (1-indexed).
- * @param {number} [limit=20] - Maximum items per page.
- * @returns {Promise<ProductPage>} Resolves to a page of product records.
- * @throws {NotFoundError} If the category does not exist.
- *
- * @example
- * const page = await fetchProducts('electronics', 2, 10);
- * console.log(page.items);
- */
-async function fetchProducts(
-  categoryId: string,
-  page = 1,
-  limit = 20
-): Promise<ProductPage> { ... }
-```
-
 ## Reference Guide
 
 Load detailed guidance based on context:
@@ -143,6 +77,152 @@ Depending on the task, provide:
 2. **API Docs:** OpenAPI specs + portal configuration
 3. **Doc Sites:** Site configuration + content structure + build instructions
 4. **Guides/Tutorials:** Structured markdown with examples + diagrams
+
+## Code Patterns (3 Examples)
+
+### Pattern 1: Complete TypeScript/JSDoc with Types and Examples
+```typescript
+/**
+ * Fetches user profile with optional caching strategy.
+ *
+ * @param {string} userId - Unique user identifier (e.g., "usr_123abc")
+ * @param {Object} [options] - Configuration object
+ * @param {boolean} [options.cached=true] - Use cache if available
+ * @param {number} [options.ttl=3600] - Cache time-to-live in seconds
+ * 
+ * @returns {Promise<UserProfile>} User profile with normalized fields
+ * @throws {NotFoundError} If user does not exist (404)
+ * @throws {UnauthorizedError} If token is invalid (401)
+ *
+ * @example
+ * // Simple usage
+ * const profile = await getUser('usr_123');
+ *
+ * @example
+ * // Bypass cache and set TTL
+ * const profile = await getUser('usr_123', { cached: false, ttl: 7200 });
+ */
+async function getUser(userId: string, options?: GetUserOptions): Promise<UserProfile> { }
+```
+
+### Pattern 2: Python Google-Style with Raises
+```python
+def process_payment(order_id: str, amount: float) -> PaymentResult:
+    """Process a payment for the given order.
+
+    Validates the order, deducts funds, and updates inventory atomically.
+
+    Args:
+        order_id: Unique order identifier (UUID format required).
+        amount: Payment amount in USD. Must be positive and match order total.
+
+    Returns:
+        PaymentResult with status, transaction_id, and timestamp.
+
+    Raises:
+        ValueError: If amount is negative or order_id format is invalid.
+        OrderNotFoundError: If no matching order exists in database.
+        InsufficientFundsError: If customer account balance is insufficient.
+        PaymentGatewayError: If payment processor is unavailable.
+
+    Example:
+        >>> result = process_payment('550e8400-e29b-41d4-a716-446655440000', 99.99)
+        >>> print(result.status)
+        'completed'
+    """
+```
+
+### Pattern 3: OpenAPI 3.1 Endpoint Schema
+```yaml
+/api/v1/users/{userId}:
+  get:
+    summary: Retrieve a user by ID
+    description: |
+      Fetches a single user profile. Requires valid JWT token.
+      Returns 404 if user does not exist.
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^usr_[a-z0-9]{20}$'
+        description: Unique user identifier
+    responses:
+      '200':
+        description: User found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      '404':
+        description: User not found
+      '401':
+        description: Unauthorized (invalid token)
+    security:
+      - BearerAuth: []
+```
+
+## Comment Template
+
+Documentation headers for modules should include scope and examples:
+
+```typescript
+/**
+ * Authentication and authorization service.
+ *
+ * Handles JWT token validation, role-based access control (RBAC),
+ * and session management.
+ *
+ * Usage:
+ *   import { AuthService } from './auth';
+ *   const auth = new AuthService(config);
+ *   const isValid = await auth.validateToken(token);
+ *
+ * Security: Never log tokens or passwords. Use environment variables
+ * for secrets (DATABASE_URL, JWT_SECRET, etc.).
+ */
+```
+
+## Lint Rules
+
+Enforce documentation standards with automated tools:
+
+```bash
+# Validate JSDoc completeness
+npm install --save-dev eslint-plugin-jsdoc
+npx eslint --plugin jsdoc src/ --rule "jsdoc/require-jsdoc: error"
+
+# Validate markdown documentation
+npm install --save-dev markdownlint
+npx markdownlint "docs/**/*.md"
+
+# Python docstring validation
+pip install pydocstyle
+pydocstyle src/ --convention=google
+
+# OpenAPI spec validation
+npm install --save-dev @redocly/cli
+npx redocly lint openapi.yaml
+```
+
+## Security Checklist (5+)
+
+- [ ] No hardcoded API keys, passwords, or tokens in examples
+- [ ] Examples use fake/test credentials (e.g., `test_token_xxx`, `user@example.com`)
+- [ ] Documentation doesn't expose internal system architecture or debugging info
+- [ ] API examples include security requirements (authentication, rate limits)
+- [ ] Secrets referenced via environment variables in all code examples
+
+## Anti-Patterns (5 Wrong/Correct)
+
+| Anti-Pattern | Wrong | Correct |
+|---|---|---|
+| **Outdated Docs** | "Use the v2 API" (but v3 shipped 6 months ago) | Bump docs version with code; add migration guides |
+| **No Examples** | Function description only, no usage | Every public function/endpoint includes runnable example |
+| **Jargon-Heavy** | "Hydrate the denormalized cache layer" | "Fetch and cache the user profile" |
+| **Copy from Code Comments** | Docstring repeats inline comments verbatim | Docstring explains "why" and "how to use"; inline comments explain "what" |
+| **No Versioning** | Single README for 5 major versions | Maintain separate docs per version; use version switcher |
 
 ## Knowledge Reference
 

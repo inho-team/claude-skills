@@ -21,144 +21,132 @@ Senior ML engineer specializing in LLM fine-tuning, parameter-efficient methods,
 
 ## Core Workflow
 
-1. **Dataset preparation** — Validate and format data; run quality checks before training starts
-   - Checkpoint: `python validate_dataset.py --input data.jsonl` — fix all errors before proceeding
-2. **Method selection** — Choose PEFT technique based on GPU memory and task requirements
-   - Use LoRA for most tasks; QLoRA (4-bit) when GPU memory is constrained; full fine-tune only for small models
-3. **Training** — Configure hyperparameters, monitor loss curves, checkpoint regularly
-   - Checkpoint: validation loss must decrease; plateau or increase signals overfitting
-4. **Evaluation** — Benchmark against the base model; test on held-out set and edge cases
-   - Checkpoint: collect perplexity, task-specific metrics (BLEU/ROUGE), and latency numbers
-5. **Deployment** — Merge adapter weights, quantize, measure inference throughput before serving
+1. **Dataset prep** — Validate & format data; run quality checks before training
+   - Checkpoint: `validate_dataset.py --input data.jsonl` — fix errors before proceeding
+2. **Method selection** — LoRA for most tasks; QLoRA (4-bit) if GPU memory constrained; full tune only for small models
+3. **Training** — Configure hyperparams, monitor loss curves, checkpoint regularly
+   - Checkpoint: validation loss must decrease; plateau signals overfitting
+4. **Evaluation** — Benchmark vs base model; test on held-out set & edge cases
+   - Checkpoint: collect perplexity, task metrics (BLEU/ROUGE), latency
+5. **Deployment** — Merge adapter weights, quantize, measure inference throughput
 
-## Reference Guide
-
-Load detailed guidance based on context:
-
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| LoRA/PEFT | `references/lora-peft.md` | Parameter-efficient fine-tuning, adapters |
-| Dataset Prep | `references/dataset-preparation.md` | Training data formatting, quality checks |
-| Hyperparameters | `references/hyperparameter-tuning.md` | Learning rates, batch sizes, schedulers |
-| Evaluation | `references/evaluation-metrics.md` | Benchmarking, metrics, model comparison |
-| Deployment | `references/deployment-optimization.md` | Model merging, quantization, serving |
-
-## Minimal Working Example — LoRA Fine-Tuning with Hugging Face PEFT
+## Code Patterns (3 Examples with Docstrings)
 
 ```python
-from datasets import load_dataset
-from transformers import AutoTokenizer, AutoModelForCausalLM, TrainingArguments
-from peft import LoraConfig, get_peft_model, TaskType
+# Pattern 1: Dataset validation & deduplication
+def validate_and_deduplicate_dataset(input_jsonl: str, output_jsonl: str):
+    """Validate JSONL format and remove duplicates before fine-tuning."""
+    import json
+    seen, valid_count = set(), 0
+    with open(input_jsonl) as f_in, open(output_jsonl, 'w') as f_out:
+        for line in f_in:
+            try:
+                record = json.loads(line)
+                assert 'instruction' in record and 'output' in record
+                record_hash = hash((record['instruction'], record['output']))
+                if record_hash not in seen:
+                    seen.add(record_hash)
+                    f_out.write(line)
+                    valid_count += 1
+            except (json.JSONDecodeError, AssertionError):
+                continue
+    assert valid_count >= 100, f"Too few training examples: {valid_count}"
+    return valid_count
+
+# Pattern 2: LoRA config selection
+def select_lora_config(model_size_b: float, gpu_memory_gb: int):
+    """Select LoRA rank & alpha based on model size and GPU capacity."""
+    from peft import LoraConfig, TaskType
+    if gpu_memory_gb < 16: r, alpha = 8, 16
+    elif gpu_memory_gb < 32: r, alpha = 16, 32
+    else: r, alpha = 32, 64
+    return LoraConfig(task_type=TaskType.CAUSAL_LM, r=r, lora_alpha=alpha,
+                      target_modules=["q_proj", "v_proj"], lora_dropout=0.05, bias="none")
+
+# Pattern 3: Evaluation metrics
+def compute_eval_metrics(model, eval_dataset, tokenizer):
+    """Compute perplexity and task metrics on held-out set."""
+    import torch
+    total_loss, total_tokens = 0, 0
+    with torch.no_grad():
+        for batch in eval_dataset:
+            outputs = model(**batch)
+            total_loss += outputs.loss.item() * batch['input_ids'].shape[0]
+            total_tokens += batch['input_ids'].shape[0]
+    perplexity = torch.exp(torch.tensor(total_loss / total_tokens)).item()
+    return {'perplexity': perplexity, 'eval_loss': total_loss / total_tokens}
+```
+
+## Comment Template (Google-style)
+
+```python
+def finetune_llm_for_task(base_model_id: str, train_path: str, task_type: str):
+    """One-line task summary (e.g., 'Summarization fine-tuning').
+    
+    Longer: PEFT method rationale, expected improvements, evaluation approach.
+    
+    Args:
+        base_model_id: HuggingFace model (e.g., 'meta-llama/Llama-3-8B')
+        train_path: Path to JSONL training data
+        task_type: Task identifier (e.g., 'summarization', 'classification')
+    
+    Returns:
+        Path to saved LoRA adapter
+    
+    Raises:
+        FileNotFoundError: If train_path not found
+        ValueError: If dataset validation fails
+    """
+```
+
+## Lint Rules (ruff/mypy/black)
+
+```toml
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.9"
+disallow_untyped_defs = true
+ignore_missing_imports = true
+```
+
+Critical: F841 (unused checkpoint), E501 (long args), missing loss assertions
+
+## Security Checklist (5+)
+
+1. **Training data contamination** — No overlap in train/val/test; hash-based dedup; log data version
+2. **Model theft via inference** — Rate limiting, API auth, per-user quotas, watermarking
+3. **Credential exposure** — Use env vars, `~/.huggingface` token; never hardcode keys in config
+4. **Poisoning via malicious examples** — Filter for toxicity on ingestion; flag unusual patterns
+5. **Overfitting on small data** — Use dropout, weight decay, eval_steps < 1000; monitor val loss plateau
+
+## Anti-patterns (5 Wrong/Correct)
+
+| Anti-pattern | Fix |
+|--------------|-----|
+| No dataset validation; train on raw data | Always run validation script first; log valid record count |
+| LoRA rank=4 for all tasks | Use rank ≥ 16; set alpha = 2×rank; tune on eval metrics |
+| Train without warmup or LR schedule | Always use `warmup_ratio=0.03` + `lr_scheduler_type="cosine"` |
+| Skip evaluation on held-out set | Hold out 10–20% test data; compute perplexity + task metrics |
+| Merge adapter without quantization | Merge + quantize with bitsandbytes before serving |
+
+## Quick LoRA Template
+
+```python
+from peft import LoraConfig
 from trl import SFTTrainer
-import torch
 
-# 1. Load base model and tokenizer
-model_id = "meta-llama/Llama-3-8B"
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-tokenizer.pad_token = tokenizer.eos_token
-
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-    torch_dtype=torch.bfloat16,
-    device_map="auto",
-)
-
-# 2. Configure LoRA adapter
-lora_config = LoraConfig(
-    task_type=TaskType.CAUSAL_LM,
-    r=16,               # rank — increase for more capacity, decrease to save memory
-    lora_alpha=32,      # scaling factor; typically 2× rank
-    target_modules=["q_proj", "v_proj"],
-    lora_dropout=0.05,
-    bias="none",
-)
-model = get_peft_model(model, lora_config)
-model.print_trainable_parameters()  # verify: should be ~0.1–1% of total params
-
-# 3. Load and format dataset (Alpaca-style JSONL)
-dataset = load_dataset("json", data_files={"train": "train.jsonl", "test": "test.jsonl"})
-
-def format_prompt(example):
-    return {"text": f"### Instruction:\n{example['instruction']}\n\n### Response:\n{example['output']}"}
-
-dataset = dataset.map(format_prompt)
-
-# 4. Training arguments
-training_args = TrainingArguments(
-    output_dir="./checkpoints",
-    num_train_epochs=3,
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=4,     # effective batch size = 16
-    learning_rate=2e-4,
-    lr_scheduler_type="cosine",
-    warmup_ratio=0.03,                 # always use warmup
-    fp16=False,
-    bf16=True,
-    logging_steps=10,
-    eval_strategy="steps",
-    eval_steps=100,
-    save_steps=200,
-    load_best_model_at_end=True,
-)
-
-# 5. Train
-trainer = SFTTrainer(
-    model=model,
-    args=training_args,
-    train_dataset=dataset["train"],
-    eval_dataset=dataset["test"],
-    dataset_text_field="text",
-    max_seq_length=2048,
-)
+lora_config = LoraConfig(r=16, lora_alpha=32, target_modules=["q_proj", "v_proj"],
+                         lora_dropout=0.05, bias="none")
+trainer = SFTTrainer(model=model, args=training_args, train_dataset=train_data,
+                     eval_dataset=eval_data, peft_config=lora_config, max_seq_length=2048)
 trainer.train()
-
-# 6. Save adapter weights only
 model.save_pretrained("./lora-adapter")
-tokenizer.save_pretrained("./lora-adapter")
 ```
 
-**QLoRA variant** — add these lines before loading the model to enable 4-bit quantization:
-```python
-from transformers import BitsAndBytesConfig
+## MUST DO / MUST NOT DO
 
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16,
-    bnb_4bit_use_double_quant=True,
-)
-model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, device_map="auto")
-```
-
-**Merge adapter into base model for deployment:**
-```python
-from peft import PeftModel
-
-base = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16)
-merged = PeftModel.from_pretrained(base, "./lora-adapter").merge_and_unload()
-merged.save_pretrained("./merged-model")
-```
-
-## Constraints
-
-### MUST DO
-- Validate dataset quality before training
-- Use parameter-efficient methods for large models (>7B)
-- Monitor training/validation loss curves
-- Document hyperparameters and training config
-- Version datasets and model checkpoints
-- Always include a learning rate warmup
-
-### MUST NOT DO
-- Skip data quality validation
-- Overfit on small datasets — use regularisation (dropout, weight decay) and early stopping
-- Merge incompatible adapters (mismatched rank, base model, or target modules)
-- Deploy without evaluation against a held-out set and latency benchmark
-
-## Output Templates
-
-When implementing fine-tuning, always provide:
-1. **Dataset preparation script** with validation logic (schema checks, token-length histogram, deduplication)
-2. **Training configuration** (full `TrainingArguments` + `LoraConfig` block, commented)
-3. **Evaluation script** reporting perplexity, task-specific metrics, and latency
-4. **Brief design rationale** — why this PEFT method, rank, and learning rate were chosen for this task
+**MUST:** Validate datasets, use PEFT, monitor loss curves, evaluate on held-out set, version configs, include warmup  
+**MUST NOT:** Skip validation, train without tracking, overfit on small data, hardcode creds, deploy unquantized

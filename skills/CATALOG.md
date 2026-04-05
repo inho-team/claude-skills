@@ -26,6 +26,7 @@
 | `/Qsource-verifier` | When you need to verify if source code matches the provided specs. | Deep integrity check between implementation and TASK_REQUEST. |
 | `/Qvisual-qa` | When UI/Frontend changes need verification. | Uses screenshots and visual analysis to find regressions. |
 | `/Qsecurity-officer` | When security-sensitive code (auth, crypto) is modified. | Specialized security audit and vulnerability detection. |
+| `/Qgc` | When codebase needs quality audit or cleanup. | Scans for doc-code drift, rule violations, dead code. Auto-fixes simple issues. |
 
 ## Management & Automation
 

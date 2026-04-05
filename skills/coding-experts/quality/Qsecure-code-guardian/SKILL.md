@@ -191,3 +191,50 @@ When implementing security features, provide:
 ## Knowledge Reference
 
 OWASP Top 10, bcrypt/argon2, JWT, OAuth 2.0, OIDC, CSP, CORS, rate limiting, input validation, output encoding, encryption (AES, RSA), TLS, security headers
+
+## Code Patterns (Security-Focused)
+
+1. **Input Validation Gate**: Zod/joi schema first; reject before processing
+2. **Parameterized Queries**: `$1, $2` placeholders; never string interpolate
+3. **Defense in Depth**: Validate input, encode output, set headers, rate limit
+
+## Comment Template
+
+```
+// SECURITY: Input validation — email format + length
+// Defense: SQL injection prevention via parameterized query
+// Risk: User enumeration via timing attack — using constant-time compare
+// Config: MAX_LOGIN_ATTEMPTS=10, LOCKOUT_MINUTES=15
+```
+
+## Lint Rules
+
+- No hardcoded secrets, API keys, or passwords in code
+- All SQL queries must use parameterized placeholders
+- All user input must pass through Zod/joi before use
+- No direct `eval()`, `exec()`, or `innerHTML` with user data
+
+## Comprehensive OWASP Checklist
+
+1. A01 Injection — Parameterized queries, input validation, no eval
+2. A02 Broken Auth — Rate limit auth endpoints, strong password hashing, JWT expiry
+3. A03 Broken Access Control — Verify authz on every request, not just UI
+4. A04 Insecure Design — Threat model before code; CORS allowlist; no open admin endpoints
+5. A05 Broken Encryption — Use TLS, bcrypt (not SHA), AES for sensitive data
+
+## Anti-patterns (5 Examples)
+
+**Wrong:** Security as afterthought (code first, "we'll secure later")
+**Correct:** Threat model before coding; security review before merge
+
+**Wrong:** No input validation (trusting user data directly)
+**Correct:** Validate all input with Zod; reject invalid before processing
+
+**Wrong:** Hardcoded secrets in code (API keys, db passwords)
+**Correct:** Environment variables only; secrets manager for production
+
+**Wrong:** Debug endpoints in production (`/admin/bypass`, `/debug/logs`)
+**Correct:** Dev-only endpoints gated by env check; removed before release
+
+**Wrong:** No rate limiting (login endpoint can be brute-forced)
+**Correct:** Rate limit on auth, API, and sensitive endpoints

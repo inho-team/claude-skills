@@ -98,6 +98,119 @@ When implementing .NET features, provide:
 4. Configuration setup (Program.cs, appsettings.json)
 5. Brief explanation of architectural decisions
 
+## Code Patterns
+
+**Basic: Class with DI + XML Documentation**
+```csharp
+/// <summary>Manages user authentication and token generation.</summary>
+public class AuthService(ITokenGenerator tokenGen, ILogger<AuthService> logger)
+{
+    /// <summary>Authenticates user credentials and returns JWT token.</summary>
+    /// <param name="username">User's login name</param>
+    /// <param name="password">User's plaintext password</param>
+    /// <returns>JWT token if successful; empty string if failed</returns>
+    public async Task<string> LoginAsync(string username, string password, CancellationToken ct)
+    {
+        logger.LogInformation("Login attempt for {Username}", username);
+        return await tokenGen.GenerateAsync(username, ct);
+    }
+}
+```
+
+**Error Handling: Result Pattern**
+```csharp
+public class OrderService(IRepository<Order> repo)
+{
+    public async Task<Result<OrderDto>> CreateOrderAsync(CreateOrderRequest req, CancellationToken ct)
+    {
+        if (req.Items.Count == 0)
+            return Result<OrderDto>.Fail("Order must contain at least one item");
+        
+        var order = new Order { Items = req.Items };
+        await repo.AddAsync(order, ct);
+        return Result<OrderDto>.Ok(new OrderDto { Id = order.Id });
+    }
+}
+```
+
+**Advanced: Async/Await + IAsyncDisposable**
+```csharp
+/// <remarks>Implements async disposal for proper resource cleanup.</remarks>
+public class DataProcessor : IAsyncDisposable
+{
+    private readonly HttpClient _client;
+    
+    public async ValueTask<T> ProcessAsync<T>(string url, CancellationToken ct) where T : class
+    {
+        using var response = await _client.GetAsync(url, ct);
+        return await response.Content.ReadAsAsync<T>(cancellationToken: ct);
+    }
+    
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        _client?.Dispose();
+        await Task.CompletedTask;
+    }
+}
+```
+
+## Comment Template
+
+**Method XML Documentation**
+```csharp
+/// <summary>Fetches a user by unique identifier.</summary>
+/// <param name="userId">The user's primary key</param>
+/// <param name="ct">Cancellation token</param>
+/// <returns>User DTO or null if not found</returns>
+/// <exception cref="ArgumentException">Thrown when userId is invalid</exception>
+public async Task<UserDto?> GetUserAsync(int userId, CancellationToken ct)
+```
+
+**Class XML Documentation**
+```csharp
+/// <summary>Provides email delivery and SMTP configuration.</summary>
+/// <remarks>Uses SMTP relay from appsettings. Retries transient failures up to 3 times.</remarks>
+/// <example>var mailer = new EmailService(config); await mailer.SendAsync(to, subject, body, ct);</example>
+public class EmailService { }
+```
+
+**File-level namespace header**
+```csharp
+/// <summary>User domain models and value objects for authentication flow.</summary>
+namespace MyApp.Domain.Users;
+```
+
+## Lint Rules
+
+- **Run before commit:** `dotnet format {project}` + `dotnet build -warnaserror`
+- **Config files:** `.editorconfig`, `.globalconfig`
+- **Recommended analyzers:** StyleCop.Analyzers, Roslynator
+- **Threshold:** Zero warnings, nullable reference types enabled
+- **Example .globalconfig:**
+```ini
+[*.cs]
+dotnet_diagnostic.CS8600.severity = error
+dotnet_diagnostic.SA1600.severity = error
+```
+
+## Security Checklist
+
+- **SQL Injection:** Use EF Core queries or parameterized SQL (DbContext.FromSqlInterpolated)
+- **XSS in Razor:** Trust @Html.Raw only for trusted internal data; use @variable (auto-encoded)
+- **CSRF:** Decorate POST/PUT handlers with [ValidateAntiForgeryToken]
+- **Insecure deserialization:** Never use BinaryFormatter; prefer JSON with JsonSerializerOptions
+- **Hardcoded secrets:** Never store connection strings in code; use appsettings + user secrets
+
+## Anti-patterns
+
+| Anti-pattern | Wrong | Correct |
+|---|---|---|
+| Service Locator | `var svc = container.Resolve<IService>()` | Constructor DI: `public Ctrl(IService svc)` |
+| async void | `async void OnClick() { await Task.Delay(1000); }` | `async Task OnClick() { await Task.Delay(1000); }` |
+| Catching all | `catch (Exception ex) { }` | `catch (DbUpdateException ex) { log error; }` |
+| String SQL | `$"SELECT * FROM Users WHERE Id={id}"` | `await ctx.Users.FromSqlInterpolated($"... WHERE Id={id}")` |
+| Not disposing | `var conn = new SqlConnection(); conn.Open();` | `using (var conn = new SqlConnection()) { ... }` |
+
 ## Example: Minimal API Endpoint
 
 ```csharp

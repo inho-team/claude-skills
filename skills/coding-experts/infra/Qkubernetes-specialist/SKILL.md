@@ -234,6 +234,140 @@ kubectl auth can-i --list --as=system:serviceaccount:my-namespace:my-app-sa
 kubectl rollout undo deployment/my-app -n my-namespace
 ```
 
+## Code Patterns
+
+### Pattern 1: Deployment with Resource Limits
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-prod
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: app
+        image: registry/app:v1.2.3  # use explicit version, never latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"  # prevents OOMKill surprises
+```
+
+### Pattern 2: HPA Config
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: app-hpa
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: app-prod
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70  # scale at 70% CPU usage
+```
+
+### Pattern 3: NetworkPolicy
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: app-deny-all
+spec:
+  podSelector:
+    matchLabels:
+      app: my-app
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 8080
+```
+
+## Comment Template
+
+### YAML Commenting Conventions
+```yaml
+# purpose: Exposes backend API on port 8080
+# constraint: Must use TLS for external traffic
+# owner: platform-team
+# urgency: critical
+# last-reviewed: 2026-04-04
+```
+
+### kubectl Annotation Conventions
+```yaml
+metadata:
+  annotations:
+    description: "Main application server"
+    managed-by: "kustomize"
+    runbook: "https://wiki/runbook/app"
+```
+
+## Lint Rules
+
+**kubeval**: Validate manifest schema
+```bash
+kubeval *.yaml
+```
+
+**kube-linter**: Check for best practices
+```bash
+kube-linter lint *.yaml
+```
+
+**conftest**: Policy-as-code validation
+```bash
+conftest test -p policies/*.rego *.yaml
+```
+
+**.kube-linter.yaml** config:
+```yaml
+checks:
+  doNotAutoAddDefaults: false
+  addAllBuiltIn: true
+excludedChecks:
+  - "no-extensions-v1beta"
+customChecks:
+  - name: "require-resource-limits"
+    template: "resource-limits"
+```
+
+## Security Checklist
+
+1. **Pod Security Standards**: Apply restricted PSS (no privileged, drop all capabilities)
+2. **RBAC Least Privilege**: Grant only necessary verbs (get, list) on required resources
+3. **Network Policies**: Default-deny ingress/egress; whitelist specific routes
+4. **Secret Encryption**: Enable etcd encryption at rest with `--encryption-provider-config`
+5. **Image Scanning**: Use Trivy or Syft; block images with critical CVEs
+6. **No Privileged Containers**: Set `securityContext.privileged: false` always
+
+## Anti-Patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `image: app:latest` | `image: app:v1.2.3` (pinned semver) |
+| No resource limits | `requests.cpu: 100m, limits.cpu: 500m` |
+| `runAsUser: 0` (root) | `runAsUser: 1000, runAsNonRoot: true` |
+| Secrets in ConfigMaps | Secrets in `Secret` objects with RBAC |
+| No readiness probes | Include `readinessProbe.httpGet` with retries |
+
 ## Output Templates
 
 When implementing Kubernetes resources, provide:

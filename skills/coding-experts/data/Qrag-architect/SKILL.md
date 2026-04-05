@@ -19,178 +19,116 @@ recommendedModel: haiku
 
 ## Core Workflow
 
-1. **Requirements Analysis** — Identify retrieval needs, latency constraints, accuracy requirements, and scale
-2. **Vector Store Design** — Select database, schema design, indexing strategy, sharding approach
-3. **Chunking Strategy** — Document splitting, overlap, semantic boundaries, metadata enrichment
-4. **Retrieval Pipeline** — Embedding selection, query transformation, hybrid search, reranking
-5. **Evaluation & Iteration** — Metrics tracking, retrieval debugging, continuous optimization
+1. **Requirements** — Identify retrieval needs, latency, accuracy, scale
+2. **Vector Store** — Select database, schema, indexing, sharding
+3. **Chunking** — Split on semantic boundaries, add overlap & metadata
+4. **Retrieval** — Embeddings, query transform, hybrid search, reranking
+5. **Evaluation** — Track metrics, debug retrieval, optimize iteratively
 
-For each step, validate before moving on (see checkpoints below).
-
-## Reference Guide
-
-Load detailed guidance based on context:
-
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| Vector Databases | `references/vector-databases.md` | Comparing Pinecone, Weaviate, Chroma, pgvector, Qdrant |
-| Embedding Models | `references/embedding-models.md` | Selecting embeddings, fine-tuning, dimension trade-offs |
-| Chunking Strategies | `references/chunking-strategies.md` | Document splitting, overlap, semantic chunking |
-| Retrieval Optimization | `references/retrieval-optimization.md` | Hybrid search, reranking, query expansion, filtering |
-| RAG Evaluation | `references/rag-evaluation.md` | Metrics, evaluation frameworks, debugging retrieval |
-
-## Implementation Examples
-
-### 1. Chunking Documents
+## Code Patterns (3 Examples with Docstrings)
 
 ```python
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-# Evaluate chunk_size on your domain data — never use 512 blindly
-splitter = RecursiveCharacterTextSplitter(
-    chunk_size=800,
-    chunk_overlap=100,
-    separators=["\n\n", "\n", ". ", " "],
-)
-
-chunks = splitter.create_documents(
-    texts=[doc.page_content for doc in raw_docs],
-    metadatas=[{"source": doc.metadata["source"], "timestamp": doc.metadata.get("timestamp")} for doc in raw_docs],
-)
-```
-
-**Checkpoint:** `assert all(c.metadata.get("source") for c in chunks), "Missing source metadata"`
-
-### 2. Generating Embeddings & Indexing
-
-```python
-from openai import OpenAI
-import qdrant_client
-from qdrant_client.models import VectorParams, Distance, PointStruct
-
-client = OpenAI()
-qdrant = qdrant_client.QdrantClient("localhost", port=6333)
-
-# Create collection
-qdrant.recreate_collection(
-    collection_name="knowledge_base",
-    vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
-)
-
-def embed_chunks(chunks: list[str], model: str = "text-embedding-3-small") -> list[list[float]]:
-    response = client.embeddings.create(input=chunks, model=model)
-    return [r.embedding for r in response.data]
-
-# Idempotent upsert with deduplication via deterministic IDs
-import hashlib, uuid
-
-points = []
-for i, chunk in enumerate(chunks):
-    doc_id = str(uuid.UUID(hashlib.md5(chunk.page_content.encode()).hexdigest()))
-    embedding = embed_chunks([chunk.page_content])[0]
-    points.append(PointStruct(id=doc_id, vector=embedding, payload=chunk.metadata))
-
-qdrant.upsert(collection_name="knowledge_base", points=points)
-```
-
-**Checkpoint:** `assert qdrant.count("knowledge_base").count == len(set(p.id for p in points)), "Deduplication failed"`
-
-### 3. Hybrid Search (Vector + BM25)
-
-```python
-from qdrant_client.models import Filter, FieldCondition, MatchValue, SparseVector
-from rank_bm25 import BM25Okapi
-
-def hybrid_search(query: str, tenant_id: str, top_k: int = 20) -> list:
-    # Dense retrieval
-    query_embedding = embed_chunks([query])[0]
-    tenant_filter = Filter(must=[FieldCondition(key="tenant_id", match=MatchValue(value=tenant_id))])
-    dense_results = qdrant.search(
-        collection_name="knowledge_base",
-        query_vector=query_embedding,
-        query_filter=tenant_filter,
-        limit=top_k,
+# Pattern 1: Semantic chunking with overlap
+def semantic_chunking(text: str, chunk_size: int = 800, overlap: int = 100):
+    """Split text on semantic boundaries with overlap for RAG."""
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size, chunk_overlap=overlap,
+        separators=["\n\n", "\n", ". ", " "]
     )
+    return splitter.split_text(text)
 
-    # Sparse retrieval (BM25)
-    corpus = [r.payload.get("text", "") for r in dense_results]
-    bm25 = BM25Okapi([doc.split() for doc in corpus])
-    bm25_scores = bm25.get_scores(query.split())
+# Pattern 2: Hybrid search with RRF
+def hybrid_search(query: str, vector_results: list, bm25_results: list, k: int = 10):
+    """Fuse dense + sparse retrieval using Reciprocal Rank Fusion."""
+    rrf_scores = {}
+    for rank, r in enumerate(vector_results[:k], 1):
+        rrf_scores[r['id']] = rrf_scores.get(r['id'], 0) + 1 / (60 + rank)
+    for rank, r in enumerate(bm25_results[:k], 1):
+        rrf_scores[r['id']] = rrf_scores.get(r['id'], 0) + 1 / (60 + rank)
+    return sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)[:k]
 
-    # Reciprocal Rank Fusion
-    ranked = sorted(
-        zip(dense_results, bm25_scores),
-        key=lambda x: 0.6 * x[0].score + 0.4 * x[1],
-        reverse=True,
-    )
-    return [r for r, _ in ranked[:top_k]]
+# Pattern 3: Retrieval evaluation
+def evaluate_retrieval(queries: list, retrieved: list, ground_truth: list, k: int = 10):
+    """Compute precision@k, recall@k, MRR on held-out queries."""
+    precisions, recalls, mrrs = [], [], []
+    for query, ret, rel in zip(queries, retrieved, ground_truth):
+        rel_set, ret_set = set(rel), set(ret[:k])
+        if rel_set:
+            precisions.append(len(rel_set & ret_set) / k)
+            recalls.append(len(rel_set & ret_set) / len(rel_set))
+        for rank, doc in enumerate(ret[:k], 1):
+            if doc in rel_set:
+                mrrs.append(1 / rank); break
+    return {
+        "precision@k": sum(precisions) / len(precisions) if precisions else 0,
+        "recall@k": sum(recalls) / len(recalls) if recalls else 0,
+        "mrr": sum(mrrs) / len(mrrs) if mrrs else 0,
+    }
 ```
 
-**Checkpoint:** `assert len(hybrid_search("test query", tenant_id="demo")) > 0, "Hybrid search returned no results"`
-
-### 4. Reranking Top-K Results
+## Comment Template (Google-style)
 
 ```python
-import cohere
-
-co = cohere.Client("YOUR_API_KEY")
-
-def rerank(query: str, results: list, top_n: int = 5) -> list:
-    docs = [r.payload.get("text", "") for r in results]
-    reranked = co.rerank(query=query, documents=docs, top_n=top_n, model="rerank-english-v3.0")
-    return [results[r.index] for r in reranked.results]
+def build_retrieval_index(documents: list, embedding_model: str):
+    """One-line summary of indexing strategy.
+    
+    Longer: explain chunking approach, embedding rationale, guarantees.
+    
+    Args:
+        documents: List of dicts with 'id', 'text', 'metadata'
+        embedding_model: HuggingFace model (e.g., 'BAAI/bge-small-en-v1.5')
+    
+    Returns:
+        Indexed vector database client
+    
+    Raises:
+        ValueError: If documents lack 'id' or 'text' fields
+    """
 ```
 
-### 5. Retrieval Evaluation
+## Lint Rules (ruff/mypy/black)
 
-```python
-# Run precision@k and recall@k against a labeled evaluation set
-# python evaluate.py --metrics precision@10 recall@10 mrr --collection knowledge_base
+```toml
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "UP"]
 
-from ragas import evaluate
-from ragas.metrics import context_precision, context_recall, faithfulness, answer_relevancy
-from datasets import Dataset
-
-eval_dataset = Dataset.from_dict({
-    "question": questions,
-    "contexts": retrieved_contexts,
-    "answer": generated_answers,
-    "ground_truth": ground_truth_answers,
-})
-
-results = evaluate(eval_dataset, metrics=[context_precision, context_recall, faithfulness, answer_relevancy])
-print(results)
+[tool.mypy]
+python_version = "3.9"
+disallow_untyped_defs = true
+ignore_missing_imports = true
 ```
 
-**Checkpoint:** Target `context_precision >= 0.7` and `context_recall >= 0.6` before moving to LLM integration.
+## Security Checklist (5+)
 
-## Constraints
+1. **Prompt injection via retrieved context** — Sanitize docs before passing to LLM; limit text length
+2. **Data poisoning in corpus** — Filter for toxicity on ingestion; flag unusual metadata/redactions
+3. **PII leakage in embeddings** — Remove emails, SSNs, phone numbers before embedding
+4. **Unauthorized vector DB access** — Enforce API keys, OAuth, role-based ACL per collection
+5. **Model endpoint credential exposure** — Use env vars & secrets manager; never hardcode keys
 
-### MUST DO
-- Evaluate multiple embedding models on your domain data before committing
-- Implement hybrid search (vector + keyword) for production systems
-- Add metadata filters for multi-tenant or domain-specific retrieval
-- Measure retrieval metrics (precision@k, recall@k, MRR, NDCG)
-- Use reranking for top-k results before passing context to LLM
-- Implement idempotent ingestion with deduplication (deterministic IDs)
-- Monitor retrieval latency and quality over time
-- Version embeddings and plan for model migration
+## Anti-patterns (5 Wrong/Correct)
 
-### MUST NOT DO
-- Use default chunk size (512) without evaluation on your domain data
-- Skip metadata enrichment (source, timestamp, section)
-- Ignore retrieval quality metrics in favor of only LLM output quality
-- Store raw documents without preprocessing/cleaning
-- Use cosine similarity alone for complex multi-domain retrieval
-- Deploy without testing on production-like data volumes
-- Forget to handle edge cases (empty results, malformed docs)
-- Couple the embedding model tightly to application code
+| Anti-pattern | Fix |
+|--------------|-----|
+| Fixed chunk_size=512 without domain eval | Test 256–1024 on domain data; measure recall@10 |
+| No reranking; direct LLM on top-1 result | Use BM25+vector hybrid + reranker (Cohere, ColBERT) |
+| Only measuring LLM output; ignoring retrieval | Measure context_precision ≥0.7 AND answer_relevancy separately |
+| Tight coupling to embedding model | Decouple via vector DB schema; version embeddings in metadata |
+| Single vector search; no hybrid or filtering | Always use hybrid (dense+sparse) + metadata filters + reranking |
 
-## Output Templates
+## Implementation Checklist
 
-When designing RAG architecture, deliver:
-1. System architecture diagram (ingestion + retrieval pipelines)
-2. Vector database selection with trade-off analysis
-3. Chunking strategy with examples and rationale
-4. Retrieval pipeline design (query → results flow)
-5. Evaluation plan with metrics, benchmarks, and pass/fail thresholds
+- [ ] Chunking strategy evaluated on domain data
+- [ ] Hybrid search (vector + BM25 or keyword) implemented
+- [ ] Reranking (Cohere, ColBERT, or cross-encoder) in place
+- [ ] Retrieval metrics (precision@k, recall@k, MRR) tracked
+- [ ] Metadata enrichment (source, timestamp, section)
+- [ ] Idempotent ingestion with deduplication (deterministic IDs)
+- [ ] Tenant isolation & access control enforced
+
+## MUST DO / MUST NOT DO
+
+**MUST:** Evaluate embeddings on domain data, implement hybrid search, measure retrieval quality, test on prod scale, monitor latency  
+**MUST NOT:** Use default chunk=512, skip reranking, ignore retrieval metrics, couple to embedding model, deploy without evaluation

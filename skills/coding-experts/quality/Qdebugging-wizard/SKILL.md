@@ -105,3 +105,52 @@ When debugging, provide:
 2. **Evidence**: Stack trace, logs, or test that proves it
 3. **Fix**: Code change that resolves it
 4. **Prevention**: Test or safeguard to prevent recurrence
+
+## Code Patterns (Debug-Focused)
+
+1. **Binary Search / Bisect**: Divide problem space in half, narrow scope quickly
+   - Use git bisect for regression hunting
+   - Remove half the code, test; keep what reproduces bug
+2. **Trace Stack Backward**: Follow call stack from failure point to root
+   - Print/log at each level; trace backwards
+3. **Isolate Variable**: Change one assumption at a time; test each
+
+## Comment Template
+
+```
+// DEBUG: <what fails> — checking <hypothesis>
+// Expected: <what should happen>
+// Actual: <what we observe>
+// Evidence: <log line, stack frame, test case>
+```
+
+## Lint Rules
+
+- No `console.log`, `print()`, or `debugger` in commits
+- All temporary debug code must be in a git branch and rebased before merge
+- Error messages must include the file/line/context where error occurred
+
+## Security Checklist (Debug-Specific)
+
+1. Never log passwords, tokens, or PII in debug output
+2. Sanitize stack traces before sharing externally (remove local paths)
+3. Don't debug in production without explicit safeguards
+4. Mask sensitive data in reproductions/screenshots
+5. Remove debug endpoints before release
+
+## Anti-patterns (5 Examples)
+
+**Wrong:** Shotgun debugging (changing multiple things, hoping one works)
+**Correct:** Change one variable; verify hypothesis; revert if wrong
+
+**Wrong:** No reproduction steps documented
+**Correct:** Written steps: "1. Create user X; 2. POST /api/...; 3. Observe error"
+
+**Wrong:** Fixing symptoms (hiding error) instead of root cause
+**Correct:** Trace back: does auth fail upstream, or just error handling?
+
+**Wrong:** Debug code left in production (console.log, debugger)
+**Correct:** Use CI to block commits with debug statements
+
+**Wrong:** Assuming single cause when multiple bugs exist
+**Correct:** Fix one, run full test suite, document each separately

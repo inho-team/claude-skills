@@ -41,37 +41,42 @@ Load detailed guidance based on context:
 | Testing | `references/testing-patterns.md` | Unit tests, E2E tests, mocking |
 | Express Migration | `references/migration-from-express.md` | Migrating from Express.js to NestJS |
 
-## Code Examples
+## Code Patterns
 
-### Controller with DTO Validation and Swagger
+### Basic: Controller + Service with TSDoc
 
 ```typescript
-// create-user.dto.ts
-import { IsEmail, IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+// users.service.ts
+import { Injectable } from '@nestjs/common';
 
-export class CreateUserDto {
-  @ApiProperty({ example: 'user@example.com' })
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({ example: 'strongPassword123', minLength: 8 })
-  @IsString()
-  @MinLength(8)
-  password: string;
+/**
+ * UsersService handles user business logic and database operations.
+ * @example const user = await usersService.create({ email: 'test@example.com' });
+ */
+@Injectable()
+export class UsersService {
+  /**
+   * Creates a new user in the database.
+   * @param createUserDto - DTO containing email and password
+   * @returns The created user entity
+   * @throws ConflictException if email already exists
+   */
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    // implementation
+  }
 }
 
 // users.controller.ts
 import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
 
+/** Handles user-related HTTP requests. */
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  /** Creates a new user. */
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ description: 'User created successfully.' })
@@ -81,99 +86,116 @@ export class UsersController {
 }
 ```
 
-### Service with Dependency Injection and Error Handling
+### Error Handling: ExceptionFilter + HttpException
 
 ```typescript
-// users.service.ts
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
+// all-exceptions.filter.ts
+import { Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 
-@Injectable()
-export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-  ) {}
+/**
+ * Global exception filter that standardizes error responses.
+ * Catches all exceptions and returns JSON with status and message.
+ */
+@Catch()
+export class AllExceptionsFilter implements ExceptionFilter {
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse();
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let message = 'Internal server error';
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const existing = await this.usersRepository.findOneBy({ email: createUserDto.email });
-    if (existing) {
-      throw new ConflictException('Email already registered');
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      message = exception.getResponse();
     }
-    const user = this.usersRepository.create(createUserDto);
-    return this.usersRepository.save(user);
-  }
 
-  async findOne(id: number): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ id });
-    if (!user) {
-      throw new NotFoundException(`User #${id} not found`);
-    }
-    return user;
+    response.status(status).json({ status, message });
   }
 }
 ```
 
-### Module Definition
+### Advanced: Custom Guard + Interceptor
 
 ```typescript
-// users.module.ts
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
+// jwt-auth.guard.ts
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
-@Module({
-  imports: [TypeOrmModule.forFeature([User])],
-  controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService], // export only when other modules need this service
-})
-export class UsersModule {}
+/** Guard that validates JWT tokens via Passport strategy. */
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+
+// logging.interceptor.ts
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+/** Logs request/response duration for monitoring. */
+@Injectable()
+export class LoggingInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const now = Date.now();
+    return next.handle().pipe(
+      tap(() => console.log(`Request took ${Date.now() - now}ms`)),
+    );
+  }
+}
 ```
 
-### Unit Test for Service
+## Comment Template
 
+Use **TSDoc** for public APIs:
 ```typescript
-// users.service.spec.ts
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
-
-const mockRepo = {
-  findOneBy: jest.fn(),
-  create: jest.fn(),
-  save: jest.fn(),
-};
-
-describe('UsersService', () => {
-  let service: UsersService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsersService,
-        { provide: getRepositoryToken(User), useValue: mockRepo },
-      ],
-    }).compile();
-    service = module.get<UsersService>(UsersService);
-    jest.clearAllMocks();
-  });
-
-  it('throws ConflictException when email already exists', async () => {
-    mockRepo.findOneBy.mockResolvedValue({ id: 1, email: 'user@example.com' });
-    await expect(
-      service.create({ email: 'user@example.com', password: 'pass1234' }),
-    ).rejects.toThrow(ConflictException);
-  });
-});
+/**
+ * Brief description of function/class.
+ * @param paramName - Description of parameter
+ * @returns Description of return value
+ * @throws ErrorType if condition occurs
+ * @example const result = await method(arg);
+ */
 ```
+
+## Lint Rules
+
+```bash
+# TypeScript check (no emit, fast)
+tsc --noEmit
+
+# ESLint with TypeScript support
+npx eslint --ext .ts,.tsx src/
+
+# Code formatting
+npx prettier --write src/
+
+# Recommended .eslintrc.json rules:
+{
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "rules": {
+    "@typescript-eslint/explicit-function-return-types": "warn",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+  }
+}
+```
+
+## Security Checklist
+
+1. **Input Validation** — Always use `class-validator` decorators on DTOs; enable `ValidationPipe` globally
+2. **Auth Guards** — Protect endpoints with `JwtAuthGuard` or `Passport.authenticate()`; verify token claims
+3. **Rate Limiting** — Use `@nestjs/throttler` `ThrottlerGuard` to prevent brute-force attacks
+4. **CORS Config** — Restrict origins in `app.enableCors({ origin: process.env.ALLOWED_ORIGINS })`
+5. **Helmet Middleware** — Add `app.use(helmet())` to set secure HTTP headers
+6. **SQL Injection** — Use TypeORM parameterized queries; never concatenate user input into raw SQL
+
+## Anti-patterns
+
+| ❌ Wrong | ✅ Correct |
+|---------|----------|
+| Circular module dependencies | Use `forwardRef()` sparingly; refactor shared logic into separate module |
+| Fat controllers with business logic | Move logic to services; controller only orchestrates |
+| Accept raw request bodies | Always create and validate DTOs with decorators |
+| Use `any` types in services | Define strict interfaces/types; document exceptions |
+| No exception filters | Implement `AllExceptionsFilter` and throw typed HTTP exceptions |
 
 ## Constraints
 

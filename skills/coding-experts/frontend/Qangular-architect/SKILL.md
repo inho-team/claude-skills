@@ -144,6 +144,93 @@ export const selectUsersLoading = createSelector(selectUsersState, (s) => s.load
 - Mutate state directly in NgRx
 - Skip unit tests for critical logic
 
+## Code Patterns
+
+**Basic: Standalone Component with Signal Inputs**
+```typescript
+@Component({
+  selector: 'app-user-badge',
+  standalone: true,
+  imports: [CommonModule],
+  template: '<span>{{ user().name }}</span>',
+})
+export class UserBadgeComponent {
+  /** User data input */
+  user = input.required<User>();
+}
+```
+
+**Error Handling: HTTP Interceptor**
+```typescript
+@Injectable({ providedIn: 'root' })
+export class ErrorInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    return next.handle(req).pipe(
+      catchError(err => {
+        console.error('[HTTP Error]', err.status);
+        return throwError(() => new Error('Request failed'));
+      })
+    );
+  }
+}
+```
+
+**Advanced: Custom Form Validator**
+```typescript
+export const uniqueEmailValidator: ValidatorFn = (c: AbstractControl) =>
+  c.value?.includes('@') ? null : { invalidEmail: true };
+```
+
+## Comment Template (TSDoc)
+
+**Component:** Document @Component, @Input/@Output, methods
+```typescript
+/** Displays paginated users with filtering capability */
+@Component({...})
+export class UserListComponent {
+  /** User items to display */
+  @Input() users: User[] = [];
+  /** Emits when user selected */
+  @Output() userSelected = new EventEmitter<User>();
+}
+```
+
+**Service:** Document @Injectable, public methods
+```typescript
+/** Manages user API calls and caching */
+@Injectable({ providedIn: 'root' })
+export class UserService {
+  /** Fetches all users from backend */
+  getUsers(): Observable<User[]> { /*...*/ }
+}
+```
+
+## Lint Rules
+
+Run these commands before commit:
+- `ng lint` — ESLint + @angular-eslint/* rules
+- `tsc --noEmit` — TypeScript strict mode
+- `prettier --write .` — Code formatting
+- `npm audit` — Dependency vulnerabilities
+
+## Security Checklist
+
+1. **XSS**: Angular auto-sanitizes; use `bypassSecurityTrust*` only for trusted HTML
+2. **CSRF**: Use `HttpClientXsrfModule` in standalone; verify token headers
+3. **HTTP-Only Cookies**: Set `httpOnly` and `secure` flags on auth cookies
+4. **Content Security Policy**: Define CSP headers; restrict inline scripts
+5. **Dependency Audit**: Run `npm audit` and update regularly
+
+## Anti-Patterns (Wrong vs. Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `sub.subscribe(...)` without unsubscribe | Use `async` pipe or `takeUntilDestroyed()` |
+| Manual `detectChanges()` calls | Use OnPush + signals; let Angular optimize |
+| `service: any` in constructors | Type injection: `inject(UserService)` |
+| One 1000+ line module with many components | Split into focused feature modules |
+| `document.getElementById(...).innerHTML = x` | Use `[innerHTML]="sanitize(x)"` with sanitizer |
+
 ## Output Templates
 
 When implementing Angular features, provide:

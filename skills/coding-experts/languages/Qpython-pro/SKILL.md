@@ -45,11 +45,11 @@ Load detailed guidance based on context:
 
 | Topic | Reference | Load When |
 |-------|-----------|-----------|
+| Code Patterns | `references/code-patterns.md` | Functions, error handling, dataclasses, async patterns |
+| Anti-patterns | `references/anti-patterns.md` | Mutable defaults, bare except, globals, string loops, file handling |
 | Type System | `references/type-system.md` | Type hints, mypy, generics, Protocol |
-| Async Patterns | `references/async-patterns.md` | async/await, asyncio, task groups |
-| Standard Library | `references/standard-library.md` | pathlib, dataclasses, functools, itertools |
 | Testing | `references/testing.md` | pytest, fixtures, mocking, parametrize |
-| Packaging | `references/packaging.md` | poetry, pip, pyproject.toml, distribution |
+| Async Patterns | `references/async-patterns.md` | async/await, asyncio, task groups, context managers |
 
 ## Constraints
 
@@ -72,99 +72,140 @@ Load detailed guidance based on context:
 - Hardcode secrets or configuration
 - Use deprecated stdlib modules (use pathlib not os.path)
 
-## Code Examples
+## Code Patterns
 
-### Type-annotated function with error handling
+Python Pro uses three essential patterns: basic type-annotated functions, error handling with custom exceptions, and async context managers. See `references/code-patterns.md` for complete examples.
+
+**Basic:** Function with type hints and Google-style docstring
 ```python
-from pathlib import Path
-
 def read_config(path: Path) -> dict[str, str]:
     """Read configuration from a file.
-
+    
     Args:
         path: Path to the configuration file.
-
+    
     Returns:
         Parsed key-value configuration entries.
-
-    Raises:
-        FileNotFoundError: If the config file does not exist.
-        ValueError: If a line cannot be parsed.
     """
-    config: dict[str, str] = {}
-    with path.open() as f:
-        for line in f:
-            key, _, value = line.partition("=")
-            if not key.strip():
-                raise ValueError(f"Invalid config line: {line!r}")
-            config[key.strip()] = value.strip()
-    return config
+    ...
 ```
 
-### Dataclass with validation
+**Intermediate:** Error handling with custom exception and logging
 ```python
-from dataclasses import dataclass, field
+class ConfigError(Exception):
+    """Raised when configuration loading fails."""
+    pass
 
+def parse_json_config(data: str) -> dict[str, Any]:
+    """Parse JSON configuration."""
+    try:
+        config = json.loads(data)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse: {e}")
+        raise ConfigError(f"Invalid JSON: {e}") from e
+```
+
+**Advanced:** Async context manager with dataclass
+```python
 @dataclass
-class AppConfig:
+class DatabasePool:
+    """Database connection pool manager."""
     host: str
-    port: int
-    debug: bool = False
-    allowed_origins: list[str] = field(default_factory=list)
-
-    def __post_init__(self) -> None:
-        if not (1 <= self.port <= 65535):
-            raise ValueError(f"Invalid port: {self.port}")
+    port: int = 5432
+    
+    async def __aenter__(self) -> "DatabasePool":
+        """Initialize connection pool."""
+        return self
 ```
 
-### Async pattern
+## Comment Template
+
+Use **Google-style docstrings** for all modules, classes, and functions:
+
 ```python
-import asyncio
-import httpx
+"""Module docstring: One-line summary. Optional longer description."""
 
-async def fetch_all(urls: list[str]) -> list[bytes]:
-    """Fetch multiple URLs concurrently."""
-    async with httpx.AsyncClient() as client:
-        tasks = [client.get(url) for url in urls]
-        responses = await asyncio.gather(*tasks)
-        return [r.content for r in responses]
+def function_name(param: str) -> int:
+    """Brief description.
+    
+    Args:
+        param: Parameter description.
+    
+    Returns:
+        Return value description.
+    
+    Raises:
+        ValueError: Error description.
+    
+    Example:
+        >>> function_name("test")
+        42
+    """
+
+class ClassName:
+    """Class docstring.
+    
+    Attributes:
+        attr: Attribute description.
+    """
 ```
 
-### pytest fixture and parametrize
-```python
-import pytest
-from pathlib import Path
+## Lint Rules
 
-@pytest.fixture
-def config_file(tmp_path: Path) -> Path:
-    cfg = tmp_path / "config.txt"
-    cfg.write_text("host=localhost\nport=8080\n")
-    return cfg
+Validate all Python code against these standards:
 
-@pytest.mark.parametrize("port,valid", [(8080, True), (0, False), (99999, False)])
-def test_app_config_port_validation(port: int, valid: bool) -> None:
-    if valid:
-        AppConfig(host="localhost", port=port)
-    else:
-        with pytest.raises(ValueError):
-            AppConfig(host="localhost", port=port)
+```bash
+# Static analysis
+ruff check {file}                  # Report style and logic issues
+ruff check --fix {file}            # Auto-fix fixable issues
+
+# Type checking (strict mode required)
+mypy --strict {file}               # Verify full type coverage
+
+# Code formatting
+black {file}                        # Enforce consistent formatting
 ```
 
-### mypy strict configuration (pyproject.toml)
+### Configuration (pyproject.toml)
 ```toml
 [tool.mypy]
 python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
 ```
 
-Clean `mypy --strict` output looks like:
-```
-Success: no issues found in 12 source files
-```
-Any reported error (e.g., `error: Function is missing a return type annotation`) must be resolved before the implementation is considered complete.
+### Thresholds
+- **No `Any` types** in public API signatures
+- **100% type coverage** for public functions and classes
+- **Zero ruff warnings** before merge
+- **mypy --strict must pass** with no deviations
+
+## Security Checklist
+
+Before committing code, verify:
+
+- **SQL Injection** — Use parameterized queries: `cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))`
+- **Pickle Deserialization** — Never deserialize untrusted data; use `json` instead of `pickle`
+- **subprocess shell=True** — Always pass arguments as list: `subprocess.run(["process", filename], check=True)`
+- **eval/exec** — Forbidden on user input; use `json.loads()` or `ast.literal_eval()` instead
+- **SSRF via requests** — Validate URLs: check `urlparse(url).hostname` against whitelist before requesting
+- **Secrets in Code** — Never hardcode credentials; always use environment variables via `os.environ`
+
+## Anti-patterns
+
+Avoid common mistakes: mutable default arguments, bare except clauses, global state mutation, string concatenation in loops, and ignoring context managers. See `references/anti-patterns.md` for complete examples and explanations.
 
 ## Output Templates
 

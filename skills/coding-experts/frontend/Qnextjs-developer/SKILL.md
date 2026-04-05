@@ -55,81 +55,90 @@ Load detailed guidance based on context:
 - Skip `loading.tsx`/`error.tsx` boundaries on async route segments
 - Deploy without running `next build` to confirm zero errors
 
-## Code Examples
+## Code Patterns
 
-### Server Component with data fetching and caching
+### Basic: Server Component with async data fetching
 ```tsx
 // app/products/page.tsx
-import { Suspense } from 'react'
-
+/**
+ * @module ProductsPage
+ * Fetches and displays product list with ISR caching
+ */
 async function ProductList() {
-  // Revalidate every 60 seconds (ISR)
   const res = await fetch('https://api.example.com/products', {
-    next: { revalidate: 60 },
+    next: { revalidate: 60 }, // ISR: revalidate every 60s
   })
   if (!res.ok) throw new Error('Failed to fetch products')
   const products: Product[] = await res.json()
-
-  return (
-    <ul>
-      {products.map((p) => (
-        <li key={p.id}>{p.name}</li>
-      ))}
-    </ul>
-  )
+  return <ul>{products.map(p => <li key={p.id}>{p.name}</li>)}</ul>
 }
 
 export default function Page() {
-  return (
-    <Suspense fallback={<p>Loading…</p>}>
-      <ProductList />
-    </Suspense>
-  )
+  return <Suspense fallback={<p>Loading…</p>}><ProductList /></Suspense>
 }
 ```
 
-### Server Action with form handling and revalidation
+### Error handling: error.tsx + loading.tsx boundary
+```tsx
+// app/products/error.tsx
+'use client'
+/** @param error - Next.js Error instance @returns Error UI boundary */
+export default function Error({ error }: { error: Error }) {
+  return <div role="alert">Failed to load products: {error.message}</div>
+}
+
+// app/products/loading.tsx
+/** Loading skeleton during async data fetch */
+export default function Loading() { return <div>Loading products…</div> }
+```
+
+### Advanced: Server Action with form validation + revalidatePath
 ```tsx
 // app/products/actions.ts
 'use server'
-
 import { revalidatePath } from 'next/cache'
-
+/**
+ * @param formData - FormData from form submission
+ * @returns success message or error
+ * @throws if validation or DB fails
+ */
 export async function createProduct(formData: FormData) {
   const name = formData.get('name') as string
+  if (!name?.trim()) throw new Error('Name required')
   await db.product.create({ data: { name } })
   revalidatePath('/products')
 }
-
-// app/products/new/page.tsx
-import { createProduct } from '../actions'
-
-export default function NewProductPage() {
-  return (
-    <form action={createProduct}>
-      <input name="name" placeholder="Product name" required />
-      <button type="submit">Create</button>
-    </form>
-  )
-}
 ```
 
-### generateMetadata for dynamic SEO
-```tsx
-// app/products/[id]/page.tsx
-import type { Metadata } from 'next'
+## Comment Template (JSDoc for Next.js)
 
-export async function generateMetadata(
-  { params }: { params: { id: string } }
-): Promise<Metadata> {
-  const product = await fetchProduct(params.id)
-  return {
-    title: product.name,
-    description: product.description,
-    openGraph: { title: product.name, images: [product.imageUrl] },
-  }
-}
-```
+**Page/Layout:** `@module` with route description and revalidation strategy
+**Server Action:** `@param formData`, `@returns`, `@throws` for validation/DB errors
+**API Route:** `@param request`, `@returns Response` with status/content-type
+
+## Lint Rules
+
+- **ESLint:** `eslint + eslint-config-next` (catches client/server boundary violations)
+- **TypeScript:** `tsc --noEmit` (strict mode, zero implicit any)
+- **Prettier:** Format on save, 80-char line limit
+
+## Security Checklist
+
+1. **SSRF in server components** — Validate URLs before fetch, never pass user input directly
+2. **Exposed env vars** — Only `NEXT_PUBLIC_*` in browser; server secrets in `.env.local`
+3. **Auth in middleware** — Protect routes via `middleware.ts`, not client-side checks
+4. **CSRF in server actions** — Built-in Next.js protection; always use `<form action={serverAction}>`
+5. **Header injection** — Sanitize response headers; use `next/headers` to set them safely
+
+## Anti-patterns: Wrong vs. Correct
+
+| Wrong | Correct |
+|-------|---------|
+| `'use client'` for static content | Default to Server Components; add `'use client'` only for interactivity |
+| `fetch()` inside `useEffect` | Fetch server-side; pass data via props or Server Components |
+| No Suspense boundaries on async segments | Wrap async components in `<Suspense>` with fallback |
+| Barrel exports (`export *`) bloating bundle | Import named exports; tree-shake unused code |
+| Hardcoded API URLs in components | Use env vars; define base URL in utility module |
 
 ## Output Templates
 

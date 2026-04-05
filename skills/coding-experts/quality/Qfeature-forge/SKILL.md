@@ -100,3 +100,55 @@ Then they are redirected to the dashboard within 2 seconds.
 ```
 
 Save as: `specs/{feature_name}.spec.md`
+
+## Code Patterns (Spec-Focused)
+
+1. **User Story + EARS**: Story defines "why"; EARS defines testable "what"
+   - User story: "As admin, I want to bulk export users so I can backup data"
+   - EARS: "When export is requested, the system shall generate CSV within 5s"
+2. **Acceptance Criteria with Constraints**: Given/When/Then + edge cases + limits
+3. **Non-Functional Requirements**: Performance, security, compliance tied to spec
+
+## Comment Template
+
+```
+/**
+ * [SPEC] Feature: Bulk user export
+ * User story: As admin, I export users for backup
+ * Acceptance: Given 10k users, When POST /export, Then CSV delivered <5s
+ * Security: Requires admin role; no PII in logs
+ * Performance: SLA 5s for 10k records
+ */
+```
+
+## Spec Validation Rules
+
+- Every acceptance criterion must be testable (no "should be fast")
+- Non-functional requirements must have measurable units (time, size, throughput)
+- Security requirements explicitly listed per feature
+- Edge cases documented (empty result, max size, timeout, auth failure)
+
+## Security Checklist (Spec-Level)
+
+1. Auth requirements specified: which role, which endpoints
+2. Data sensitivity classified: PII, secrets, public
+3. Input constraints defined: max length, format, allowed characters
+4. Error handling specified: auth failure, validation failure, timeout
+5. Compliance requirements noted: GDPR retention, HIPAA, SOC2
+
+## Anti-patterns (5 Examples)
+
+**Wrong:** Vague acceptance criteria ("make it user-friendly")
+**Correct:** "When user clicks Export, CSV downloads within 5 seconds"
+
+**Wrong:** No edge cases mentioned (spec assumes happy path only)
+**Correct:** Listed: "If export >10k records, queue async job + email result"
+
+**Wrong:** Assumed happy path ("user has permission, API succeeds")
+**Correct:** Explicit error cases: "If auth fails, return 403; if invalid format, 400"
+
+**Wrong:** No performance criteria ("should be fast")
+**Correct:** "Endpoint responds within 100ms; handles 100 concurrent requests"
+
+**Wrong:** Security omitted from spec (added during code review)
+**Correct:** "Feature requires admin role; user ID from token (not param)"

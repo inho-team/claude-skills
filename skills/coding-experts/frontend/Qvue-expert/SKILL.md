@@ -95,6 +95,150 @@ When implementing Vue features, provide:
 3. Pinia store if global state needed
 4. Brief explanation of reactivity decisions
 
+## Code Patterns
+
+### Basic: Component with Props & Emits
+```vue
+<script setup lang="ts">
+/**
+ * @component UserCard
+ * @prop {Object} user - User profile data
+ * @prop {string} user.name - User's display name
+ * @prop {string} user.email - User's email address
+ * @emits update - Emitted when user data changes
+ * @example
+ * <UserCard :user="userData" @update="handleUpdate" />
+ */
+import { computed } from 'vue'
+
+interface User { name: string; email: string }
+const props = defineProps<{ user: User }>()
+const emit = defineEmits<{ update: [user: User] }>()
+
+const displayName = computed(() => props.user.name.toUpperCase())
+</script>
+```
+
+### Error Handling: Error Boundary Component
+```vue
+<script setup lang="ts">
+/**
+ * @component ErrorBoundary
+ * Catches child component errors and displays fallback UI
+ * @emits error - Emitted when child component errors
+ */
+import { onErrorCaptured, ref } from 'vue'
+
+const error = ref<Error | null>(null)
+
+onErrorCaptured((err) => {
+  error.value = err as Error
+  return false // prevent propagation
+})
+</script>
+```
+
+### Advanced: Composable with TypeScript
+```typescript
+/**
+ * @param {Ref<string>} query - Search query
+ * @returns {Object} { results: Ref<Item[]>, loading: Ref<boolean>, error: Ref<string|null> }
+ * @example
+ * const { results, loading } = useSearch(queryRef)
+ */
+import { ref, computed, watch } from 'vue'
+
+export function useSearch(query: Ref<string>) {
+  const results = ref<Item[]>([])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+
+  watch(query, async (val) => {
+    if (!val) { results.value = []; return }
+    loading.value = true
+    try {
+      const data = await fetch(`/api/search?q=${val}`).then(r => r.json())
+      results.value = data
+    } catch (e) {
+      error.value = (e as Error).message
+    } finally {
+      loading.value = false
+    }
+  })
+
+  return { results, loading, error }
+}
+```
+
+## Comment Template
+
+### Component JSDoc
+```typescript
+/**
+ * @component MyComponent
+ * @prop {string} title - Component title (required)
+ * @prop {boolean} [disabled=false] - Disable interactions
+ * @prop {Object} config - Configuration object
+ * @emits submit - Emitted with form data on submit
+ * @emits cancel - Emitted when user cancels
+ * @example
+ * <MyComponent title="Settings" @submit="save" />
+ */
+```
+
+### Composable JSDoc
+```typescript
+/**
+ * useFetch - Fetches data with caching and retry logic
+ * @param {string} url - API endpoint
+ * @param {FetchOptions} [options] - Fetch configuration
+ * @returns {Object} { data, loading, error, refetch }
+ * @example
+ * const { data, loading } = useFetch('/api/users')
+ */
+```
+
+### Store JSDoc
+```typescript
+/**
+ * @module userStore - Pinia store for user authentication
+ * @state {User|null} user - Current authenticated user
+ * @getter {boolean} isLoggedIn - True if user is authenticated
+ * @action login(credentials) - Authenticate with email/password
+ */
+```
+
+## Lint Rules
+
+**ESLint + eslint-plugin-vue:**
+- Run: `eslint --fix 'src/**/*.{vue,ts,js}'`
+- Config: `.eslintrc.cjs` with `plugin:vue/vue3-recommended`
+
+**Vue Type Checking:**
+- Run: `vue-tsc --noEmit` (must pass before commit)
+
+**Formatting:**
+- Run: `prettier --write 'src/**/*.vue'`
+- Enforce: 2 spaces, single quotes, 80 char line length
+
+## Security Checklist
+
+1. **XSS Prevention**: Never use `v-html` with user input; sanitize with `DOMPurify` if necessary
+2. **Template Injection**: Avoid dynamic templates; use components + slots instead
+3. **CSRF Protection**: Include CSRF tokens in API POST/PUT/DELETE via interceptors
+4. **Dependency Vulnerabilities**: Run `npm audit` weekly; keep Pinia, Vue, Vite updated
+5. **Sensitive Data**: Never store auth tokens or passwords in Pinia; use secure httpOnly cookies
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `export default { data() { return { count: 0 } } }` | `const count = ref(0)` in `<script setup>` |
+| `watch(() => a + b, () => {...})` for derived state | `const sum = computed(() => a.value + b.value)` |
+| `props.user.name = "New"` (mutating props) | Emit event: `emit('update:user', newUser)` |
+| `eventBus.emit('update', data)` | Use `provide/inject` or Pinia store |
+| `<ul><li v-for="item in list">{{ item }}</li></ul>` on large lists | Add `v-memo="[item.id]"` to optimize re-renders |
+
 ## Knowledge Reference
 
 Vue 3 Composition API, Pinia, Nuxt 3, Vue Router 4, Vite, VueUse, TypeScript, Vitest, Vue Test Utils, SSR/SSG, reactive programming, performance optimization

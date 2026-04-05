@@ -143,3 +143,68 @@ When implementing MCP features, provide:
 2. Schema definitions (tools, resources, prompts)
 3. Configuration file (transport, auth, etc.)
 4. Brief explanation of design decisions
+
+## Code Patterns
+
+### Tool Definition with Schema
+```typescript
+server.tool("list_files", "List directory contents", 
+  { dir: z.string().min(1).describe("Directory path") },
+  async ({ dir }) => ({ content: [{ type: "text", text: await ls(dir) }] })
+);
+```
+
+### Resource Handler
+```typescript
+server.resource("file://", "File read access",
+  async (uri) => ({ contents: [{ uri: uri.href, text: await fs.readFile(uri.pathname, "utf-8"), mimeType: "text/plain" }] })
+);
+```
+
+### Prompt Template
+```typescript
+server.prompt("debug_mcp", "Debug MCP protocol issues",
+  [{ name: "error", description: "Error message from tool call" }],
+  async ({ error }) => ({ messages: [{ role: "user", content: `Fix this MCP issue: ${error}` }] })
+);
+```
+
+## Comment Template
+
+Use JSDoc/TSDoc for all MCP tool handlers and schemas:
+```typescript
+/**
+ * Fetch weather data for a location.
+ * @param location - City name or coordinates (string, required, min 1 char)
+ * @param units - Temperature unit (enum: celsius | fahrenheit, default: celsius)
+ * @returns Weather JSON with temp, humidity, wind
+ * @throws Error if API rate limit exceeded or location invalid
+ */
+server.tool("get_weather", "Fetch weather", { location: z.string().min(1), units: z.enum(["celsius", "fahrenheit"]) }, handler);
+```
+
+## Lint Rules
+
+- **eslint**: Enable `@typescript-eslint/no-explicit-any`, `no-unused-vars`, `consistent-return`
+- **tsc --noEmit**: Run before deployment to catch type errors
+- **Config**: `tsconfig.json` must include `"strict": true`, `"moduleResolution": "node"`, `"module": "esnext"`
+
+## Security Checklist
+
+- [ ] Validate all tool parameters with schemas (reject null, empty strings, oversized inputs)
+- [ ] No shell injection: use parameterized APIs (avoid `exec()` with unsanitized input)
+- [ ] Rate-limit tool calls per client/session to prevent DoS
+- [ ] Propagate auth context from client headers through tool execution
+- [ ] Strip sensitive data (API keys, tokens, PII) from tool responses
+- [ ] Sandbox code-execution tools (use isolated processes or containers)
+- [ ] Log all tool invocations with client ID and timestamp for audit trails
+
+## Anti-patterns
+
+| Wrong | Correct |
+|-------|---------|
+| Single tool with 20+ params ("God tool") | Split into focused tools (get_user, update_user, delete_user) |
+| No error handling in tool handler | Wrap in try/catch, return structured error response with code/message |
+| `async def long_task()` blocking the transport | Use background jobs or async tasks, return job ID immediately |
+| `const path = "/data/" + filename` (path traversal) | Use `path.join(safe_base, filename)` with validation |
+| Tool returns `{ result: data }` without type | Return `{ content: [{ type: "text", text: JSON.stringify(data) }] }` |

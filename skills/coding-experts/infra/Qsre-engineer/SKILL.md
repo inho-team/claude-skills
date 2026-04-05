@@ -146,38 +146,76 @@ sum(rate(container_cpu_cfs_throttled_seconds_total[5m])) by (pod)
 sum(rate(container_cpu_cfs_periods_total[5m])) by (pod)
 ```
 
-### Toil Automation Script (Python)
+## Code Patterns
 
-```python
-#!/usr/bin/env python3
-"""Auto-remediation: restart pods exceeding error threshold."""
-import subprocess, sys, json
-
-ERROR_THRESHOLD = 0.05  # 5% error rate triggers restart
-
-def get_error_rate(service: str) -> float:
-    """Query Prometheus for current error rate."""
-    import urllib.request
-    query = f'sum(rate(http_requests_total{{status=~"5..",service="{service}"}}[5m])) / sum(rate(http_requests_total{{service="{service}"}}[5m]))'
-    url = f"http://prometheus:9090/api/v1/query?query={urllib.request.quote(query)}"
-    with urllib.request.urlopen(url) as resp:
-        data = json.load(resp)
-    results = data["data"]["result"]
-    return float(results[0]["value"][1]) if results else 0.0
-
-def restart_deployment(namespace: str, deployment: str) -> None:
-    subprocess.run(
-        ["kubectl", "rollout", "restart", f"deployment/{deployment}", "-n", namespace],
-        check=True
-    )
-    print(f"Restarted {namespace}/{deployment}")
-
-if __name__ == "__main__":
-    service, namespace, deployment = sys.argv[1], sys.argv[2], sys.argv[3]
-    rate = get_error_rate(service)
-    print(f"Error rate for {service}: {rate:.2%}")
-    if rate > ERROR_THRESHOLD:
-        restart_deployment(namespace, deployment)
-    else:
-        print("Within SLO threshold — no action required")
+### SLO Definition Template
+```yaml
+service: api-gateway
+slo:
+  availability: 99.9%
+  latency_p99: 500ms
+  error_rate: 0.1%
+error_budget:
+  monthly_budget: 43.2 minutes downtime
+  burn_rate: (errors / total_requests)
+  threshold_alert: 2% burned in 1 hour
 ```
+
+### Error Budget Calculator
+```python
+def calc_error_budget(slo: float, window_hours: int) -> dict:
+    allowed_error = 1 - slo
+    minutes = window_hours * 60
+    return {"budget_minutes": allowed_error * minutes, "burn_rate_alert": allowed_error * 14.4}
+```
+
+### Incident Runbook Template
+```
+# Incident: [Service] High Error Rate
+**Severity:** P1 | **Detection:** [Alert name] | **Duration:** 5 min
+**Root Cause:** [To be filled] | **Impact:** [N users, $X revenue]
+**Action Plan:**
+1. Page on-call engineer
+2. Check [service] logs for errors
+3. If DB slow: scale replicas / query optimization
+4. Verify error budget impact
+```
+
+## Comment Template (YAML SLO Config)
+```yaml
+# SLO config for [service-name]
+# Last reviewed: [DATE] | Owner: [team]
+service:
+  name: api-gateway
+  sli_query: sum(rate(http_requests_total{status=~"5.."}[5m]))
+  slo:
+    availability: 99.9%  # Justification: user-facing API
+    latency_p99: 500ms   # Justification: customer expectation
+  error_budget_policy:
+    - if burn_rate > 14.4x for 1h: freeze non-critical releases
+    - if burn_rate > 1x for 6h: declare SEV2, page on-call
+```
+
+## Lint Rules
+
+- **promtool validate rules**: Validate Prometheus alert syntax
+- **yamllint**: Enforce consistent SLO YAML (2-space indent, no tabs)
+- **SLO validation**: Verify all SLOs have SLI queries and burn-rate alerts
+- **Runbook links**: All alerts must reference a runbook URL
+- **Error budget tracking**: All services must expose error budget metrics
+
+## Security Checklist
+
+1. **Dashboard Access**: Restrict Grafana dashboards to authenticated users; audit access logs weekly
+2. **Alert Routing**: Encrypt alert webhook payloads; validate sender IP allowlist; rotate auth tokens monthly
+3. **Incident Data**: Classify incident severity; redact PII from logs before storing; encrypt at-rest
+4. **On-Call Rotation**: Require MFA for on-call schedule changes; audit escalation paths; 2-person rule for critical overrides
+5. **Post-Mortem Confidentiality**: Store documents in access-controlled wiki; require sign-off before publishing; mark sensitive findings [INTERNAL-ONLY]
+
+## Anti-Patterns
+
+1. **Alerting on Uptime, Not SLO**: Alert on 99%+ uptime, not SLO burn rate → misses gradual failures
+2. **No Error Budget**: Set SLOs without tracking budget consumption → unbounded failure tolerance
+3. **Alert Fatigue**: Create alerts for every metric spike → team ignores alerts, misses real incidents
+4. **Toil Over Automation**: Manually restart pods, regenerate certs, scale services → burnout, repeated mistakes
+5. **No Post-Mortem Culture**: Skip blameless reviews after incidents → repeating same failures, no learning

@@ -65,75 +65,115 @@ Load detailed guidance based on context:
 - Hardcode authorization logic
 - Ignore schema validation
 
-## Code Examples
+## Code Patterns
 
-### Federation Schema (SDL)
-
+**1. Type Definition + Resolver**
 ```graphql
-# products subgraph
-type Product @key(fields: "id") {
+"""Fields for searching products; supports paginated results."""
+input ProductFilter {
+  name: String
+  minPrice: Float
+  maxPrice: Float
+}
+
+type Query {
+  """Fetch paginated products with filters."""
+  products(filter: ProductFilter, first: Int = 10): [Product!]!
+}
+```
+```js
+// resolver with DataLoader for author batching
+Query: {
+  products: (_, { filter }, { loaders }) => 
+    db.products.find(filter).limit(10),
+},
+Product: {
+  author: (product, _, { loaders }) => loaders.user.load(product.authorId),
+}
+```
+
+**2. Error Handling with Union Types**
+```graphql
+union CreateProductResult = Product | ValidationError | AuthError
+type ValidationError { message: String! path: [String!]! }
+
+type Mutation {
+  createProduct(input: CreateProductInput!): CreateProductResult!
+}
+```
+
+**3. Subscription with Filter**
+```graphql
+type Subscription {
+  """Stream product updates; optionally filter by category."""
+  productUpdated(category: String): Product!
+}
+
+// resolver
+Subscription: {
+  productUpdated: {
+    subscribe: (_, { category }, { pubsub }) =>
+      pubsub.asyncIterator([`PRODUCT_${category || 'ALL'}`]),
+  },
+}
+```
+
+## Comment Template
+
+**Schema descriptions** (SDL):
+```graphql
+"""
+Describes a product in the catalog.
+- Use for inventory management and customer queries
+- Must have valid price (> 0)
+"""
+type Product {
+  """Unique product identifier (UUID)."""
   id: ID!
+  """Product name; searchable field."""
   name: String!
-  price: Float!
-  inStock: Boolean!
-}
-
-# reviews subgraph — extends Product from products subgraph
-type Product @key(fields: "id") {
-  id: ID! @external
-  reviews: [Review!]!
-}
-
-type Review {
-  id: ID!
-  rating: Int!
-  body: String
-  author: User! @shareable
-}
-
-type User @shareable {
-  id: ID!
-  username: String!
 }
 ```
 
-### Resolver with DataLoader (N+1 Prevention)
-
+**JSDoc for resolvers**:
 ```js
-// context setup — one DataLoader instance per request
-const context = ({ req }) => ({
-  loaders: {
-    user: new DataLoader(async (userIds) => {
-      const users = await db.users.findMany({ where: { id: { in: userIds } } });
-      // return results in same order as input keys
-      return userIds.map((id) => users.find((u) => u.id === id) ?? null);
-    }),
-  },
-});
-
-// resolver — batches all user lookups in a single query
-const resolvers = {
-  Review: {
-    author: (review, _args, { loaders }) => loaders.user.load(review.authorId),
-  },
-};
+/**
+ * Resolve product's author via DataLoader batch query.
+ * @param {Object} product - Parent product object
+ * @param {string} product.authorId - Foreign key to User
+ * @param {Object} context - Request context with loaders
+ * @returns {Promise<User>}
+ */
+author: (product, _, { loaders }) => loaders.user.load(product.authorId)
 ```
 
-### Query Complexity Validation
+## Lint Rules
 
-```js
-import { createComplexityRule } from 'graphql-query-complexity';
+- **eslint-plugin-graphql**: Schema validation, enum naming, field naming
+  ```json
+  { "rules": { "graphql/named-operations": "error", "graphql/no-deprecated-fields": "warn" } }
+  ```
+- **graphql-schema-linter**: Schema best practices (no orphaned types, proper nullability)
+- **tsc --noEmit**: TypeScript strict mode for resolver type safety
 
-const server = new ApolloServer({
-  schema,
-  validationRules: [
-    createComplexityRule({
-      maximumComplexity: 1000,
-      onComplete: (complexity) => console.log('Query complexity:', complexity),
-    }),
-  ],
-});
-```
+## Security Checklist
+
+- **Query Depth Limiting**: Restrict nesting depth (default: 10 levels)
+- **Query Complexity Analysis**: Set max complexity score (1000–2000 typical)
+- **Authentication in Context**: Validate token in context before resolver execution
+- **Field-Level Authorization**: Check `context.user.role` in parent/field resolvers
+- **Introspection Disabled in Prod**: Disable via `introspectionFromSchema: false` in Apollo Server
+- **Persisted Queries**: Whitelist queries by hash; reject ad-hoc GraphQL
+
+## Anti-patterns (Wrong → Correct)
+
+| Anti-pattern | Wrong | Correct |
+|--------------|-------|---------|
+| **N+1 Queries** | Loop `db.user.find()` per review | Use DataLoader to batch user lookups |
+| **Overly Nested Types** | 10+ levels of nested objects | Flatten schema; use pagination + edges |
+| **No Input Validation** | Accept any ProductInput field | Use validation middleware; validate in resolver |
+| **God Resolver** | One resolver handling all logic | Split into field resolvers; use context helpers |
+| **Exposing Internal Errors** | Throw `new Error(dbError.message)` | Return `InternalError` union; log details server-side |
 
 ## Output Templates
 

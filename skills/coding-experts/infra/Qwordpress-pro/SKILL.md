@@ -149,3 +149,54 @@ When implementing WordPress features, provide:
 ## Knowledge Reference
 
 WordPress 6.4+, PHP 8.1+, Gutenberg, WooCommerce, ACF, REST API, WP-CLI, block development, theme customizer, widget API, shortcode API, transients, object caching, query optimization, security hardening, WPCS
+
+## PHP Hook Patterns (3 Core Examples)
+
+1. **Action Hook Registration** — `add_action('hook_name', 'callback_function', priority, arg_count)` fired with `do_action()`
+2. **Filter Hook with Sanitization** — `add_filter('option_name', function($value) { return sanitize_text_field($value); })` always sanitize inputs
+3. **Custom Hook for Extensibility** — `do_action('my_plugin_after_save', $post_id, $data)` allows third-party code to extend
+
+## PHPDoc Comment Template
+
+```php
+/**
+ * Registers custom post type for products.
+ *
+ * @since 1.0.0
+ * @param array $args Custom CPT arguments {
+ *     @type string $singular Singular name
+ *     @type string $plural Plural name
+ *     @type array $supports List of supported features
+ * }
+ * @return void
+ * @throws WP_Error if registration fails
+ */
+function my_register_custom_post_type( array $args = [] ): void {
+    // Implementation
+}
+```
+
+## phpcs / phpstan Rules
+
+Run: `phpcs --standard=WordPress . && phpstan analyse .`
+- **WordPress.Security.ValidatedSanitizedInput** — All `$_GET/$_POST` must be sanitized before use
+- **WordPress.DB.PreparedSQL** — All SQL queries use `$wpdb->prepare()` with placeholders
+- **WordPress.WP.CapabilitiesChecking** — Sensitive operations require `current_user_can()` check
+
+## Security Checklist (5+ Items)
+
+- [ ] SQL Injection: All dynamic queries use `$wpdb->prepare('... WHERE id = %d ...', $id)` with proper placeholder types
+- [ ] XSS Prevention: All output escaped with `esc_html()`, `esc_url()`, `esc_attr()`, or `wp_kses_post()`
+- [ ] Nonce Verification: AJAX and form handlers verify `wp_verify_nonce()` before processing
+- [ ] Privilege Escalation: All admin/user actions gated by `current_user_can()` with appropriate capability
+- [ ] Data Sanitization: User input sanitized at entry point with `sanitize_text_field()`, `wp_kses_post()`, `absint()` depending on context
+
+## Anti-patterns (5 Wrong/Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `$wpdb->get_results("SELECT * FROM {$wpdb->users} WHERE id = $id")` | `$wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->users} WHERE id = %d", $id))` |
+| `echo $_GET['name'];` (direct output) | `echo esc_html(sanitize_text_field(wp_unslash($_GET['name'])));` |
+| `if ($_POST['action'] === 'save') { /* save */ }` (no nonce) | Verify: `wp_verify_nonce($_POST['nonce'] ?? '', 'my_action')` first |
+| `if (is_admin()) { /* delete records */ }` (only checks admin screen) | `if (current_user_can('manage_options')) { /* delete */ }` (checks actual capability) |
+| `$result = $wpdb->get_results("SELECT * FROM wp_posts LIMIT 1000")` (no pagination) | `$limit = 50; for ($page=0; $page<$total_pages; $page++) { ... LIMIT 50 OFFSET 0 ... }` |

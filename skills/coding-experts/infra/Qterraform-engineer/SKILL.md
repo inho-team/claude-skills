@@ -68,47 +68,34 @@ Load detailed guidance based on context:
 - Create circular module dependencies or skip input validation
 - Commit `.terraform` directories
 
-## Code Examples
+## Code Patterns
 
-### Minimal Module Structure
-
-**`main.tf`**
+### Pattern 1: Module with Variables & Outputs
 ```hcl
+# variables.tf
+variable "bucket_name" {
+  description = "S3 bucket name (3+ chars)"
+  type        = string
+  validation {
+    condition     = length(var.bucket_name) > 3
+    error_message = "Must exceed 3 characters"
+  }
+}
+
+# main.tf
 resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
   tags   = var.tags
 }
-```
 
-**`variables.tf`**
-```hcl
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
-  type        = string
-
-  validation {
-    condition     = length(var.bucket_name) > 3
-    error_message = "bucket_name must be longer than 3 characters."
-  }
-}
-
-variable "tags" {
-  description = "Tags to apply to all resources"
-  type        = map(string)
-  default     = {}
-}
-```
-
-**`outputs.tf`**
-```hcl
+# outputs.tf
 output "bucket_id" {
-  description = "ID of the created S3 bucket"
+  description = "S3 bucket ID"
   value       = aws_s3_bucket.this.id
 }
 ```
 
-### Remote Backend Configuration (S3 + DynamoDB)
-
+### Pattern 2: Remote State Backend (S3 + DynamoDB)
 ```hcl
 terraform {
   backend "s3" {
@@ -121,24 +108,86 @@ terraform {
 }
 ```
 
-### Provider Version Pinning
-
+### Pattern 3: Data Source with Locals
 ```hcl
-terraform {
-  required_version = ">= 1.5.0"
+data "aws_availability_zones" "available" {
+  state = "available"
+}
 
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
+locals {
+  azs = data.aws_availability_zones.available.names
+  common_tags = {
+    Environment = var.environment
+    ManagedBy   = "terraform"
   }
 }
+
+resource "aws_subnet" "this" {
+  for_each            = toset(local.azs)
+  availability_zone   = each.value
+  tags                = local.common_tags
+}
 ```
+
+## Comment Template
+
+```hcl
+# Inline comment: Manages S3 bucket versioning and encryption
+
+/* Block comment:
+   Multi-line explanation of module purpose,
+   inputs, and expected outputs
+*/
+
+variable "enable_logging" {
+  description = "Enable CloudWatch logging for all resources"
+  type        = bool
+  default     = true
+}
+```
+
+## Lint Rules
+
+**Tools & Commands:**
+- `tflint` — Check best practices, naming, complexity
+- `terraform validate` — Syntax and provider reference validation
+- `terraform fmt` — Auto-format with 2-space indent
+- `tfsec` — Security scanning (secrets, IAM misconfigs)
+
+**Config File (.tflint.hcl):**
+```hcl
+plugin "aws" {
+  enabled = true
+  version = "0.24.0"
+}
+
+rule "terraform_naming_convention" {
+  enabled = true
+}
+
+rule "terraform_unused_declarations" {
+  enabled = true
+}
+```
+
+## Security Checklist
+
+1. **State File Encryption** — Enable `encrypt = true` in remote backend; use S3 SSE-KMS
+2. **No Hardcoded Secrets** — Use `sensitive = true` on variables, inject via env vars or Vault
+3. **Least Privilege IAM** — Assume role with minimal permissions; avoid `*` actions
+4. **Remote State Locking** — Enable DynamoDB locking to prevent concurrent applies
+5. **Module Source Pinning** — Pin git modules to tags/commits; avoid `main` or `HEAD`
+6. **Credential Isolation** — Never commit `.tfvars` with secrets; use `.gitignore`
+
+## Anti-patterns (Wrong → Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `bucket = "my-prod-bucket-123"` (hardcoded) | `bucket = var.bucket_name` (variable) |
+| No DynamoDB lock table configured | `dynamodb_table = "terraform-lock"` in backend |
+| One monolithic `main.tf` (1000+ lines) | Separate `modules/` directory with focused modules |
+| Inline provider in `main.tf` | `providers.tf` with version pinning + required_providers |
+| `source = "git::https://...?ref=main"` | `source = "git::https://...?ref=v1.0.0"` (pinned tag) |
 
 ## Output Format
 

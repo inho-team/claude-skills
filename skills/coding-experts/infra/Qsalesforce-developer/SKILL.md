@@ -203,3 +203,48 @@ export default class CounterComponent extends LightningElement {
     </targets>
 </LightningComponentBundle>
 ```
+
+## Apex Code Patterns (3 Core Examples)
+
+1. **Bulkified Collection Pattern** — Collect IDs first, query once, map results
+2. **Async Batch for Bulk Operations** — Use `Database.Batchable<SObject>` for 1000+ records with `Database.update(scope, false)`
+3. **Selective SOQL with Indexed Fields** — Always filter by indexed field (Id, CreatedDate, custom lookup) to avoid full table scan
+
+## Apex Comment Template
+
+```apex
+/**
+ * @description Brief method summary (imperative: "Updates account status based on...")
+ * @param accountIds Set of Account Ids to process
+ * @return Map<Id, Account> processed accounts keyed by Id
+ * @throws QueryException if SOQL returns no results; CalloutException on API failure
+ */
+public static Map<Id, Account> getAccountsByIds(Set<Id> accountIds) {
+    // Implementation with bulkified queries
+}
+```
+
+## PMD / sfdx scanner Rules
+
+Run: `sfdx scanner:run --target='.' --severity-threshold=3`
+- **ApexUnitTestClassShouldHaveAsserts** — Fail if test has no assertions
+- **ApexCRUDViolation** — Warn on SOQL/DML without FLS/sharing checks
+- **AvoidDeeplyNestedIfStmts** — Flag nesting > 3 levels; refactor to guard clauses
+
+## Security Checklist (5+ Items)
+
+- [ ] SOQL injection: All WHERE clauses use `:variable` binding (never string concatenation)
+- [ ] Field-Level Security: Check with `SObjectAccessDecision` before read/write on sensitive fields
+- [ ] Sharing Rules: Verify `with sharing` on classes accessing Account/Opportunity; use `inherited sharing` for helpers
+- [ ] CRUD Security: Confirm DML via `Database.update(..., false)` with error handling for restricted records
+- [ ] Credential Security: Never hardcode API keys or OAuth tokens; use Named Credentials or Custom Settings
+
+## Anti-patterns (5 Wrong/Correct)
+
+| Wrong | Correct |
+|-------|---------|
+| `for (Account a : allAccounts) { [SELECT ... WHERE Id = :a.Id]; }` | Collect IDs, query once: `[SELECT ... WHERE Id IN :accountIds]` |
+| `trigger Tr on Account (after update) { /* 100 lines */ }` | Move logic to handler class: `AccountTriggerHandler.handle(Trigger.new)` |
+| `if (acc.ParentId != null) { }` then LATER query parent | Query parent upfront in bulkified collection: `[SELECT ... WHERE Id IN :parentIds]` |
+| Recursive trigger with no guard: `if (Trigger.isExecuting) { /* more DML */ }` | Use static flag: `static Boolean isRecursing = false;` |
+| `new Apex class with 500+ lines` | Max 300 lines per class; split into focused handlers and helpers |

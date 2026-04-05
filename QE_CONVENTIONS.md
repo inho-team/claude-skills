@@ -238,6 +238,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qutopia` | Fully autonomous execution mode |
 | `QCodexUpdate` | Check/update codex-plugin-cc plugin |
 | `Qmistake` | Record mistakes to prevent repetition (.qe/MISTAKE.md) |
+| `Qgc` | Code garbage collection (drift, violations, dead code) |
 | `Mrefactor-agent-md` | Refactor bloated instruction files |
 | `Mqe-audit` | Full framework quality audit and report |
 

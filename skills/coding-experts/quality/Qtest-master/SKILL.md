@@ -86,6 +86,101 @@ Load detailed guidance based on context:
 - Ignore flaky tests — quarantine and fix them; don't just re-run until green
 - Test implementation details (internal method calls) — test observable behaviour
 
+## Code Patterns (3 Examples)
+
+### Pattern 1: Arrange-Act-Assert (AAA) Structure
+```js
+// ✅ Clear, readable test with separated phases
+describe('PaymentProcessor', () => {
+  it('calculates total with tax correctly', () => {
+    // Arrange
+    const processor = new PaymentProcessor({ taxRate: 0.1 });
+    const items = [{ price: 100 }, { price: 50 }];
+    
+    // Act
+    const total = processor.calculate(items);
+    
+    // Assert
+    expect(total).toBe(165); // 150 + 15% tax
+  });
+});
+```
+
+### Pattern 2: Async Error Handling
+```js
+// ✅ Proper async/await with error assertions
+describe('UserService', () => {
+  it('rejects with 404 when user does not exist', async () => {
+    const service = new UserService();
+    await expect(service.fetchUser(999)).rejects.toThrow('User not found');
+  });
+});
+```
+
+### Pattern 3: Fixture-Based Setup (Reduces Duplication)
+```js
+// ✅ Reusable test data and setup
+const userFixture = { id: 1, name: 'Alice', role: 'admin' };
+describe('AuthService', () => {
+  it('grants access for admin users', () => {
+    expect(canAccess(userFixture, 'DELETE_USERS')).toBe(true);
+  });
+});
+```
+
+## Comment Template
+
+Every test file should include JSDoc header documenting test scope:
+
+```js
+/**
+ * Unit tests for UserService authentication methods.
+ *
+ * Coverage:
+ * - login() with valid/invalid credentials
+ * - logout() session cleanup
+ * - refreshToken() expiration handling
+ *
+ * Security: Tests verify password hashing, no plaintext storage.
+ * Performance: All mocked — no real API calls.
+ */
+```
+
+## Lint Rules
+
+Run the following in CI:
+
+```bash
+# Jest config
+jest --coverage --collectCoverageFrom="src/**/*.js" --coveragePathIgnorePatterns="node_modules"
+
+# ESLint + jest plugin
+eslint "**/*.test.js" --ext .js --plugin jest
+
+# Coverage thresholds in jest.config.js
+coverageThreshold: {
+  global: { branches: 80, functions: 80, lines: 80, statements: 80 }
+}
+```
+
+## Security Checklist (5+)
+
+- [ ] No test data includes real passwords, API keys, or tokens
+- [ ] Fixtures use redacted or synthetic credentials (e.g., `test@example.com`)
+- [ ] Mock external services — never call production APIs
+- [ ] XSS/SQL injection tests included for security-sensitive functions
+- [ ] Secrets not logged in test output — check `console.log()` statements
+
+## Anti-Patterns (5 Wrong/Correct)
+
+| Anti-Pattern | Wrong | Correct |
+|---|---|---|
+| **Test Implementation, Not Behavior** | `expect(getUserCalls).toBe(1)` (mocking internals) | `expect(result).toBe(expectedUser)` (assert outcome) |
+| **Flaky Tests** | `await wait(500); expect(...)` (arbitrary sleep) | `await screen.findByText('Loaded')` (wait for state) |
+| **No Assertions** | `test('user exists', () => { getUser(1); })` | `test('user exists', () => { expect(getUser(1)).toBeDefined(); })` |
+| **Testing Private Methods** | `expect(obj._privateMethod()).toBe(...)` | Only test public interface; internal changes shouldn't break tests |
+| **Copy-Paste Tests** | Identical describe blocks with 1 value changed | Use parametrized tests: `describe.each(testCases)(...)`|
+
 ## Output Templates
 
 When creating test plans, provide:

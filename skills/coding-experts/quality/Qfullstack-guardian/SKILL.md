@@ -105,3 +105,53 @@ When implementing features, provide:
 2. Backend code (models, schemas, endpoints)
 3. Frontend code (components, hooks, API calls)
 4. Brief security notes
+
+## Code Patterns (Fullstack)
+
+1. **API Contract**: Shared types, OpenAPI spec, or generated client
+   - Backend exports schema; frontend imports it
+2. **Error Propagation**: Typed error responses across stack
+   - Backend throws; middleware formats; frontend handles by code
+3. **End-to-End Validation**: Client-side guard + server-side enforce
+   - Both validate; server never trusts client
+
+## Comment Template
+
+```
+// [System Boundary] Frontend ↔ Backend
+// API Contract: GET /users/:id → { id, name, email, role }
+// Auth required: Bearer token in Authorization header
+// Error: 403 if user != owner; 404 if not found
+```
+
+## Lint Rules
+
+- Cross-stack files must be reviewed together (frontend + backend)
+- API contract changes require both sides updated in same commit
+- All DB queries must be parameterized (no string interpolation)
+- Error handling must exist at frontend, backend, and network layers
+
+## Security Checklist (Fullstack)
+
+1. Auth enforced server-side, never client-side only
+2. Input validated on both client (UX) and server (security)
+3. Output from API explicitly excludes sensitive fields
+4. Error responses don't leak user existence or internal details
+5. CORS/CSRF protection in place; test with curl/Postman
+
+## Anti-patterns (5 Examples)
+
+**Wrong:** Frontend-only validation (client-side check, no server enforcement)
+**Correct:** Client checks for UX; server re-validates all input
+
+**Wrong:** Inconsistent error handling (frontend catches some, server returns others)
+**Correct:** Typed error schema shared; both sides follow same format
+
+**Wrong:** No API contract (backend changes response shape; frontend breaks)
+**Correct:** OpenAPI spec or Zod schema; generate client code
+
+**Wrong:** Tight coupling (frontend hardcodes URLs, backend path logic)
+**Correct:** Env vars for endpoints; API versioning; clear contracts
+
+**Wrong:** No end-to-end testing (unit tests pass, integration fails)
+**Correct:** E2E tests with real DB, real API, real frontend

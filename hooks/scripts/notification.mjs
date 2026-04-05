@@ -38,7 +38,7 @@ const chains = [
   { match: 'Epm-planner',        hint: 'Planning document created by Epm-planner. Review and confirm with user.' },
   { match: 'Eprofile-collector',  hint: 'Profile updated by Eprofile-collector. Data saved to .qe/profile/.' },
   { match: 'Eqa-orchestrator',   hint: '[CHAIN] Eqa-orchestrator completed quality loop. Report test/review/fix results to user.' },
-  { match: 'codex-rescue',       hint: '[CODEX] Codex rescue returned Done. IMPORTANT: Run Materialization Check — verify files exist via Glob and git diff before proceeding. Codex may return Done before files are written (async companion).' },
+  { match: 'codex-rescue',       hint: '[CODEX] Codex rescue returned Done. WARNING: Done does NOT mean files are written — Codex companion runs async. You MUST now execute this polling loop: (1) Run `git diff --stat` immediately. (2) If changes found, proceed to verify. (3) If NO changes, run `sleep 30 && git diff --stat` in a loop up to 120 times (1 hour max). (4) On each poll, tell the user: "Polling Codex companion... N/120 (Xm elapsed)". (5) If changes appear, stop polling and proceed. (6) After 1 hour with no changes, ask user: retry/fallback/keep waiting. Do NOT say "waiting for completion" without actually polling.' },
   { match: 'codex-review',       hint: '[CODEX] Codex review completed. Parse review findings and map to supervision verdict.' },
 ];
 

@@ -76,9 +76,25 @@ for (const { match, hint, action } of chains) {
       }
 
       if (codexPollStarted) {
-        hints.push('[CODEX] Codex rescue returned Done. A background watcher is now polling for file changes (30s interval, 1h timeout). Check `.qe/agent-results/codex-ready.signal` — when it appears, read it. If `detected: true`, Codex wrote files → proceed to verify with `git diff --stat`. If `detected: false` (timeout), use AskUserQuestion: (a) Keep waiting +1h (b) Retry Codex (c) Fallback to Claude. To check now: `cat .qe/agent-results/codex-ready.signal 2>/dev/null || echo "still polling"`');
+        hints.push(`[CODEX] Codex rescue returned Done. IMPORTANT: Done does NOT mean files are written. Execute these steps IN ORDER:
+
+STEP 1 — DIAGNOSE (run immediately, do NOT skip):
+  Run: ps aux | grep -i codex | grep -v grep
+  - If NO codex process found → Codex companion is NOT running. Skip to STEP 3 fallback.
+  - If codex process found → companion is alive, proceed to STEP 2.
+
+STEP 2 — WAIT FOR SIGNAL:
+  A background watcher is polling git diff every 30s (1h timeout).
+  Run: cat ${join(cwd, '.qe', 'agent-results', 'codex-ready.signal')} 2>/dev/null || echo "still polling"
+  - If "detected: true" → Codex wrote files. Run git diff --stat and proceed to Verify stage.
+  - If "still polling" → wait 60s and check again. Repeat up to 60 times (1h).
+  - If "detected: false, timeout: true" → 1 hour passed with no changes. Go to STEP 3.
+
+STEP 3 — FALLBACK:
+  Use AskUserQuestion: "Codex companion did not produce file changes. Options: (a) Retry with Codex (b) Implement with Claude instead (c) Check Codex logs"
+  If user picks (c): run find $TMPDIR/codex-companion -name "*.log" 2>/dev/null | tail -5 | xargs tail -30`);
       } else {
-        hints.push('[CODEX] Codex rescue returned Done but watcher failed to start. Run `git diff --stat` manually to check for changes.');
+        hints.push('[CODEX] Codex rescue returned Done but watcher failed to start. Run `ps aux | grep codex` to check if companion is alive, then `git diff --stat` for changes. If nothing, implement with Claude instead.');
       }
     } else if (hint) {
       hints.push(hint);

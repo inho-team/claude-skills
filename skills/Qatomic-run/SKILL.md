@@ -65,9 +65,9 @@ After every Codex `Done`:
 1. Resolve Codex state dir via `CLAUDE_PLUGIN_DATA` env or `$TMPDIR/codex-companion/`
 2. Find the most recent job in `state.json` → check `status` field
 3. `completed` → verify via `git diff --stat`, proceed to Verify
-4. `running` → poll job file every 30s, max 1 hour
+4. `running` → poll job file every 30s, max 5 min first pass
 5. `failed` → report error, offer retry or Claude fallback
-6. On timeout → offer: (a) Keep waiting (+30m), (b) Retry Codex, (c) Fallback to Claude
+6. After 5 min with no completion → `AskUserQuestion`: (a) Keep polling +10m, (b) Retry Codex, (c) Fallback to Claude, (d) Check Codex process. Repeat every 10 min if user extends.
 
 **Fallback:** If Codex state dir unavailable, use `git diff --stat` polling (30s interval, 1h timeout).
 

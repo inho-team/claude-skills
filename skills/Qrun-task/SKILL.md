@@ -67,13 +67,19 @@ After every Codex `Done`:
 4. **Polling loop** (when status is "running"):
    - Interval: 30 seconds
    - Read job file for status update
-   - Timeout: 1 hour maximum
+   - First pass: max 5 minutes (10 polls)
    - On each poll, log: `[codex-job] poll N — status: {status}, phase: {phase} (Elapsed: Xm)`
 5. On `completed` → verify files via `git diff --stat`, proceed to Verify
-6. On timeout (1 hour) → offer: (a) Keep waiting (+30m), (b) Retry Codex, (c) Fallback to Claude
+6. After 5 min with no completion → use `AskUserQuestion`:
+   - "Codex companion still running after 5 min. No file changes yet."
+   - (a) Keep polling 10 more minutes
+   - (b) Retry with Codex
+   - (c) Fallback to Claude
+   - (d) Check if Codex is still running (`ps aux | grep codex`)
+7. If user extends, repeat polling + ask every 10 min
 
 **Fallback method — git diff polling:**
-If Codex state directory is not found (plugin data path unavailable), fall back to `git diff --stat` polling with same 30s interval and 1h timeout.
+If Codex state directory is not found (plugin data path unavailable), fall back to `git diff --stat` polling with same 30s/5min/ask pattern.
 
 Log result to `.qe/agent-results/codex-materialization.md`
 

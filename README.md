@@ -123,7 +123,7 @@ Cross-session knowledge with TTL (permanent / 30d / 7d / 1d). Auto-pruned at ses
 
 ## Version
 
-`5.1.0` — SIVS (Spec-Implement-Verify-Supervise) architecture with enforced token efficiency.
+`5.2.0` — SIVS architecture + Codex companion integration (job state polling, materialization check).
 
 ## License
 

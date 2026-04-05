@@ -49,7 +49,15 @@ Before executing task items, check SIVS engine configuration:
 - Use `codex:codex-rescue` subagent (via Agent tool) for autonomous execution
 - Pass TASK_REQUEST content as the task prompt
 - Codex operates in `--write` mode (can modify files)
-- After Codex completes, proceed to the Verify stage (validation only)
+- After Codex returns Done, run **Materialization Check** before proceeding
+
+**Codex Materialization Check (Mandatory after Codex Done):**
+Codex may return `Done` before files are actually written (async companion pattern). After every Codex `Done`:
+1. Parse TASK_REQUEST checklist for expected output paths (`→ output: {path}`)
+2. Wait 3 seconds, then check if expected files exist via `Glob`
+3. If files exist and `git diff` shows changes → Codex succeeded, proceed to Verify
+4. If no files and no diff after 3 retries (3s intervals) → Codex submitted to companion but didn't write. Report to user: "Codex returned Done but no file changes detected. Possible async companion issue." Then offer: (a) Retry with Codex, (b) Fallback to Claude implementation
+5. Log materialization result to `.qe/agent-results/codex-materialization.md`
 
 **Fallback guarantee**: Missing `.qe/sivs-config.json` → all stages default to Claude. Zero impact on existing workflows.
 

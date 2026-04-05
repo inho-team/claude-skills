@@ -57,6 +57,14 @@ Before spawning Haiku teammates, check SIVS engine configuration:
 
 **Note**: When using Codex engine, wave-based parallelism is not used — Codex handles task partitioning internally. The Verify stage (validation) and quality loop (`/Qcode-run-task`) still run after Codex completes.
 
+**Codex Materialization Check (Mandatory after Codex Done):**
+Codex may return `Done` before files are actually written (async companion pattern). After every Codex `Done`:
+1. Parse TASK_REQUEST checklist for expected output paths (`→ output: {path}`)
+2. Wait 3 seconds, then check if expected files exist via `Glob`
+3. If files exist and `git diff` shows changes → Codex succeeded, proceed to Verify
+4. If no files and no diff after 3 retries (3s intervals) → report "Codex Done but no changes detected" and offer: (a) Retry with Codex, (b) Fallback to Claude
+5. Log result to `.qe/agent-results/codex-materialization.md`
+
 **Fallback guarantee**: Missing `.qe/sivs-config.json` → all stages default to Claude. Zero impact on existing workflows.
 
 ## Will

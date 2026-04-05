@@ -38,7 +38,7 @@ const chains = [
   { match: 'Epm-planner',        hint: 'Planning document created by Epm-planner. Review and confirm with user.' },
   { match: 'Eprofile-collector',  hint: 'Profile updated by Eprofile-collector. Data saved to .qe/profile/.' },
   { match: 'Eqa-orchestrator',   hint: '[CHAIN] Eqa-orchestrator completed quality loop. Report test/review/fix results to user.' },
-  { match: 'codex-rescue',       hint: '[CODEX] Codex rescue completed. Review Codex output, then proceed to Verify stage (validation).' },
+  { match: 'codex-rescue',       hint: '[CODEX] Codex rescue returned Done. IMPORTANT: Run Materialization Check — verify files exist via Glob and git diff before proceeding. Codex may return Done before files are written (async companion).' },
   { match: 'codex-review',       hint: '[CODEX] Codex review completed. Parse review findings and map to supervision verdict.' },
 ];
 

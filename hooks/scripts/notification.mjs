@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 'use strict';
 
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, existsSync, unlinkSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 import { readStdinJson, getCwd, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { isPersistentModeActiveFromState, getPersistentModeMessageFromState } from './lib/persistent-mode.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const data = readStdinJson();
 if (!data) {
@@ -20,7 +24,7 @@ const hints = [];
 const message = data.message || data.notification || '';
 const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
 
-// Agent completion chaining — all 16 agents
+// Agent completion chaining — all 16 agents + codex
 const chains = [
   { match: 'Etask-executor',     hint: '[CHAIN] Etask-executor completed. Run Earchive-executor in background to archive completed tasks.' },
   { match: 'Erefresh-executor',  hint: 'Analysis updated by Erefresh-executor. Proceed with user\'s request using fresh .qe/analysis/ data.' },
@@ -38,29 +42,54 @@ const chains = [
   { match: 'Epm-planner',        hint: 'Planning document created by Epm-planner. Review and confirm with user.' },
   { match: 'Eprofile-collector',  hint: 'Profile updated by Eprofile-collector. Data saved to .qe/profile/.' },
   { match: 'Eqa-orchestrator',   hint: '[CHAIN] Eqa-orchestrator completed quality loop. Report test/review/fix results to user.' },
-  { match: 'codex-rescue',       hint: '[CODEX] Codex rescue returned Done. WARNING: Done does NOT mean files are written — Codex companion runs async and can take 15-60 min. You MUST now execute this polling loop: (1) Run `git diff --stat` immediately. (2) If changes found, proceed to verify. (3) If NO changes, start background polling: run `sleep 30 && git diff --stat` in a loop up to 120 times (1 hour). Log every 10th poll to user: "Codex polling... Xm elapsed". (4) If changes appear at any point, stop polling and proceed to verify. (5) After 1 HOUR with no changes, use AskUserQuestion: "Codex companion has not written files after 1 hour. (a) Keep waiting 1 more hour (b) Retry with Codex (c) Fallback to Claude (d) Check process: ps aux | grep codex". If user picks (a), repeat the 1-hour loop. Keep repeating as long as user says keep waiting. Do NOT ask before 1 hour. Do NOT say "waiting" without actually running sleep+diff.' },
+  { match: 'codex-rescue',       hint: null, action: 'codex-poll' },
   { match: 'codex-review',       hint: '[CODEX] Codex review completed. Parse review findings and map to supervision verdict.' },
 ];
 
 let agentChainMatched = false;
-for (const { match, hint } of chains) {
-  // Use word boundary match to prevent partial agent name collisions
+let codexPollStarted = false;
+
+for (const { match, hint, action } of chains) {
   const regex = new RegExp(`\\b${match}\\b`);
   if (regex.test(messageStr)) {
-    hints.push(hint);
     agentChainMatched = true;
+
+    if (action === 'codex-poll') {
+      // --- Spawn background poll watcher ---
+      const signalFile = join(cwd, '.qe', 'agent-results', 'codex-ready.signal');
+
+      // Clean up any stale signal from previous run
+      try { if (existsSync(signalFile)) unlinkSync(signalFile); } catch {}
+
+      const watcherScript = join(__dirname, 'lib', 'codex-poll-watcher.mjs');
+      try {
+        const child = spawn('node', [watcherScript, cwd, '--interval', '30', '--timeout', '3600'], {
+          cwd,
+          detached: true,
+          stdio: 'ignore',
+        });
+        child.unref();
+        codexPollStarted = true;
+      } catch {
+        // If spawn fails, fall back to manual hint
+        codexPollStarted = false;
+      }
+
+      if (codexPollStarted) {
+        hints.push('[CODEX] Codex rescue returned Done. A background watcher is now polling for file changes (30s interval, 1h timeout). Check `.qe/agent-results/codex-ready.signal` — when it appears, read it. If `detected: true`, Codex wrote files → proceed to verify with `git diff --stat`. If `detected: false` (timeout), use AskUserQuestion: (a) Keep waiting +1h (b) Retry Codex (c) Fallback to Claude. To check now: `cat .qe/agent-results/codex-ready.signal 2>/dev/null || echo "still polling"`');
+      } else {
+        hints.push('[CODEX] Codex rescue returned Done but watcher failed to start. Run `git diff --stat` manually to check for changes.');
+      }
+    } else if (hint) {
+      hints.push(hint);
+    }
+
     break;  // One chain action per notification
   }
 }
 
 // --- Persistent Mode Reinforcement ---
-// When persistent mode is active and the notification contains completion-like
-// patterns (e.g., agent finished, task done), inject a reinforcement message
-// to prevent Claude from wrapping up prematurely.
-//
-// IMPORTANT: Skip reinforcement if an agent chain was matched above.
-// Agent completion is expected "done" — reinforcing "don't stop" here
-// would prevent the caller from processing the agent's results.
+// Skip reinforcement if an agent chain was matched above.
 try {
   if (!agentChainMatched) {
     const unifiedState = readUnifiedState(cwd);
@@ -70,7 +99,6 @@ try {
       if (completionPatterns.test(messageStr)) {
         const reinforcement = getPersistentModeMessageFromState(unifiedState);
         if (reinforcement) {
-          // Increment reinforcement counter in state
           if (unifiedState.persistentMode) {
             unifiedState.persistentMode.reinforcements = (unifiedState.persistentMode.reinforcements || 0) + 1;
             try { writeUnifiedState(cwd, unifiedState); } catch {}

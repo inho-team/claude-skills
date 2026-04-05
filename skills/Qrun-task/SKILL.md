@@ -52,12 +52,17 @@ Before executing task items, check SIVS engine configuration:
 - After Codex returns Done, run **Materialization Check** before proceeding
 
 **Codex Materialization Check (Mandatory after Codex Done):**
-Codex may return `Done` before files are actually written (async companion pattern). After every Codex `Done`:
-1. Parse TASK_REQUEST checklist for expected output paths (`→ output: {path}`)
-2. Wait 3 seconds, then check if expected files exist via `Glob`
-3. If files exist and `git diff` shows changes → Codex succeeded, proceed to Verify
-4. If no files and no diff after 3 retries (3s intervals) → Codex submitted to companion but didn't write. Report to user: "Codex returned Done but no file changes detected. Possible async companion issue." Then offer: (a) Retry with Codex, (b) Fallback to Claude implementation
-5. Log materialization result to `.qe/agent-results/codex-materialization.md`
+Codex may return `Done` before files are actually written (async companion pattern). The companion can take 15–30+ minutes for complex tasks. After every Codex `Done`:
+1. Snapshot current git state: `git diff --stat` (save baseline)
+2. Immediate check: if `git diff --stat` already shows changes → Codex succeeded, proceed to Verify
+3. If no changes, start **polling loop**:
+   - Interval: 30 seconds
+   - Check: `git diff --stat` for any new changes vs baseline
+   - Timeout: 1 hour maximum
+   - On each poll, log: `[materialization] poll N — no changes yet (Elapsed: Xm)`
+4. On change detected → proceed to Verify immediately
+5. On timeout (1 hour) → report to user: "Codex companion has not produced changes after 1 hour." Offer: (a) Keep waiting (extend 30m), (b) Retry with Codex, (c) Fallback to Claude
+6. Log materialization result to `.qe/agent-results/codex-materialization.md`
 
 **Fallback guarantee**: Missing `.qe/sivs-config.json` → all stages default to Claude. Zero impact on existing workflows.
 

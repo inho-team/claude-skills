@@ -52,17 +52,30 @@ Before executing task items, check SIVS engine configuration:
 - After Codex returns Done, run **Materialization Check** before proceeding
 
 **Codex Materialization Check (Mandatory after Codex Done):**
-Codex may return `Done` before files are actually written (async companion pattern). The companion can take 15–30+ minutes for complex tasks. After every Codex `Done`:
-1. Snapshot current git state: `git diff --stat` (save baseline)
-2. Immediate check: if `git diff --stat` already shows changes → Codex succeeded, proceed to Verify
-3. If no changes, start **polling loop**:
+Codex may return `Done` before files are actually written (async companion pattern). The companion can take 15–30+ minutes for complex tasks.
+
+**Primary method — Codex Job State polling:**
+Codex companion tracks jobs in `state.json` under its plugin data directory. Each job has a status file at `jobs/{job-id}.json` with `{ status, phase, completedAt }`.
+
+After every Codex `Done`:
+1. Resolve the Codex state directory via `CLAUDE_PLUGIN_DATA` env or `$TMPDIR/codex-companion/`
+2. Find the most recent job in `state.json` → `jobs[]` sorted by `updatedAt`
+3. Read the job's status:
+   - `status: "completed"` + `phase: "done"` → Codex finished, check `git diff --stat` for file changes
+   - `status: "running"` → companion still working, start polling
+   - `status: "failed"` → report error to user, offer retry or Claude fallback
+4. **Polling loop** (when status is "running"):
    - Interval: 30 seconds
-   - Check: `git diff --stat` for any new changes vs baseline
+   - Read job file for status update
    - Timeout: 1 hour maximum
-   - On each poll, log: `[materialization] poll N — no changes yet (Elapsed: Xm)`
-4. On change detected → proceed to Verify immediately
-5. On timeout (1 hour) → report to user: "Codex companion has not produced changes after 1 hour." Offer: (a) Keep waiting (extend 30m), (b) Retry with Codex, (c) Fallback to Claude
-6. Log materialization result to `.qe/agent-results/codex-materialization.md`
+   - On each poll, log: `[codex-job] poll N — status: {status}, phase: {phase} (Elapsed: Xm)`
+5. On `completed` → verify files via `git diff --stat`, proceed to Verify
+6. On timeout (1 hour) → offer: (a) Keep waiting (+30m), (b) Retry Codex, (c) Fallback to Claude
+
+**Fallback method — git diff polling:**
+If Codex state directory is not found (plugin data path unavailable), fall back to `git diff --stat` polling with same 30s interval and 1h timeout.
+
+Log result to `.qe/agent-results/codex-materialization.md`
 
 **Fallback guarantee**: Missing `.qe/sivs-config.json` → all stages default to Claude. Zero impact on existing workflows.
 

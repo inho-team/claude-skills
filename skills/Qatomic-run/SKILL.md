@@ -58,16 +58,20 @@ Before spawning Haiku teammates, check SIVS engine configuration:
 **Note**: When using Codex engine, wave-based parallelism is not used — Codex handles task partitioning internally. The Verify stage (validation) and quality loop (`/Qcode-run-task`) still run after Codex completes.
 
 **Codex Materialization Check (Mandatory after Codex Done):**
-Codex may return `Done` before files are actually written (async companion pattern). The companion can take 15–30+ minutes for complex tasks. After every Codex `Done`:
-1. Snapshot current git state: `git diff --stat` (save baseline)
-2. Immediate check: if `git diff --stat` already shows changes → Codex succeeded, proceed to Verify
-3. If no changes, start **polling loop**:
-   - Interval: 30 seconds
-   - Check: `git diff --stat` for any new changes vs baseline
-   - Timeout: 1 hour maximum
-4. On change detected → proceed to Verify immediately
-5. On timeout (1 hour) → offer: (a) Keep waiting (+30m), (b) Retry Codex, (c) Fallback to Claude
-6. Log result to `.qe/agent-results/codex-materialization.md`
+Codex may return `Done` before files are actually written (async companion pattern). The companion can take 15–30+ minutes for complex tasks.
+
+**Primary method — Codex Job State polling:**
+After every Codex `Done`:
+1. Resolve Codex state dir via `CLAUDE_PLUGIN_DATA` env or `$TMPDIR/codex-companion/`
+2. Find the most recent job in `state.json` → check `status` field
+3. `completed` → verify via `git diff --stat`, proceed to Verify
+4. `running` → poll job file every 30s, max 1 hour
+5. `failed` → report error, offer retry or Claude fallback
+6. On timeout → offer: (a) Keep waiting (+30m), (b) Retry Codex, (c) Fallback to Claude
+
+**Fallback:** If Codex state dir unavailable, use `git diff --stat` polling (30s interval, 1h timeout).
+
+Log result to `.qe/agent-results/codex-materialization.md`
 
 **Fallback guarantee**: Missing `.qe/sivs-config.json` → all stages default to Claude. Zero impact on existing workflows.
 

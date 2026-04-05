@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
+import { createHash } from 'crypto';
 import { existsSync, readdirSync, readFileSync } from 'fs';
-import { homedir } from 'os';
+import { homedir, tmpdir } from 'os';
 import { join } from 'path';
 
 /**
@@ -190,5 +191,66 @@ export function getCodexPluginInfo() {
     };
   } catch {
     return { installed: false };
+  }
+}
+
+/**
+ * Resolve Codex companion state directory for the given workspace.
+ * The companion stores job state in:
+ *   $CLAUDE_PLUGIN_DATA/state/{slug}-{hash}/  (primary)
+ *   $TMPDIR/codex-companion/{slug}-{hash}/    (fallback)
+ *
+ * @param {string} cwd - Project root directory
+ * @returns {string|null} Absolute path to state dir, or null if not found
+ */
+export function resolveCodexStateDir(cwd) {
+  const basename = cwd.split('/').filter(Boolean).pop() || 'workspace';
+  const slug = basename.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'workspace';
+  const hash = createHash('sha256').update(cwd).digest('hex').slice(0, 16);
+  const dirName = `${slug}-${hash}`;
+
+  // Primary: CLAUDE_PLUGIN_DATA
+  const pluginData = process.env.CLAUDE_PLUGIN_DATA;
+  if (pluginData) {
+    const primary = join(pluginData, 'state', dirName);
+    if (existsSync(primary)) return primary;
+  }
+
+  // Fallback: tmpdir
+  const fallback = join(tmpdir(), 'codex-companion', dirName);
+  if (existsSync(fallback)) return fallback;
+
+  return null;
+}
+
+/**
+ * Get the latest Codex companion job status for the given workspace.
+ * @param {string} cwd - Project root directory
+ * @returns {{ found: boolean, jobId?: string, status?: string, phase?: string, completedAt?: string, error?: string }}
+ */
+export function getLatestCodexJobStatus(cwd) {
+  const stateDir = resolveCodexStateDir(cwd);
+  if (!stateDir) return { found: false };
+
+  const stateFile = join(stateDir, 'state.json');
+  if (!existsSync(stateFile)) return { found: false };
+
+  try {
+    const state = JSON.parse(readFileSync(stateFile, 'utf-8'));
+    const jobs = state?.jobs;
+    if (!Array.isArray(jobs) || jobs.length === 0) return { found: false };
+
+    // Most recent job (sorted by updatedAt desc)
+    const latest = jobs.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))[0];
+    return {
+      found: true,
+      jobId: latest.id,
+      status: latest.status,
+      phase: latest.phase,
+      completedAt: latest.completedAt || null,
+      error: latest.errorMessage || null,
+    };
+  } catch {
+    return { found: false };
   }
 }

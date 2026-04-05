@@ -237,6 +237,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qprofile` | Analyze user patterns and style |
 | `Qutopia` | Fully autonomous execution mode |
 | `QCodexUpdate` | Check/update codex-plugin-cc plugin |
+| `Qmistake` | Record mistakes to prevent repetition (.qe/MISTAKE.md) |
 | `Mrefactor-agent-md` | Refactor bloated instruction files |
 | `Mqe-audit` | Full framework quality audit and report |
 

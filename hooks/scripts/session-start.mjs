@@ -149,6 +149,41 @@ try {
   // Fault tolerance — ignore project memory errors
 }
 
+// --- Mistake Registry: inject recorded mistakes so they are not repeated ---
+try {
+  const mistakePath = join(cwd, '.qe', 'MISTAKE.md');
+  if (existsSync(mistakePath)) {
+    const content = readFileSync(mistakePath, 'utf8');
+    // Count entries and categorize by severity
+    const entries = content.match(/^### M\d+:/gm) || [];
+    const resolved = (content.match(/\[RESOLVED\]/g) || []).length;
+    const active = entries.length - resolved;
+    const critical = (content.match(/\*\*Severity\*\*:\s*critical/gi) || []).length;
+    const important = (content.match(/\*\*Severity\*\*:\s*important/gi) || []).length;
+
+    if (active > 0) {
+      // Extract unresolved "Wrong" lines for quick injection
+      const wrongLines = [];
+      const lines = content.split('\n');
+      let inResolved = false;
+      for (const line of lines) {
+        if (line.startsWith('### M') && line.includes('[RESOLVED]')) { inResolved = true; continue; }
+        if (line.startsWith('### M') && !line.includes('[RESOLVED]')) { inResolved = false; }
+        if (!inResolved && line.startsWith('- **Wrong**:')) {
+          wrongLines.push(line.replace('- **Wrong**:', '').trim());
+        }
+      }
+      const topMistakes = wrongLines.slice(0, 5).map((m, i) => `  ${i + 1}. ${m}`).join('\n');
+      messages.push(
+        `[MISTAKES] ${active} active mistake(s) recorded (critical: ${critical}, important: ${important}). ` +
+        `DO NOT repeat these:\n${topMistakes}\n  Full list: .qe/MISTAKE.md`
+      );
+    }
+  }
+} catch {
+  // Fault tolerance — ignore mistake registry errors
+}
+
 // Cleanup: Remove stale intent-route.json for clean session start
 try {
   const intentRoutePath = join(cwd, '.qe', 'state', 'intent-route.json');

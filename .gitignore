@@ -13,3 +13,4 @@ test-translate.js
 test-framework.js
 results.tsv
 run.log
+.mailmap

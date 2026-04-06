@@ -47,9 +47,42 @@ This project includes or adapts content from the following third-party sources.
 - **License:** Apache-2.0
 - **Used in:** Qagent-browser
 
+### deanpeters/Product-Manager-Skills
+- **Repository:** https://github.com/deanpeters/Product-Manager-Skills
+- **Author:** Dean Peters
+- **License:** MIT
+- **Used in:** Qpm-prd, Qpm-roadmap, Qpm-user-story
+
+### antfu/skills (Vite & Vitest skill generators)
+- **Repository:** https://github.com/antfu/skills
+- **Author:** Anthony Fu
+- **License:** MIT
+- **Used in:** Qvite (generated from vitejs/vite), Qvitest (generated from vitest-dev/vitest)
+
+### ankitpokhrel/jira-cli
+- **Repository:** https://github.com/ankitpokhrel/jira-cli
+- **Author:** Ankit Pokhrel
+- **License:** MIT
+- **Used in:** Qjira-cli (CLI wrapper patterns and command reference)
+
 ## No Explicit License
 
 The following sources do not have an explicit license in their repositories at the time of audit (2026-03-20). Content was adapted in good faith from publicly shared skills. If you are the author and would like to specify terms, please open an issue.
+
+### ComposioHQ/awesome-claude-skills
+- **Repository:** https://github.com/ComposioHQ/awesome-claude-skills
+- **Author:** ComposioHQ
+- **Used in:** Qcontent-research-writer
+
+### ericgandrade/claude-superskills
+- **Repository:** https://github.com/ericgandrade/claude-superskills
+- **Author:** ericgandrade
+- **Used in:** Qaudio-transcriber
+
+### daymade/claude-code-skills
+- **Repository:** https://github.com/daymade/claude-code-skills
+- **Author:** daymade
+- **Used in:** Qdoc-converter
 
 ### tfriedel/claude-office-skills
 - **Repository:** https://github.com/tfriedel/claude-office-skills

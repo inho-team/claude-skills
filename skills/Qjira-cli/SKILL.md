@@ -4,6 +4,9 @@ description: Lightweight Jira CLI wrapper for quick issue management without MCP
 metadata: 
 version: 1.0.0
 domain: platform
+source: "https://github.com/ankitpokhrel/jira-cli"
+author: ankitpokhrel
+license: MIT
 triggers: jira, jira-cli, issue, ticket, sprint, board, backlog, JQL, jira issue, jira sprint
 role: expert
 scope: implementation

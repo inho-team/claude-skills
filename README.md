@@ -66,14 +66,14 @@ qe-framework-install
 
 ## Quick Start
 
+You only need to remember two commands:
+
 ```
-/Qinit                    # Initialize project + context memory
-/Qcontext init            # Set up folder-aware context partitioning
-/Qplan                    # Create roadmap and phases
-/Qgs Phase 1: ...        # Generate spec (TASK_REQUEST + VERIFY_CHECKLIST)
-/Qatomic-run              # Execute via parallel Haiku Wave
-/Qcode-run-task           # Test → review → fix quality loop
+/Qinit    # Set up project, choose engine routing (Claude-only or Claude+Codex)
+/Qplan    # Start working — the framework guides you through every next step
 ```
+
+`/Qinit` asks how you want to assign engines to each stage (Spec, Implement, Verify, Supervise). Pick Claude-only or mix in Codex — your choice. After that, `/Qplan` takes over and tells you exactly what to run next.
 
 ---
 

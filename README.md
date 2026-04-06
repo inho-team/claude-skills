@@ -410,7 +410,7 @@ qe-framework/
 
 ## Version
 
-`6.0.1` — Folder-aware context memory, SIVS config CLI, 165 skills, 71 coding experts.
+`6.1.0` — Quality Engine branding, folder-aware context memory, SIVS config CLI, 165 skills.
 
 ## License
 

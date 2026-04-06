@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qlesson-learned (git history analysis). This skill facilitates real-time team reflection sessions using structured formats (Start/Stop/Continue, 4Ls, Sailboat) and conducts pre-mortem risk analysis. It does not analyze historical git commits or extract lessons from code changes (see /Qlesson-learned). Retros are forward-looking; lessons-learned extracts insights from what was built.
 
 ## Purpose
 Run structured retrospectives, conduct pre-mortem risk analysis, and generate release notes. Provides multiple facilitation formats so teams can rotate approaches and avoid retro fatigue.

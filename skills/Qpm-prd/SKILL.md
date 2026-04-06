@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qpm-user-story (individual stories), Qpm-roadmap (timeline). This skill writes the full PRD document encompassing all sections from executive summary through dependencies. For breaking a PRD into individual user stories, delegate to /Qpm-user-story; for sequencing PRD epics into Now/Next/Later phases, delegate to /Qpm-roadmap.
 
 ## Purpose
 Write structured PRDs from problem definition through engineering handoff. Transforms scattered notes and Slack threads into clear, comprehensive PRDs for stakeholder alignment, engineering context, and as a source of truth.

@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qpm-prd (full document), Qgenerate-spec (task specs). This skill writes individual INVEST-format user stories with Gherkin acceptance criteria. It does not produce comprehensive PRD documents (see /Qpm-prd) or task specifications for internal QE processes (see /Qgenerate-spec). User stories are development units; PRDs are strategic documents.
 
 ## Purpose
 Generate clear, concise user stories by combining Mike Cohn's user story format with Gherkin acceptance criteria. Converts user needs into outcome-focused development tasks and provides testable success criteria.

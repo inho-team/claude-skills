@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qpm-discovery (validation), Qpm-roadmap (execution). This skill performs market/competitive analysis using frameworks like SWOT, PESTLE, and Porter's Five Forces. It does not validate customer problems through interviews or experiments (see /Qpm-discovery) or sequence work into timelines (see /Qpm-roadmap). Strategy analyzes *what market conditions exist*; discovery validates *what customers need*.
 
 ## Purpose
 Provide structured strategy frameworks for product positioning, competitive analysis, and business model design. Each framework includes a ready-to-fill template and guiding questions to drive strategic thinking.

@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qpm-roadmap (work sequence), Qpm-strategy (market analysis). This skill defines measurable objectives and key results (OKRs) that answer "where do we want to go?" and validates they are SMART. It does not sequence execution into quarters (see /Qpm-roadmap) or perform market/competitive analysis (see /Qpm-strategy). OKRs set *direction*; roadmaps execute it.
 
 ## Purpose
 Guide OKR creation from objective brainstorming through key result validation to initiative mapping. Ensures OKRs are aspirational yet measurable, connected to roadmap execution, and free of common anti-patterns.

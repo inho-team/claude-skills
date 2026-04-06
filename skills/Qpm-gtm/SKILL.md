@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qpm-strategy (analysis), Qpm-prd (product spec). This skill plans go-to-market execution: beachhead selection, ICP definition, growth loop design, and launch messaging. It does not perform market analysis (see /Qpm-strategy) or detail product requirements (see /Qpm-prd). GTM answers *how to sell and grow*; strategy answers *what market exists*; PRD answers *what to build*.
 
 ## Purpose
 Plan and execute go-to-market strategy from beachhead selection through growth loop design. Combines ICP definition, competitive battlecards, positioning/messaging, and North Star metrics into one integrated workflow.

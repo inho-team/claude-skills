@@ -14,6 +14,9 @@ recommendedModel: haiku
 
 # Doc Converter — Document Format Conversion
 
+## Role
+This is the **single entry point** for all document format conversions. It orchestrates Qdocx, Qpdf, Qpptx, and Qxlsx behind the scenes. Use this skill when you need format conversion; use the individual skills (Qdocx, Qpdf, etc.) only for format-specific creation/editing.
+
 ## HTML-First Collaborative Workflow (Recommended for New Documents)
 
 When creating new documents, use the **HTML-first + interactive collaboration** approach. Instead of producing a finished document in one go, communicate with the user at each stage.

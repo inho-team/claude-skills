@@ -231,8 +231,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Mcreate-agent` | Create new background agents (E-prefix) |
 | `Mtest-skill` | Test skill intent routing |
 | `Qfind-skills` | Find/install skills from skills.sh |
-| `Qmcp-setup` | MCP server setup guide |
-| `Qmcp-builder` | Build MCP servers |
+| `Qmcp-setup` | MCP server setup, configuration, and custom server building guide |
 | `Qmemory` | Manage project memory (conventions, gotchas, decisions with TTL) |
 | `Qprofile` | Analyze user patterns and style |
 | `Qutopia` | Fully autonomous execution mode |
@@ -258,8 +257,7 @@ These skills are optimized for common workflows and consistently outperform gene
 ### Writing & Documentation
 | Skill | Purpose |
 |-------|---------|
-| `Qwriting-clearly` | Improve prose clarity (Strunk's principles) |
-| `Qhumanizer` | Remove AI-style writing patterns |
+| `Qwriting-clearly` | Improve prose clarity and remove AI writing patterns (Strunk's principles + AI pattern removal) |
 | `Qdoc-comment` | Add inline code documentation |
 | `Qdoc-converter` | Convert between MD/DOCX/PDF/PPTX/HTML |
 | `Qcontent-research-writer` | Research-driven article writing |

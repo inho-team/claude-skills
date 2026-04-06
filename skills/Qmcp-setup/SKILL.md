@@ -183,3 +183,51 @@ echo -n "Agentation:  "; claude mcp list 2>/dev/null | grep -qi agentation && ec
 - Store credentials in code or git-tracked files
 - Install MCP servers without user confirmation
 - Modify existing MCP configurations without asking
+
+---
+
+## Building Custom MCP Servers
+
+> Use this section when building MCP servers from scratch. This is a **development guide only** — it does NOT auto-generate server code.
+
+| Request | Correct action |
+|---------|---------------|
+| "Show me how to build MCP servers", "MCP development guide" | **This section** — guide development process |
+| "Write MCP server code", "Build a server" | **NOT this section** — use standard code implementation |
+
+### Workflow
+
+**Phase 1: Research & Planning**
+- Study MCP docs: `https://modelcontextprotocol.io/sitemap.xml`
+- Recommended: TypeScript + Streamable HTTP (remote) or stdio (local)
+- Plan API coverage vs workflow tools
+
+**Phase 2: Implementation**
+- Input Schema: Zod(TS) / Pydantic(Python)
+- Output Schema: `outputSchema` + `structuredContent`
+- Annotations: readOnlyHint, destructiveHint, idempotentHint
+
+**Phase 3: Review & Test**
+- No duplicated code (DRY)
+- Consistent error handling
+- Test: `npx @modelcontextprotocol/inspector`
+
+**Phase 4: Evaluations**
+- 10 complex, realistic questions
+- Independent, read-only, verifiable, stable
+
+### Presets
+
+Pre-configured MCP server sets are available in `presets/`. Offer these to the user before building from scratch:
+
+| Preset | File | Use Case |
+|--------|------|----------|
+| Recommended | `presets/recommended.json` | General-purpose (filesystem, git, fetch, memory, sequential-thinking) |
+| Frontend | `presets/frontend.json` | Frontend development (browser, puppeteer, filesystem, git) |
+| Full-stack | `presets/fullstack.json` | Full-stack development (filesystem, git, postgres, redis, fetch, docker) |
+
+Usage: Copy the selected preset's `mcpServers` block into the project's `.claude.json` or MCP config file. Replace `${PROJECT_ROOT}` and other environment variables with actual values.
+
+### References
+- TypeScript SDK: `https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md`
+- Python SDK: `https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md`

@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qpm-prd (full spec), Qpm-okr (goals). This skill sequences work into Now/Next/Later quarters with hypothesis-driven epics and RICE prioritization. It does not write detailed product requirements (see /Qpm-prd) or define measurable objectives (see /Qpm-okr). Roadmaps communicate *what* is being built and *when*; PRDs detail *why* and *how*.
 
 ## Purpose
 Transform scattered feature requests into a cohesive, outcome-driven roadmap through strategic roadmap planning. Aligns stakeholders, sequences work logically, and communicates strategic intent.

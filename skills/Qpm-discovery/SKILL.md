@@ -5,6 +5,8 @@ invocation_trigger: When product discovery, requirements, or roadmap planning is
 recommendedModel: sonnet
 ---
 
+## Scope Boundary
+**Distinct from:** Qpm-strategy (frameworks), Qpm-prd (documentation). This skill validates problems and solutions through customer interviews, experiments, and OST-driven prioritization. It does not perform competitive or market analysis (see /Qpm-strategy) or write comprehensive PRD documentation (see /Qpm-prd). Discovery answers *what customers actually need*; strategy answers *how the market is positioned*; PRDs answer *what we commit to build*.
 
 ## Purpose
 Run continuous product discovery: map opportunities, surface risky assumptions, design cheap experiments, run customer interviews, and triage feature requests. Combines Teresa Torres' OST with Alberto Savoia's pretotyping into a single actionable workflow.

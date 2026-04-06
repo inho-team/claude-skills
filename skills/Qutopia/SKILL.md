@@ -2,7 +2,7 @@
 name: Qutopia
 description: Utopia mode — fully autonomous execution. Skips all confirmations and auto-allows tool permissions. Use when the user wants fully autonomous, no-confirmation execution.
 allowed-tools: Bash(*), Read, Write, Edit, Glob, Grep
-invocation_trigger: When framework initialization, maintenance, or audit is required.
+invocation_trigger: When the user wants fully autonomous, no-confirmation execution mode.
 recommendedModel: haiku
 ---
 

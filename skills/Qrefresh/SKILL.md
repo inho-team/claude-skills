@@ -22,12 +22,19 @@ Actual refresh work is delegated to the `Erefresh-executor` sub-agent.
 ### Step 1: Call Erefresh-executor
 Run the `Erefresh-executor` sub-agent to perform the analysis refresh.
 
+### Step 1.5: Refresh Folder Contexts
+If `.qe/context/_registry.json` exists:
+1. For each registered context, check if files matching its glob pattern have been modified after `updatedAt`
+2. Auto-refresh stale contexts (rescan folder, update .md file, update timestamp)
+3. Include refreshed context names in the change summary
+
 ### Step 2: Display Change Summary
 After the refresh is complete, summarize changes for the user:
 - Newly added files/directories
 - Deleted files/directories
 - Dependency changes
 - Tech stack changes
+- Refreshed folder contexts (if any)
 - Recent history recorded in `.qe/changelog.md`
 
 ### Step 3: Suggest CLAUDE.md Update

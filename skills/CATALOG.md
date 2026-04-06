@@ -34,6 +34,7 @@
 |-------|-------------------|--------------|
 | `/Qutopia` | When you want to enable fully autonomous execution mode. | Switches framework to ultra-mode (auto-approvals, auto-remediation). |
 | `/Qplan` | When a multi-phase project roadmap or high-level strategic planning is needed. | Manages PROJECT.md, ROADMAP.md and phases within .qe/planning/. |
+| `/Qcontext` | When managing folder-aware context memory (create, refresh, status). | Optimizes Claude's context window by loading only relevant folder context. |
 | `/Qinit` | When starting a new project or initializing the QE framework. | Sets up directory structure, conventions, and core configuration. |
 | `/Qmap-codebase` | When onboarding to an existing project or starting work on unfamiliar code. | Spawns 4 parallel agents to map stack, architecture, quality, and concerns. |
 | `/Qmcp-sync` | When MCP settings should be shared across Claude, Codex, and Gemini. | Keeps one QE-managed MCP registry and syncs clients from it. |
@@ -42,6 +43,7 @@
 | `/QCodexUpdate` | When checking or updating the Codex plugin. | Checks codex-plugin-cc version and updates if outdated. |
 | `/Qmistake` | When user points out a mistake or corrects behavior. | Records to .qe/MISTAKE.md, loaded every session start. |
 | `/Qversion` | When you need to check the current framework version. | Displays version info and recent changelog. |
+| `/Qsivs-config` | When you need to view or change SIVS engine routing (claude/codex per stage). | CLI-style config manager for `.qe/sivs-config.json`. |
 | `/Qarchive` | When a task is completed and needs to be archived. | Moves files to archive and cleans up temporary state. |
 | `/Qsummary` | When work summary is needed or the session is concluding. | Generates a high-density report of "What, Why, Next". |
 

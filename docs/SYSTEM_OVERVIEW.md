@@ -1,130 +1,237 @@
 # QE Framework System Overview
 
-QE Framework is a SIVS (Spec-Implement-Verify-Supervise) loop system for Claude Code. It provides a complete AI-driven workflow using Claude as the default provider, with optional Codex support via the `codex-plugin-cc` bridge.
+QE Framework is a SIVS (Spec-Implement-Verify-Supervise) loop system for Claude Code. It provides a structured AI-driven workflow with **folder-aware context memory**, **165 skills**, and **21 agents**, using Claude as the default provider with optional Codex support via `codex-plugin-cc`.
+
+---
+
+## System Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                     QE Framework v6.x                    │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐  │
+│  │   Context     │  │    SIVS      │  │    Skill      │  │
+│  │   Memory      │  │    Engine    │  │    Library    │  │
+│  │   Manager     │  │    Router    │  │    (165)      │  │
+│  └──────┬───────┘  └──────┬───────┘  └───────┬───────┘  │
+│         │                 │                   │          │
+│  ┌──────┴─────────────────┴───────────────────┴───────┐  │
+│  │              PSE Chain Orchestrator                 │  │
+│  │         Plan → Spec → Execute → Verify             │  │
+│  └──────────────────────┬─────────────────────────────┘  │
+│                         │                                │
+│  ┌──────────────────────┴─────────────────────────────┐  │
+│  │                 Agent Fleet (21)                    │  │
+│  │    Etask-executor  Eqa-orchestrator  Edeep-researcher │
+│  │    Ecode-reviewer  Esecurity-officer  Ecommit-executor│
+│  └────────────────────────────────────────────────────┘  │
+│                         │                                │
+│              ┌──────────┴──────────┐                     │
+│              │    Claude Code      │                     │
+│              │  (+ optional Codex) │                     │
+│              └─────────────────────┘                     │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## User Workflow
 
-Most users only need these commands:
-
-```text
-/Qinit
-/Qplan
-/Qatomic-run
-/Qcode-run-task
+```
+/Qinit           →  /Qcontext init  →  /Qplan  →  /Qgs  →  /Qatomic-run  →  /Qcode-run-task
+ Setup               Context            Plan       Spec     Execute          Verify
 ```
 
-- `/Qinit`: initialize the project and choose how AI roles should be assigned
-- `/Qplan`: create the project plan and active execution context
-- `/Qatomic-run`: execute implementation work
-- `/Qcode-run-task`: run review and final verification
+| Step | Skill | Purpose |
+|------|-------|---------|
+| Setup | `/Qinit` | Initialize project, directory structure, conventions |
+| Context | `/Qcontext init` | Set up folder-aware context partitioning |
+| Plan | `/Qplan` | Create roadmap, phases, requirements |
+| Spec | `/Qgs` | Generate TASK_REQUEST + VERIFY_CHECKLIST |
+| Execute | `/Qatomic-run` | Implement via parallel Haiku Wave |
+| Verify | `/Qcode-run-task` | Test → review → fix quality loop |
 
-## SIVS Loop Architecture
+---
 
-QE separates work via the **PSE Chain** (user workflow) and **SIVS Loop** (execution model):
+## SIVS Loop
 
-**PSE Chain** — the user-facing workflow:
-- **Plan** (`/Qplan`): creates roadmap, phases, requirements
-- **Spec** (`/Qgs`): generates TASK_REQUEST + VERIFY_CHECKLIST
-- **Execute** (`/Qatomic-run`): implements via Wave execution
-- **Verify** (`/Qcode-run-task`): runs verification and quality loop
+The execution engine that runs inside Execute and Verify steps:
 
-**SIVS Loop** — the execution engine with 4 stages:
-- **Spec** (S): TASK_REQUEST generation defines the contract
-- **Implement** (I): Actual coding and file modifications
-- **Verify** (V): Validation against VERIFY_CHECKLIST (no coding — pure confirmation)
-- **Supervise** (S): Quality gates and final review
+```
+  ┌─────┐    ┌───────────┐    ┌────────┐    ┌───────────┐
+  │Spec │───►│Implement  │───►│Verify  │───►│Supervise  │
+  │ (S) │    │   (I)     │    │  (V)   │    │   (S)     │
+  └─────┘    └───────────┘    └────────┘    └─────┬─────┘
+                                                   │
+                                          ┌────────┴────────┐
+                                          │                 │
+                                        PASS              FAIL
+                                          │                 │
+                                        Done          Remediate
+                                                          │
+                                                    ┌─────┴─────┐
+                                                    │   Spec    │
+                                                    │  (retry)  │
+                                                    └───────────┘
+```
 
-Each SIVS stage can be routed to Claude (default) or Codex (via codex-plugin-cc). The routing is configured in `.qe/sivs-config.json`.
+**Stage Responsibilities:**
+
+| Stage | Owner | Artifacts |
+|-------|-------|-----------|
+| **Spec** | TASK_REQUEST generation | `TASK_REQUEST.md` |
+| **Implement** | Code changes | `IMPLEMENTATION_REPORT.md` |
+| **Verify** | Validation (no coding) | `VERIFY_CHECKLIST.md` |
+| **Supervise** | Quality gate + approval | `SUPERVISION_REPORT.md` |
+
+**Engine Routing** — each stage independently routes to Claude (default) or Codex:
+
+```json
+{
+  "spec":      { "engine": "claude" },
+  "implement": { "engine": "codex", "model": "gpt-5.4", "effort": "high" },
+  "verify":    { "engine": "claude" },
+  "supervise": { "engine": "claude" }
+}
+```
+
+Managed via `/Qsivs-config`. Falls back to Claude if codex-plugin-cc is not installed.
+
+---
+
+## Folder-Aware Context Memory
+
+The context memory system optimizes Claude's context window by loading only relevant knowledge for the current working directory.
+
+### How It Works
+
+```
+.qe/context/
+├── _registry.json     # glob pattern → context file mapping
+├── root.md            # always loaded
+├── frontend.md        # loaded in src/frontend/**
+├── backend.md         # loaded in src/backend/**
+└── scripts.md         # loaded in scripts/**
+```
+
+### Loading Rules
+
+1. **Always load** `root.md` — project-wide conventions
+2. **Glob match** — load contexts whose pattern matches the working directory
+3. **Multiple matches OK** — `src/frontend/api/` can match both `frontend.md` and `api.md`
+4. **Staleness detection** — warns if context is >7 days old, suggests `/Qcontext refresh`
+
+### Token Savings
+
+```
+Traditional:  Load full CLAUDE.md (all domain rules)    → 100% tokens
+QE Context:   Load root.md + matched folder context     → ~40% tokens
+
+Savings: ~60% context token reduction per session
+```
+
+### Management
+
+| Command | Action |
+|---------|--------|
+| `/Qcontext init` | Initialize with root.md |
+| `/Qcontext add <name> <pattern>` | Add folder context |
+| `/Qcontext show` | List all contexts + staleness |
+| `/Qcontext refresh` | Update stale contexts |
+| `/Qcontext status <path>` | Preview matches for a path |
+
+Auto-refreshed when `/Qrefresh` runs.
+
+---
 
 ## Provider Routing
 
-QE Framework defaults to Claude for all stages but supports optional Codex routing via `codex-plugin-cc`.
+### Default (Claude-only)
+- All SIVS stages use Claude
+- No external dependencies
+- Full functionality out of the box
 
-**Default (Claude-only)**:
-- Spec, Implement, Verify, and Supervise stages all use Claude
-- No external dependencies required
-- Complete functionality without installation
-
-**Optional Codex Bridge**:
+### Optional Codex Bridge
 - Install `codex-plugin-cc` for Codex integration
-- Route individual SIVS stages to Codex via `sivs-config.json`
-- Bridge logic in `scripts/lib/codex_bridge.mjs`
+- Route individual SIVS stages via `/Qsivs-config`
+- Bridge logic: `scripts/lib/codex_bridge.mjs`
+- Falls back to Claude if plugin unavailable
 
-## Artifacts
+---
 
-SIVS stages exchange standard artifacts in `.qe/artifacts/`:
+## Model Tiering
 
-- `TASK_REQUEST.md`: Spec stage output; defines implementation contract
-- `VERIFY_CHECKLIST.md`: Verify stage input/output; tracks completion and quality gates
-- `IMPLEMENTATION_REPORT.md`: Implement stage report; documents results and issues
-- `SUPERVISION_REPORT.md`: Supervise stage report; final quality assurance
+| Tier | Model | Assigned To |
+|------|-------|-------------|
+| **Strategy** | Opus | `/Qplan`, Edeep-researcher, Esupervision-orchestrator |
+| **Implementation** | Sonnet | Etask-executor, Ecode-reviewer, Ecode-test-engineer |
+| **Parallel Tasks** | Haiku | Wave Teammates, archiving, data refresh, formatting |
 
-Ownership is explicit by stage:
+Delegation Enforcer hook auto-assigns the correct model tier.
 
-- Spec owns TASK_REQUEST
-- Implement owns code changes and IMPLEMENTATION_REPORT
-- Verify owns VERIFY_CHECKLIST validation
-- Supervise owns SUPERVISION_REPORT
+---
 
-## Configuration
+## Token Efficiency
 
-The main configuration file is:
+| Layer | Mechanism | Effect |
+|-------|-----------|--------|
+| **Context** | Folder-aware context loading | Load only relevant domain knowledge |
+| **Dedup** | ContextMemo hook | Block duplicate file reads (`exit 2`) |
+| **Compaction** | Ecompact-executor | Auto-trigger at 140k tokens, mandatory at 170k |
+| **Persistence** | Persistent Mode | Prevent pipeline interruption |
+| **Size Limits** | 250-line SKILL.md cap | Excess content → `references/` |
 
-```text
-.qe/sivs-config.json
-```
+---
 
-It defines:
+## Skill Library (165 skills)
 
-- which provider (Claude or Codex) each SIVS stage uses
-- provider options (model, temperature, timeout)
-- quality gate policies and verification rules
+| Category | Count | Key Skills |
+|----------|-------|------------|
+| Core PSE | 6 | Qplan, Qgs, Qatomic-run, Qrun-task, Qcode-run-task, Qinit |
+| Context & Config | 5 | Qcontext, Qsivs-config, Qrefresh, Qmemory, Qcompact |
+| Project Management | 6 | Qpm-prd, Qpm-roadmap, Qpm-okr, Qpm-retro, Qpm-strategy, Qpm-gtm |
+| Documents | 6 | Qdocx, Qpdf, Qpptx, Qxlsx, Qdoc-converter, Qdoc-comment |
+| Academic | 4 | Qgrad-paper-write, Qgrad-research-plan, Qgrad-seminar-prep, Qgrad-thesis-manage |
+| Coding Experts | 71 | Backend(14), Frontend(12), Languages(13), Infra(14), Quality(12), Data(6) |
+| Other | 67 | `/Qfind-skills` or `/Qhelp` to discover |
 
-## Runtime
+---
 
-The SIVS execution engine is implemented with:
+## Agent Fleet (21 agents)
 
-- `scripts/lib/svs-engine.mjs`: Core SIVS loop orchestration
-- `scripts/lib/codex_bridge.mjs`: Optional Codex provider bridge (requires codex-plugin-cc)
-- `scripts/validate_svs_config.mjs`: SIVS configuration validation
+| Agent | Responsibility |
+|-------|---------------|
+| Etask-executor | Complex checklist implementation |
+| Eqa-orchestrator | Test → review → fix loop |
+| Esupervision-orchestrator | Domain supervisor routing + grade aggregation |
+| Ecode-reviewer | Post-change code review |
+| Ecode-test-engineer | Test writing + coverage |
+| Ecommit-executor | AI-trace-free git commits |
+| Erefresh-executor | Project analysis + context refresh |
+| Edeep-researcher | Multi-source research |
+| Esecurity-officer | Security audit on diffs |
+| Ecompact-executor | Context window management |
+| Epm-planner | PRD, roadmap, document generation |
 
-The engine supports:
+---
 
-- Spec stage: generating TASK_REQUEST from requirements
-- Implement stage: executing code changes based on TASK_REQUEST
-- Verify stage: validating implementation against VERIFY_CHECKLIST
-- Supervise stage: quality gates and approval
-- Provider routing: Claude (default) or Codex (if available)
-- Resume and checkpoint modes
-- Artifact versioning and history
+## Configuration Files
 
-## Installation Model
+| File | Purpose |
+|------|---------|
+| `.qe/sivs-config.json` | SIVS engine routing (claude/codex per stage) |
+| `.qe/context/_registry.json` | Folder-to-context mapping |
+| `.qe/context/*.md` | Folder-specific context files |
+| `core/schemas/svs-config.schema.json` | SIVS config JSON schema |
+| `QE_CONVENTIONS.md` | Framework coding conventions |
 
-QE Framework is distributed as a Claude Code plugin:
+---
 
-**Minimal Install** (Claude-only, no external dependencies):
-```text
-claude install
-claude plugin marketplace add inho-team/qe-framework
-claude plugin install qe-framework@inho-team-qe-framework
-```
+## v6.x Changes
 
-**With Codex Support** (optional, requires codex-plugin-cc):
-```text
-npm install --save-dev codex-plugin-cc
-# sivs-config.json can then route stages to codex-plugin-cc
-```
-
-QE Framework works completely without Codex; the plugin is optional for teams that want to use Codex for specific SIVS stages.
-
-## v5.x Architecture
-
-QE v5.x focuses on **Claude-first simplicity with optional Codex extensibility**:
-
-- **Single-provider baseline**: Claude handles all SIVS stages by default
-- **Zero external dependencies**: Works without Codex, Gemini, or other external APIs
-- **Optional bridge**: `codex-plugin-cc` enables Codex routing for teams that want it
-- **Clear separation of concerns**: 4 SIVS stages (Spec, Implement, Verify, Supervise) — each with a single responsibility
-- **Explicit configuration**: All provider choices in `sivs-config.json`, no hidden fallbacks
-
-This approach reduces complexity while keeping extensibility for future multi-provider scenarios.
+- **Folder-aware context memory** (`/Qcontext`) — partition and optimize context loading
+- **SIVS config CLI** (`/Qsivs-config`) — quick engine routing changes
+- **165 skills** (was 93 in v5.0) — 71 coding expert skills added
+- **Auto-refresh integration** — `/Qrefresh` keeps context files up to date
+- **Claude-first simplicity** — zero external dependencies required

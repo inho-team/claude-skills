@@ -117,29 +117,32 @@ The problem with single-model workflows: the same model that writes the spec als
 
 QE solves this by letting you **assign a different engine to each SIVS stage**. Claude handles all stages by default, but you can optionally route specific stages to Codex via `codex-plugin-cc`:
 
-```
-Stage        Default    Example hybrid setup
-─────        ───────    ────────────────────
-Spec         Claude     Claude (strategic thinking)
-Implement    Claude     Codex (fast code generation)
-Verify       Claude     Claude (careful validation)
-Supervise    Claude     Claude (final judgment)
-```
-
-**Why this matters:**
-- Spec and Supervise benefit from deep reasoning → Claude
-- Implement can be offloaded to a fast code generator → Codex
-- Verify should be independent from the implementer → different model/stage
-- You choose the tradeoff per project. No lock-in.
+You decide what fits your project. Some examples:
 
 ```
-/Qsivs-config                              # View current routing
-/Qsivs-config implement codex --effort high # Route implement to Codex
-/Qsivs-config set --all claude              # Reset all to Claude
-/Qsivs-config --help                        # Full usage guide
+Solo developer, simple project:
+  Spec → Claude    Implement → Claude    Verify → Claude    Supervise → Claude
+  (default — just use Claude for everything, zero config needed)
+
+Speed-focused team:
+  Spec → Claude    Implement → Codex     Verify → Claude    Supervise → Claude
+  (Claude thinks, Codex codes fast, Claude reviews)
+
+Maximum independence:
+  Spec → Claude    Implement → Codex     Verify → Claude    Supervise → Codex
+  (no stage shares the same engine with its neighbor)
 ```
 
-Config file: `.qe/sivs-config.json`. If codex-plugin-cc is not installed, Codex stages automatically fall back to Claude. Zero configuration required for Claude-only usage.
+Pick a setup with one command:
+
+```
+/Qsivs-config implement codex --effort high  # just change one stage
+/Qsivs-config set --all claude               # back to Claude-only
+/Qsivs-config                                # see current setup
+/Qsivs-config --help                         # full options
+```
+
+No Codex? No problem. All stages default to Claude and everything works out of the box. Install `codex-plugin-cc` later if you want — the routing updates instantly, no migration needed.
 
 ### Folder-Aware Context Memory
 

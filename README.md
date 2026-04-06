@@ -48,16 +48,17 @@ Claude Code is powerful, but raw Claude lacks **structured workflow**, **context
 ```bash
 git clone https://github.com/inho-team/qe-framework.git
 cd qe-framework
-npm pack --cache /tmp/qe-npm-cache
-npm install -g ./inho-team-qe-framework-6.0.1.tgz
+npm pack
+npm install -g inho-team-qe-framework-*.tgz
 qe-framework-install
 ```
 
 **Update:**
 ```bash
+cd qe-framework
 git pull
-npm pack --cache /tmp/qe-npm-cache
-npm install -g ./inho-team-qe-framework-6.0.1.tgz
+npm pack
+npm install -g inho-team-qe-framework-*.tgz
 qe-framework-install
 ```
 

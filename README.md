@@ -111,13 +111,35 @@ Runs inside Execute and Verify steps:
      └──────────────────────────────────────┘
 ```
 
-Each stage can be routed to **Claude** (default) or **Codex** (optional):
+### Multi-Engine Routing
+
+The problem with single-model workflows: the same model that writes the spec also implements it, reviews it, and approves it. That's self-grading.
+
+QE solves this by letting you **assign a different engine to each SIVS stage**. Claude handles all stages by default, but you can optionally route specific stages to Codex via `codex-plugin-cc`:
+
+```
+Stage        Default    Example hybrid setup
+─────        ───────    ────────────────────
+Spec         Claude     Claude (strategic thinking)
+Implement    Claude     Codex (fast code generation)
+Verify       Claude     Claude (careful validation)
+Supervise    Claude     Claude (final judgment)
+```
+
+**Why this matters:**
+- Spec and Supervise benefit from deep reasoning → Claude
+- Implement can be offloaded to a fast code generator → Codex
+- Verify should be independent from the implementer → different model/stage
+- You choose the tradeoff per project. No lock-in.
 
 ```
 /Qsivs-config                              # View current routing
 /Qsivs-config implement codex --effort high # Route implement to Codex
-/Qsivs-config reset --all                  # Reset all to Claude
+/Qsivs-config set --all claude              # Reset all to Claude
+/Qsivs-config --help                        # Full usage guide
 ```
+
+Config file: `.qe/sivs-config.json`. If codex-plugin-cc is not installed, Codex stages automatically fall back to Claude. Zero configuration required for Claude-only usage.
 
 ### Folder-Aware Context Memory
 

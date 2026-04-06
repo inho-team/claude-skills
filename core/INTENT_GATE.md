@@ -31,13 +31,13 @@ All skills and agents refer to this classification to determine whether a reques
 | **Spring Security** | "Spring Security", "authentication", "authorization", "CSRF", "JWT", "security headers" | Qspringboot-security |
 | **Architecture diagram** | "architecture diagram", "C4 diagram", "system context", "container diagram", "deployment diagram" | Qc4-architecture |
 | **Database design** | "schema design", "database design", "create tables", "data modeling", "normalization", "indexing" | Qdatabase-schema-designer |
-| **MCP server** | "MCP server", "Model Context Protocol", "FastMCP", "MCP SDK", "MCP integration" | Qmcp-builder |
+| **MCP server** | "MCP server", "Model Context Protocol", "FastMCP", "MCP SDK", "MCP integration" | Qmcp-setup |
 | **Systematic debugging** | "root cause", "debug systematically", "test hypothesis", "trace error", "find bug cause" | Qsystematic-debugging |
 | **TDD** | "TDD", "test-driven", "write test first", "red-green-refactor", "before implementing" | Qtest-driven-development |
 | **QA test plan** | "test plan", "test cases", "regression suite", "QA testing", "bug report template" | Qqa-test-planner |
 | **Doc comments** | "add docstring", "documentation comments", "JSDoc", "JavaDoc", "KDoc", "TSDoc" | Qdoc-comment |
 | **Requirements clarity** | "clarify requirements", "unclear feature", "ambiguous specs", "YAGNI check" | Qrequirements-clarity |
-| **Humanize text** | "humanize", "remove AI writing", "make it sound natural", "AI trace" | Qhumanizer |
+| **Humanize text** | "humanize", "remove AI writing", "make it sound natural", "AI trace" | Qwriting-clearly |
 | **Professional communication** | "professional email", "team message", "meeting agenda", "communication guide" | Qprofessional-communication |
 | **YouTube transcript** | "YouTube subtitles", "video captions", "transcribe video", "extract subtitles" | Qyoutube-transcript-api |
 | **Lesson learned** | "what can we learn", "key takeaway", "look back at this code", "code review insight" | Qlesson-learned |

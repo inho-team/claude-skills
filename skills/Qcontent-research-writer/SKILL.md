@@ -10,7 +10,7 @@ triggers: write article, write report, research and write, content writing, draf
 role: specialist
 scope: implementation
 output-format: document
-related-skills: Qwriting-clearly, Qhumanizer, Qfact-checker
+related-skills: Qwriting-clearly, Qfact-checker
 keywords: content writing, research, citations, articles, reports, editing, hooks, drafting
 invocation_trigger: When framework initialization, maintenance, or audit is required.
 recommendedModel: haiku

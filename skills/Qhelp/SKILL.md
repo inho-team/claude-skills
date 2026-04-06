@@ -33,7 +33,7 @@ DEVELOPMENT
   /Qspringboot-security    Spring Security best practices
   /Qdatabase-schema-designer Database schema design
   /Qdoc-comment            Add doc comments (JSDoc, PyDoc, etc.)
-  /Qmcp-builder            Build MCP servers
+  /Qmcp-setup              MCP server setup + building guide
   /Qagent-browser          Browser automation
 
 TASK MANAGEMENT
@@ -49,8 +49,7 @@ DOCUMENTATION
   /Qpdf                    PDF operations
   /Qpptx                   Presentations
   /Qxlsx                   Spreadsheets
-  /Qwriting-clearly        Improve prose quality
-  /Qhumanizer              Remove AI writing traces
+  /Qwriting-clearly        Clear writing + AI pattern removal
   /Qprofessional-communication  Professional emails & messages
   /Qmermaid-diagrams       Mermaid diagrams
   /Qc4-architecture        C4 architecture diagrams

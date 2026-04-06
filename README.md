@@ -1,6 +1,6 @@
 # QE Framework
 
-**Spec-driven task execution framework for Claude Code**
+**Quality Engine for Claude Code**
 
 > 165 skills | 21 agents | Folder-aware context memory | SIVS quality gate
 

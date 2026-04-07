@@ -150,8 +150,14 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
 {
   const toolInput = data.tool_input || data.toolInput || {};
 
-  // Check bypass flag
-  const bypass = state.skill_bypass;
+  // Check bypass flag (unified state OR standalone file)
+  let bypass = state.skill_bypass;
+  if (!bypass || !bypass.active) {
+    const bypassFile = join(cwd, '.qe', 'state', 'skill-bypass.json');
+    if (existsSync(bypassFile)) {
+      try { bypass = JSON.parse(readFileSync(bypassFile, 'utf8')); } catch { bypass = null; }
+    }
+  }
   let bypassSkill = null;
   if (bypass && bypass.active && (Date.now() - (bypass.ts || 0)) < 60000) {
     bypassSkill = bypass.skill || null;

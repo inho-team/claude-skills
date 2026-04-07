@@ -1,7 +1,7 @@
 {
   "name": "@inho-team/qe-framework",
-  "version": "6.1.0",
-  "description": "Quality Engine for Claude Code — SIVS loop, folder-aware context memory, 165 skills and 21 agents",
+  "version": "6.2.0",
+  "description": "Quality Engine for Claude Code — SIVS loop, folder-aware context memory, 167 skills and 21 agents",
   "files": [
     ".claude-plugin/",
     "agents/",

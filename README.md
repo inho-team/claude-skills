@@ -436,7 +436,7 @@ qe-framework/
 
 ## Version
 
-`6.1.0` — Quality Engine branding, folder-aware context memory, SIVS config CLI, 165 skills.
+`6.2.0` — Qdebate, Qperspective, Qplan micro-task support, 167 skills.
 
 ## License
 

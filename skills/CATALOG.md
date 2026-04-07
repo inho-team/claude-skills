@@ -21,6 +21,8 @@
 
 | Skill | Invocation Trigger | Core Benefit |
 |-------|-------------------|--------------|
+| `/Qdebate` | When the user wants to debate tradeoffs with opposing agents or Codex. | Multi-round structured debate (agent-vs-agent, codex-vs-claude, self-debate). |
+| `/Qperspective` | When the user needs multiple viewpoints on a problem before deciding. | Parallel multi-perspective analysis (dev, PM, user, security, ops, codex). |
 | `/Qsystematic-debugging` | When a bug is reported or a test fails repeatedly. | Applies scientific method to isolate and fix root causes. |
 | `/Qtest-driven-development` | When starting a new feature that requires robust testing. | Implements TDD workflow (Red-Green-Refactor). |
 | `/Qsource-verifier` | When you need to verify if source code matches the provided specs. | Deep integrity check between implementation and TASK_REQUEST. |

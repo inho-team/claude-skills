@@ -49,12 +49,43 @@ If no sivs-config.json or all stages are Claude, skip this check entirely.
 
 ## Workflow
 
-### Step 1: Deep Discovery & Research
+### Step 0.7: Assess Scale
+
+Before starting, determine the task scale:
+
+| Signal | Scale | Workflow |
+|--------|-------|----------|
+| Single bug fix, small refactor, one function | **Micro** | Skip to Micro Plan |
+| One feature, one component, a few files | **Small** | Skip to Small Plan |
+| Multi-feature, multi-phase, new project | **Full** | Full Planning |
+
+**Micro Plan** (estimated < 30 min of work):
+1. Confirm the task with the user in 1-2 lines
+2. Skip roadmap, phases, and research
+3. Go directly to handoff:
+   ```
+   PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
+
+   Next Command:
+
+     /Qgs Fix: {task description}
+   ```
+
+**Small Plan** (one feature / one component):
+1. Brief discovery: ask 1-2 clarifying questions max
+2. Create a single-phase plan (no ROADMAP.md, no Wave Model)
+3. List 3-7 tasks in plain text
+4. Go to handoff
+
+**Full Planning** (multi-phase project):
+Continue to Step 1 below.
+
+### Step 1: Deep Discovery & Research (Full Planning only)
 - **Interactive Discovery**: Use the `ask_user` tool (choice/text) to gather initial requirements and constraints. Do not guess; present options.
 - **Requirement Tiering**: Use `ask_user` to let the user select the priority (P0/P1/P2) for each core feature.
 - **Proactive Research**: If the domain is new, run **Edeep-researcher** first. Store findings in `.qe/planning/research/`.
 
-### Step 2: Strategic Roadmap Design (Wave Model)
+### Step 2: Strategic Roadmap Design (Full Planning only)
 Design a phased roadmap in `.qe/planning/ROADMAP.md`:
 - **Phase Goal**: Define a verifiable high-level objective for each phase.
 - **Dependency Mapping**: Use the **Wave Model** to group independent tasks for parallel execution.

@@ -204,9 +204,9 @@ ANALYSIS_*.md
 ```
 
 ### Step 4: Completion Notice
-Show the list of created files and guide the next steps:
-- "Initialization complete. Use `/Qgenerate-spec` to create your first task."
+Show the list of created files and guide the next steps.
 - Show a brief summary of analysis results (tech stack, file count, main entry points).
+- Follow the **Response Language** rule from `QE_CONVENTIONS.md`: all output must match the user's language. If the user asked in Korean, write section titles, descriptions, and guidance in Korean.
 
 ## Creation Rules
 - Do not overwrite files that already exist.

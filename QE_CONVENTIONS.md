@@ -141,6 +141,17 @@ All phases done. Finalize with /Qcommit
 
 ---
 
+## Global Output Rules
+
+### Response Language
+All skills MUST respond in the same language the user used in their most recent message. If the user writes in Korean, all output — section titles, descriptions, summaries, handoff messages — must be in Korean. Only the following are exempt and stay in English:
+- File names and paths (e.g., `TASK_REQUEST_abc123.md`)
+- Code and code blocks
+- Skill/command names (e.g., `/Qgs`, `/Qatomic-run`)
+- Status markers (`[x]`, `[>]`, `PSE:`)
+
+---
+
 ## QE Rules
 
 ### File Naming

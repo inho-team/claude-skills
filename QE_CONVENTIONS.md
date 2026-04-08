@@ -77,10 +77,11 @@ Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows 
 
 1. **Phase context + Roadmap progress** — Display current Phase and overall progress at a glance
 2. **PSE Chain status, one line** — Show current completion/progress status
-3. **`Next command:` block** — Place alone in a code block for easy copying, **must include UUID or Phase argument**
-4. **No explanations** — Do not add alternatives, elaborations, or choices after the command
-5. **Task type branching** — Guide only `type: code` to `/Qcode-run-task`. For docs/analysis/deletion tasks, guide to the next Phase
-6. **Shortcut fallback** — `/Qgs` may not be recognized, so always include `If not: /Qgenerate-spec ...`
+3. **Task description line** — One-line natural language summary of what the next command does, placed directly above the `Next:` line
+4. **`Next command:` block** — Place alone in a code block for easy copying, **must include UUID or Phase argument**
+5. **No explanations** — Do not add alternatives, elaborations, or choices after the command
+6. **Task type branching** — Guide only `type: code` to `/Qcode-run-task`. For docs/analysis/deletion tasks, guide to the next Phase
+7. **Shortcut fallback** — `/Qgs` may not be recognized, so always include `If not: /Qgenerate-spec ...`
 
 ### Phase Progress Display
 
@@ -104,6 +105,7 @@ Roadmap
 
 PSE: [x] Plan [x] Spec [x] Execute [>] Verify
 
+구현 코드의 테스트 및 품질 검증
 Next: /Qcode-run-task a1b2c3d4
 ```
 
@@ -118,6 +120,7 @@ Roadmap
 
 PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
+Codex CLI 브릿지 연동 및 fallback 로직 구현
 Next: /Qgs Phase 2: Codex Bridge
   or: /Qgenerate-spec Phase 2: Codex Bridge
 ```
@@ -327,7 +330,8 @@ These skills are optimized for common workflows and consistently outperform gene
 ### Design & Frontend
 | Skill | Purpose |
 |-------|---------|
-| `Qfrontend-design` | Create new UI from scratch |
+| `Qdesign` | Create DESIGN.md — the design system spec that all frontend skills reference |
+| `Qfrontend-design` | Create new UI from scratch (reads DESIGN.md as source of truth) |
 | `Qdesign-audit` | Audit design consistency within the project's own design system |
 | `Qweb-design-guidelines` | Audit existing UI code |
 | `Qweb-design-guidelines-vercel` | Vercel Web Interface Guidelines review |

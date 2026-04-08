@@ -49,6 +49,14 @@
 | `/Qarchive` | When a task is completed and needs to be archived. | Moves files to archive and cleans up temporary state. |
 | `/Qsummary` | When work summary is needed or the session is concluding. | Generates a high-density report of "What, Why, Next". |
 
+## Design & Frontend
+
+| Skill | Invocation Trigger | Core Benefit |
+|-------|-------------------|--------------|
+| `/Qdesign` | When a project needs a design system defined before frontend work. | Creates DESIGN.md — single source of truth for colors, typography, spacing, components. |
+| `/Qfrontend-design` | When implementing UI components from the design spec. | Creates production-grade frontend code following DESIGN.md. |
+| `/Qdesign-audit` | When checking if implementation matches the design spec. | Validates code against DESIGN.md for consistency. |
+
 ## Documentation & Research
 
 | Skill | Invocation Trigger | Core Benefit |

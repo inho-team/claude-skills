@@ -66,6 +66,7 @@ Before starting, determine the task scale:
    ```
    PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 
+   {task description — 작업 내용 한 줄 요약}
    Next Command:
 
      /Qgs Fix: {task description}
@@ -153,6 +154,7 @@ PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 ### Section 4: Next Command (always last, must be easy to copy)
 
 ```
+{PhaseDescription — 해당 Phase 작업 내용 한 줄 요약}
 Next Command:
 
   /Qgs Phase {X}: {PhaseName}

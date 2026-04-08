@@ -12,10 +12,11 @@ This skill creates distinctive, production-grade frontend interfaces that avoid 
 
 Before any design work, gather essential context. Code tells you what was built, not who it's for or what it should feel like.
 
-1. Check current instructions for existing Design Context
-2. Review `.impeccable.md` from project root (if exists)
-3. **Check for Stitch project** — if the user designed screens in Stitch, run Step 0-S before proceeding
-4. If none of the above exists, ask the user:
+1. **Check for `DESIGN.md`** in project root — if found, use it as the single source of truth for all design tokens, colors, typography, spacing, and component guidelines. Skip questions already answered there.
+2. Check current instructions for existing Design Context
+3. Review `.impeccable.md` from project root (if exists)
+4. **Check for Stitch project** — if the user designed screens in Stitch, run Step 0-S before proceeding
+5. If none of the above exists, suggest running `/Qdesign` first, or ask the user:
    - **Target audience** and usage context
    - **Use cases** and user jobs
    - **Brand personality and tone**

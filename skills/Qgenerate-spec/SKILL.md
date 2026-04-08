@@ -193,6 +193,7 @@ Phase {X}: {PhaseName} — Spec complete
 
 PSE: [x] Plan [x] Spec [>] Execute [ ] Verify
 
+{TaskDescription — 다음 작업 내용 한 줄 요약}
 Next: /Qatomic-run {UUID}
 ```
 

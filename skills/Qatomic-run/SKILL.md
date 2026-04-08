@@ -103,6 +103,7 @@ Roadmap
 
 PSE: [x] Plan [x] Spec [x] Execute [>] Verify
 
+{TaskDescription — 다음 작업 내용 한 줄 요약}
 Next: /Qcode-run-task {UUID}
 ```
 
@@ -118,6 +119,7 @@ Roadmap
 
 PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
+{NextPhaseDescription — 다음 Phase 작업 내용 한 줄 요약}
 Next: /Qgs Phase {X+1}: {NextPhaseName}
   or: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
 ```

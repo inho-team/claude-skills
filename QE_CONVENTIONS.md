@@ -342,6 +342,7 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qlegacy-modernizer` | Legacy system migration strategy |
 | `Qagent-browser` | Browser automation CLI |
 | `Qvisual-qa` | Chrome browser visual QA — screenshot compare against reference images |
+| `Qvisual-redesign` | Visual audit + auto-fix — captures rendered pages, diagnoses DESIGN.md violations, fixes code |
 
 ### Language & Framework Experts
 | Skill | Purpose |

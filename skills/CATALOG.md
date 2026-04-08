@@ -56,6 +56,7 @@
 | `/Qdesign` | When a project needs a design system defined before frontend work. | Creates DESIGN.md — single source of truth for colors, typography, spacing, components. |
 | `/Qfrontend-design` | When implementing UI components from the design spec. | Creates production-grade frontend code following DESIGN.md. |
 | `/Qdesign-audit` | When checking if implementation matches the design spec. | Validates code against DESIGN.md for consistency. |
+| `/Qvisual-redesign` | When rendered UI doesn't match the design system visually. | Captures live pages, diagnoses DESIGN.md violations, auto-fixes code. |
 
 ## Documentation & Research
 

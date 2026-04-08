@@ -158,6 +158,7 @@ All skills MUST respond in the same language the user used in their most recent 
 - Task request: `TASK_REQUEST_{UUID}.md`
 - Verification checklist: `VERIFY_CHECKLIST_{UUID}.md`
 - One task shares the same UUID across both documents.
+- UUID: 8-character random hex (`openssl rand -hex 4`). Must check for collision before use.
 
 ### Task Status
 | Status | Meaning |

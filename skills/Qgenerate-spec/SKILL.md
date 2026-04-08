@@ -178,8 +178,10 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
   - `type: docs` → add: "All links in documentation are valid", "Terminology and formatting are consistent"
 
 ## UUID Generation Rules
-- 8-character hex (e.g., `a1b2c3d4`)
+- 8-character hex (e.g., `a1b2c3d4`), generated randomly
 - Same UUID shared between TASK_REQUEST and VERIFY_CHECKLIST for same task
+- **Collision check**: Before using a UUID, verify no file matching `TASK_REQUEST_{UUID}.md` already exists in `.qe/tasks/pending/` or `.qe/tasks/completed/`. If it exists, generate a new random UUID and check again.
+- Generate UUIDs via bash: `openssl rand -hex 4` (produces 8-char hex)
 
 ## Self-Evolving
 - After completing tasks, if recurring patterns found, suggest template improvements

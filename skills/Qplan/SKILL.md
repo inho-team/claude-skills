@@ -92,9 +92,9 @@ Design a phased roadmap in `.qe/planning/ROADMAP.md`:
 - **Dependency Mapping**: Use the **Wave Model** to group independent tasks for parallel execution.
 - **Traceability**: Link each Phase to specific Requirement IDs.
 
-### Step 3: Activate Phase & Hand Off
+### Step 3: Activate Phase & Hand Off (MANDATORY)
 - **Activate Phase**: Update `.qe/planning/STATE.md` to reflect the active phase.
-- **STOP HERE**: Do NOT invoke /Qgs or /Qatomic-run. Display the handoff message below.
+- **STOP HERE**: Do NOT invoke /Qgs or /Qatomic-run. You MUST display the full Handoff section below — including the `Next Command:` block. Without it, the user has no way to proceed.
 
 ### Step 4 (Post-Execution): Verification & Transition
 After execution is complete (by /Qatomic-run + /Qcode-run-task), review the results:
@@ -114,8 +114,8 @@ After execution is complete (by /Qatomic-run + /Qcode-run-task), review the resu
 | `research/` | Deep technical research reports and domain analysis. |
 | `phases/{X}/` | Phase artifacts directory. |
 
-## Handoff
-After completing planning, you MUST display this structured output. Fill in the `{...}` placeholders from the actual plan.
+## Handoff (MANDATORY — never skip)
+**CRITICAL**: After completing planning, you MUST display this structured output as the LAST thing in your response. No matter how long the planning or research was, the response MUST end with this handoff. If the handoff is missing, the user cannot proceed to the next step. Fill in the `{...}` placeholders from the actual plan.
 
 ### Section 1: Roadmap + PSE Chain (always first)
 
@@ -162,7 +162,7 @@ Next Command:
   If that doesn't work: /Qgenerate-spec Phase {X}: {PhaseName}
 ```
 
-This must be the **last thing displayed** — no trailing explanation, no alternatives. The user copies and pastes this.
+This must be the **last thing displayed** — no trailing explanation, no alternatives. The user copies and pastes this. **If the response does not end with a `Next Command:` block, the handoff has failed.**
 
 ## Will
 - Create roadmap, requirements, and phase structure.
@@ -173,3 +173,4 @@ This must be the **last thing displayed** — no trailing explanation, no altern
 - Write or modify source code.
 - Invoke /Qgs or /Qatomic-run directly.
 - Skip the handoff or bury the next command in prose.
+- End a response without the `Next Command:` block — this is a hard failure.

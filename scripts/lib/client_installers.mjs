@@ -37,6 +37,9 @@ export function installClaudeAssets({ repoRoot = REPO_ROOT, homeDir = homedir(),
   const targets = [
     { src: 'skills', dest: join(homeDir, '.claude', 'commands'), label: 'skill' },
     { src: 'agents', dest: join(homeDir, '.claude', 'agents'), label: 'agent' },
+    { src: 'core', dest: join(homeDir, '.claude', 'core'), label: 'core' },
+    { src: 'hooks', dest: join(homeDir, '.claude', 'hooks'), label: 'hook' },
+    { src: 'scripts', dest: join(homeDir, '.claude', 'scripts'), label: 'script' },
   ];
 
   for (const { src, dest, label } of targets) {
@@ -59,6 +62,9 @@ export function uninstallClaudeAssets({ repoRoot = REPO_ROOT, homeDir = homedir(
   const targets = [
     { src: 'skills', dest: join(homeDir, '.claude', 'commands'), label: 'skill' },
     { src: 'agents', dest: join(homeDir, '.claude', 'agents'), label: 'agent' },
+    { src: 'core', dest: join(homeDir, '.claude', 'core'), label: 'core' },
+    { src: 'hooks', dest: join(homeDir, '.claude', 'hooks'), label: 'hook' },
+    { src: 'scripts', dest: join(homeDir, '.claude', 'scripts'), label: 'script' },
   ];
 
   for (const { src, dest, label } of targets) {

@@ -12,13 +12,30 @@ import { join } from 'path';
 export function isCodexPluginAvailable() {
   const pluginDir = join(homedir(), '.claude', 'plugins');
 
-  // Check for exact codex directory
+  // 1. Check installed_plugins.json registry (authoritative source)
+  const registryPath = join(pluginDir, 'installed_plugins.json');
+  if (existsSync(registryPath)) {
+    try {
+      const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
+      const codexEntries = registry?.plugins?.['codex@openai-codex'];
+      if (Array.isArray(codexEntries) && codexEntries.length > 0) {
+        const installPath = codexEntries[0].installPath;
+        if (installPath && existsSync(installPath)) {
+          return true;
+        }
+      }
+    } catch {
+      // Fall through to directory checks
+    }
+  }
+
+  // 2. Check for exact codex directory
   const codexPath = join(pluginDir, 'codex');
   if (existsSync(codexPath)) {
     return true;
   }
 
-  // Check if plugins directory exists and look for codex in subdirectories
+  // 3. Check top-level subdirectories for codex
   if (existsSync(pluginDir)) {
     try {
       const entries = readdirSync(pluginDir, { withFileTypes: true });

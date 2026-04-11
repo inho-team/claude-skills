@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'fs';
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'fs';
 import { homedir } from 'os';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -13,7 +13,8 @@ function ensureDir(path) {
 }
 
 function copyRecursive(src, dest) {
-  const stat = statSync(src);
+  const stat = lstatSync(src);
+  if (stat.isSymbolicLink()) return; // skip symlinks to prevent traversal
   if (stat.isDirectory()) {
     ensureDir(dest);
     for (const entry of readdirSync(src)) {
@@ -37,24 +38,44 @@ function removeRecursiveIfExists(path) {
  * Check if qe-framework is installed as a Claude Code plugin.
  * Returns the plugin installPath if found, null otherwise.
  */
-function getPluginInstallPath(homeDir) {
+function getPluginInstallPath(homeDir, log = () => {}) {
   const registryPath = join(homeDir, '.claude', 'plugins', 'installed_plugins.json');
   if (!existsSync(registryPath)) return null;
+
+  const pluginPrefix = join(homeDir, '.claude', 'plugins');
+
+  let registry;
   try {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
-    const entries = registry?.plugins?.['qe-framework@inho-team-qe-framework'];
-    if (Array.isArray(entries) && entries.length > 0) {
-      const installPath = entries[0].installPath;
-      if (installPath && existsSync(installPath)) return installPath;
-    }
-    return null;
-  } catch {
+    registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
+  } catch (e) {
+    log(`[WARN] Failed to parse ${registryPath}: ${e.message}. Falling back to non-plugin mode.`);
     return null;
   }
+
+  const entries = registry?.plugins?.['qe-framework@inho-team-qe-framework'];
+  if (!Array.isArray(entries) || entries.length === 0) return null;
+
+  // Sort by installedAt descending to pick the most recent entry
+  const sorted = [...entries].sort((a, b) =>
+    (b.installedAt || '').localeCompare(a.installedAt || '')
+  );
+
+  for (const entry of sorted) {
+    const installPath = entry.installPath;
+    if (!installPath) continue;
+    // Path boundary check: must be under ~/.claude/plugins/
+    if (!installPath.startsWith(pluginPrefix)) {
+      log(`[WARN] Plugin installPath "${installPath}" is outside ${pluginPrefix}. Skipping.`);
+      continue;
+    }
+    if (existsSync(installPath)) return installPath;
+  }
+
+  return null;
 }
 
 export function installClaudeAssets({ repoRoot = REPO_ROOT, homeDir = homedir(), log = console.log } = {}) {
-  const pluginPath = getPluginInstallPath(homeDir);
+  const pluginPath = getPluginInstallPath(homeDir, log);
 
   if (pluginPath) {
     log(`Plugin mode: syncing patches to ${pluginPath}\n`);
@@ -121,6 +142,52 @@ export function installClaudeAssets({ repoRoot = REPO_ROOT, homeDir = homedir(),
 }
 
 export function uninstallClaudeAssets({ repoRoot = REPO_ROOT, homeDir = homedir(), log = console.log } = {}) {
+  const pluginPath = getPluginInstallPath(homeDir, log);
+
+  if (pluginPath) {
+    // Clean plugin cache
+    const pluginTargets = [
+      { src: 'skills', dest: join(pluginPath, 'skills'), label: 'skill' },
+      { src: 'agents', dest: join(pluginPath, 'agents'), label: 'agent' },
+      { src: 'core',   dest: join(pluginPath, 'core'),   label: 'core' },
+      { src: 'hooks',  dest: join(pluginPath, 'hooks'),  label: 'hook' },
+      { src: 'scripts', dest: join(pluginPath, 'scripts'), label: 'script' },
+    ];
+    for (const { src, dest, label } of pluginTargets) {
+      const srcDir = join(repoRoot, src);
+      if (!existsSync(srcDir)) continue;
+      const entries = readdirSync(srcDir);
+      let removed = 0;
+      for (const entry of entries) {
+        const target = join(dest, entry);
+        if (existsSync(target)) {
+          rmSync(target, { recursive: true, force: true });
+          removed++;
+        }
+      }
+      if (removed > 0) log(`Removed ${removed} ${label}(s) from plugin cache.`);
+    }
+
+    // Clean scripts absolute path fallback
+    const scriptsSrc = join(repoRoot, 'scripts');
+    const scriptsDest = join(homeDir, '.claude', 'scripts');
+    if (existsSync(scriptsSrc)) {
+      const entries = readdirSync(scriptsSrc);
+      let removed = 0;
+      for (const entry of entries) {
+        const target = join(scriptsDest, entry);
+        if (existsSync(target)) {
+          rmSync(target, { recursive: true, force: true });
+          removed++;
+        }
+      }
+      if (removed > 0) log(`Removed ${removed} script(s) from ${scriptsDest}.`);
+    }
+
+    log('Plugin mode uninstall complete.\n');
+    return;
+  }
+
   const targets = [
     { src: 'skills', dest: join(homeDir, '.claude', 'commands'), label: 'skill' },
     { src: 'agents', dest: join(homeDir, '.claude', 'agents'), label: 'agent' },

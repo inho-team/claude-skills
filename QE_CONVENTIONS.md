@@ -334,6 +334,9 @@ These skills are optimized for common workflows and consistently outperform gene
 | `Qvitest` | Vitest unit testing |
 | `Qspec-miner` | Reverse-engineer specs from legacy code |
 | `Qthe-fool` | Critical reasoning / devil's advocate |
+| `Qcritical-review` | SIVS stage-aware adversarial verification (PASS/WARN/FAIL) |
+| `Qdebate` | Structured multi-round debate (agent-vs-agent, codex-vs-claude) |
+| `Qperspective` | Multi-perspective analysis (dev/user/pm/security/ops) |
 | `Qfact-checker` | Verify factual claims |
 | `Qsource-verifier` | Source credibility verification (SIFT) |
 | `Qlesson-learned` | Extract engineering lessons from git history |

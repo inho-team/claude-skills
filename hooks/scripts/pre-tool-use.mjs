@@ -235,12 +235,18 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
 
 // --- SIVS Option Guard (AskUserQuestion) ---
 // Hard-block any SIVS engine routing question that omits the Codex Hybrid option.
+// Detection: broad keyword match (sivs, 엔진, engine) + semantic check (must have codex/hybrid label).
 if (toolName === 'AskUserQuestion') {
   const toolInput = data.tool_input || data.toolInput || {};
   const questions = toolInput.questions || [];
   for (const q of questions) {
     const qText = (q.question || '').toLowerCase();
-    if (qText.includes('sivs') || qText.includes('엔진 라우팅') || qText.includes('engine routing')) {
+    const isSivsQuestion =
+      qText.includes('sivs') ||
+      (qText.includes('엔진') && (qText.includes('라우팅') || qText.includes('설정') || qText.includes('선택'))) ||
+      (qText.includes('engine') && (qText.includes('routing') || qText.includes('config') || qText.includes('select'))) ||
+      (qText.includes('spec') && qText.includes('implement') && qText.includes('verify'));
+    if (isSivsQuestion) {
       const labels = (q.options || []).map(o => (o.label || '').toLowerCase());
       const hasCodexOption = labels.some(l => l.includes('codex') || l.includes('hybrid'));
       if (!hasCodexOption) {

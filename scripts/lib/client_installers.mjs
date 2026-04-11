@@ -77,6 +77,21 @@ export function installClaudeAssets({ repoRoot = REPO_ROOT, homeDir = homedir(),
       totalSynced += entries.length;
       log(`Synced ${entries.length} ${label}(s) -> ${dest}`);
     }
+
+    // Also copy scripts to ~/.claude/scripts/ — SKILL.md bash commands
+    // reference $HOME/.claude/scripts/ by absolute path, and CLAUDE_PLUGIN_ROOT
+    // is not available in those contexts.
+    const scriptsSrc = join(repoRoot, 'scripts');
+    const scriptsDest = join(homeDir, '.claude', 'scripts');
+    if (existsSync(scriptsSrc)) {
+      ensureDir(scriptsDest);
+      const entries = readdirSync(scriptsSrc);
+      for (const entry of entries) {
+        copyRecursive(join(scriptsSrc, entry), join(scriptsDest, entry));
+      }
+      log(`Copied ${entries.length} script(s) -> ${scriptsDest} (absolute path fallback)`);
+    }
+
     log(`\n${totalSynced} asset(s) synced to plugin cache. Restart Claude Code to apply.\n`);
     return;
   }

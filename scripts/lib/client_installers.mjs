@@ -35,28 +35,49 @@ function removeRecursiveIfExists(path) {
 
 /**
  * Check if qe-framework is installed as a Claude Code plugin.
- * When installed as a plugin, skills and agents are registered by the plugin system
- * with the "qe-framework:" prefix — copying them to ~/.claude/commands/ creates duplicates.
+ * Returns the plugin installPath if found, null otherwise.
  */
-function isInstalledAsPlugin(homeDir) {
+function getPluginInstallPath(homeDir) {
   const registryPath = join(homeDir, '.claude', 'plugins', 'installed_plugins.json');
-  if (!existsSync(registryPath)) return false;
+  if (!existsSync(registryPath)) return null;
   try {
     const registry = JSON.parse(readFileSync(registryPath, 'utf-8'));
     const entries = registry?.plugins?.['qe-framework@inho-team-qe-framework'];
-    return Array.isArray(entries) && entries.length > 0;
+    if (Array.isArray(entries) && entries.length > 0) {
+      const installPath = entries[0].installPath;
+      if (installPath && existsSync(installPath)) return installPath;
+    }
+    return null;
   } catch {
-    return false;
+    return null;
   }
 }
 
 export function installClaudeAssets({ repoRoot = REPO_ROOT, homeDir = homedir(), log = console.log } = {}) {
-  const pluginMode = isInstalledAsPlugin(homeDir);
+  const pluginPath = getPluginInstallPath(homeDir);
 
-  if (pluginMode) {
-    log('qe-framework is installed as a plugin. Skipping ~/.claude/ asset copy to avoid duplicates.');
-    log('Skills, agents, hooks, and scripts are managed by the plugin system.\n');
-    log('To update, run: /plugin update qe-framework@inho-team-qe-framework\n');
+  if (pluginPath) {
+    log(`Plugin mode: syncing patches to ${pluginPath}\n`);
+    const pluginTargets = [
+      { src: 'skills', dest: join(pluginPath, 'skills'), label: 'skill' },
+      { src: 'agents', dest: join(pluginPath, 'agents'), label: 'agent' },
+      { src: 'core',   dest: join(pluginPath, 'core'),   label: 'core' },
+      { src: 'hooks',  dest: join(pluginPath, 'hooks'),  label: 'hook' },
+      { src: 'scripts', dest: join(pluginPath, 'scripts'), label: 'script' },
+    ];
+    let totalSynced = 0;
+    for (const { src, dest, label } of pluginTargets) {
+      const srcDir = join(repoRoot, src);
+      if (!existsSync(srcDir)) continue;
+      ensureDir(dest);
+      const entries = readdirSync(srcDir);
+      for (const entry of entries) {
+        copyRecursive(join(srcDir, entry), join(dest, entry));
+      }
+      totalSynced += entries.length;
+      log(`Synced ${entries.length} ${label}(s) -> ${dest}`);
+    }
+    log(`\n${totalSynced} asset(s) synced to plugin cache. Restart Claude Code to apply.\n`);
     return;
   }
 

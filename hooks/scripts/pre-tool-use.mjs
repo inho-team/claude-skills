@@ -233,6 +233,28 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
   }
 }
 
+// --- SIVS Option Guard (AskUserQuestion) ---
+// Hard-block any SIVS engine routing question that omits the Codex Hybrid option.
+if (toolName === 'AskUserQuestion') {
+  const toolInput = data.tool_input || data.toolInput || {};
+  const questions = toolInput.questions || [];
+  for (const q of questions) {
+    const qText = (q.question || '').toLowerCase();
+    if (qText.includes('sivs') || qText.includes('엔진 라우팅') || qText.includes('engine routing')) {
+      const labels = (q.options || []).map(o => (o.label || '').toLowerCase());
+      const hasCodexOption = labels.some(l => l.includes('codex') || l.includes('hybrid'));
+      if (!hasCodexOption) {
+        process.stderr.write(
+          '[QE] SIVS option guard: "Claude + Codex Hybrid" option is MISSING. ' +
+          'All three SIVS options (Claude Only, Claude + Codex Hybrid, Configure Later) are mandatory. ' +
+          'Re-call AskUserQuestion with all three options included.'
+        );
+        process.exit(2);
+      }
+    }
+  }
+}
+
 // --- Secret Scanner (Write/Edit only) ---
 if (['Write', 'Edit'].includes(toolName)) {
   const toolInput = data.tool_input || data.toolInput || {};

@@ -45,23 +45,56 @@ Ask the user for the minimum required information:
 
 ### Step 1.5: SIVS Engine Configuration (Optional)
 
-**Codex Plugin Version Check:** Before presenting engine options, call `getCodexPluginInfo()` from `scripts/lib/codex_bridge.mjs` to check the codex-plugin-cc status. If installed, display the version inline. If an update may be available (installed > 30 days ago), append: "Run `/QCodexUpdate` to check for updates."
+**Codex Plugin Detection (MANDATORY):** Before presenting engine options, you MUST run the following bash command. Do NOT skip this step. Do NOT guess the result. The output determines what status to display.
 
-After collecting project info, ask the user whether to configure SIVS engine routing using `AskUserQuestion`:
+```bash
+node -e "(async()=>{const m=await import('$HOME/.claude/scripts/lib/codex_bridge.mjs');const r=await m.getCodexPluginInfo();console.log(JSON.stringify(r))})()"
+```
 
-**Question**: "Would you like to configure SIVS engine routing? (Choose Claude or Codex for each Spec/Implement/Verify/Supervise stage)"
+- If `installed: true`: Display "Codex 플러그인 v{version} 감지됨" before the options.
+- If `installed: false`: Display "Codex 플러그인 미설치 (Hybrid 선택 시 설치 안내)" before the options.
+- If the command fails or the script is missing: Treat as `installed: false`.
+- If installed > 30 days ago (compare `installedAt`): Append "Run `/QCodexUpdate` to check for updates."
 
-**Options**:
-1. **Claude Only (Default)** — All stages handled by Claude. No additional configuration.
-2. **Claude + Codex Hybrid** — Choose engine per stage. Requires codex-plugin-cc.
-3. **Configure Later** — Proceed with initialization only. `.qe/sivs-config.json` can be created manually later.
+After running the detection command and displaying the result, ask the user to configure SIVS engine routing.
 
-**On "Claude Only"**: Skip — Do not create `.qe/sivs-config.json`. All stages automatically use Claude.
+> **CRITICAL — ALL THREE OPTIONS ARE MANDATORY**: You MUST call `AskUserQuestion` with exactly the three options listed below. NEVER remove, merge, reword, or conditionally hide any option. The "Claude + Codex Hybrid" option MUST always appear regardless of the detection result above. Codex availability is checked AFTER the user selects that option, not before.
 
-**On "Claude + Codex Hybrid"**:
-1. First check codex-plugin-cc installation status using `isCodexPluginAvailable()` from `scripts/lib/codex_bridge.mjs`.
-   - If not installed: Show warning ("codex-plugin-cc is not installed. Install it with `/plugin install codex@openai-codex` then try again.") → Fallback to Claude Only.
-   - If installed: Continue.
+Call `AskUserQuestion` with these **exact** parameters (copy verbatim):
+```json
+{
+  "questions": [{
+    "question": "SIVS 엔진 라우팅을 설정하시겠습니까? (Spec/Implement/Verify/Supervise 각 단계별 엔진 선택)",
+    "header": "SIVS 설정",
+    "multiSelect": false,
+    "options": [
+      {
+        "label": "Claude Only (Recommended)",
+        "description": "모든 단계를 Claude가 처리합니다. 추가 설정 없음."
+      },
+      {
+        "label": "Claude + Codex Hybrid",
+        "description": "단계별 엔진을 선택합니다. codex-plugin-cc 필요."
+      },
+      {
+        "label": "나중에 설정",
+        "description": "초기화만 진행. .qe/sivs-config.json은 나중에 수동 생성 가능."
+      }
+    ]
+  }]
+}
+```
+> **Hook enforced**: PreToolUse hook will hard-block this call if the "Claude + Codex Hybrid" option is missing. Do not attempt to remove it.
+
+**On option 1 "Claude Only"**: Skip — Do not create `.qe/sivs-config.json`. All stages automatically use Claude.
+
+**On option 2 "Claude + Codex Hybrid"**:
+1. **After** the user selects this option, you MUST run this bash command to verify (reuse the result from the detection step above if it was `installed: true`):
+   ```bash
+   node -e "(async()=>{const m=await import('$HOME/.claude/scripts/lib/codex_bridge.mjs');console.log(m.isCodexPluginAvailable())})()"
+   ```
+   - If `false`: Show warning ("codex-plugin-cc가 설치되어 있지 않습니다. `/plugin install codex@openai-codex`로 설치 후 `/Qsivs-config`로 다시 설정해주세요.") → Fallback to Claude Only.
+   - If `true`: Continue.
 2. For each SIVS stage, use `AskUserQuestion` to select engine:
 
    **Spec Stage**: "Select engine for Spec stage"
@@ -94,7 +127,7 @@ After collecting project info, ask the user whether to configure SIVS engine rou
    - **Effort** (Optional): Reasoning effort level (`low` / `medium` / `high` / `xhigh`, default: not set)
 5. Validate generated configuration with `npm run qe:validate`.
 
-**On "Configure Later"**: Skip — Show guidance message: "You can manually create `.qe/sivs-config.json` later or re-run `/Qinit`"
+**On option 3 "나중에 설정"**: Skip — Show guidance message: "`.qe/sivs-config.json`은 나중에 수동 생성하거나 `/Qsivs-config`로 설정할 수 있습니다."
 
 ### Step 2: Auto-analyze Project
 Delegate the analysis to the `Erefresh-executor` sub-agent. Since Erefresh-executor uses the same analysis logic as Qrefresh, consistency of analysis is guaranteed.

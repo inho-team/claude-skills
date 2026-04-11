@@ -1,6 +1,6 @@
 # QE Framework System Overview
 
-QE (**Quality Engine**) Framework is a SIVS (Spec-Implement-Verify-Supervise) loop system for Claude Code. It provides a structured AI-driven workflow with **folder-aware context memory**, **165 skills**, and **21 agents**, using Claude as the default provider with optional Codex support via `codex-plugin-cc`.
+QE (**Query Execute**) Framework is a SIVS (Spec-Implement-Verify-Supervise) loop system for Claude Code. It provides a structured AI-driven workflow with **folder-aware context memory**, **165 skills**, and **21 agents**, using Claude as the default provider with optional Codex support via `codex-plugin-cc`.
 
 ---
 

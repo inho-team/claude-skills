@@ -1,6 +1,6 @@
 # QE Framework
 
-**Quality Engine for Claude Code**
+**Query Execute Framework for Claude Code**
 
 > 165 skills | 21 agents | Folder-aware context memory | SIVS quality gate
 
@@ -11,9 +11,26 @@
 
 ---
 
-## Why QE Framework?
+## Why QE?
 
-Claude Code is powerful, but raw Claude lacks **structured workflow**, **context optimization**, and **quality enforcement**. QE Framework adds these layers:
+Everything you do with AI comes down to two things: **Query** and **Execute**.
+
+"Why is this bug happening?" — that's a Query.
+"Fix it." — that's an Execute.
+"Run the tests", "commit this", "is this architecture right?" — all just Q and E, over and over.
+
+The problem is, raw AI doesn't do either well on its own. Query without context gives shallow answers. Execute without verification gives unchecked results. And the precision of your question determines the quality of the output — but maintaining that precision every time is exhausting.
+
+**QE Framework puts structure between Query and Execute.**
+
+```
+  You say             QE does                    You get
+─────────────────────────────────────────────────────────
+  "what to do"   →   Plan → Spec (refine Q)   →  precise query
+  "do it"        →   Implement → Verify → S   →  verified result
+```
+
+You only say **what you want**. How to ask the right question, how to verify the result — the framework handles that.
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -45,21 +62,48 @@ Claude Code is powerful, but raw Claude lacks **structured workflow**, **context
 
 ## Install
 
+QE Framework is a **Claude Code plugin**. Install it with two commands:
+
 ```bash
-git clone https://github.com/inho-team/qe-framework.git
-cd qe-framework
-npm pack
-npm install -g inho-team-qe-framework-*.tgz
-qe-framework-install
+# 1. Register the marketplace
+claude plugin marketplace add inho-team/qe-framework
+
+# 2. Install the plugin
+claude plugin install qe-framework@inho-team-qe-framework
+```
+
+That's it. All 165 skills, 21 agents, and hooks are active immediately.
+
+**SSH error?** If installation fails with `Host key verification failed`, set git to use HTTPS:
+```bash
+git config --global url."https://github.com/".insteadOf "git@github.com:"
+```
+Then retry the install command.
+
+**Verify installation:**
+```bash
+claude plugin list
+# Should show: qe-framework@inho-team-qe-framework ✔ enabled
 ```
 
 **Update:**
 ```bash
-cd qe-framework
-git pull
-npm pack
-npm install -g inho-team-qe-framework-*.tgz
-qe-framework-install
+claude plugin update qe-framework@inho-team-qe-framework
+```
+
+**Uninstall:**
+```bash
+claude plugin uninstall qe-framework@inho-team-qe-framework
+```
+
+### Alternative: Local development mode
+
+If you're developing or contributing to QE Framework itself:
+
+```bash
+git clone https://github.com/inho-team/qe-framework.git
+cd your-project
+claude --plugin-dir /path/to/qe-framework
 ```
 
 ---
@@ -436,7 +480,7 @@ qe-framework/
 
 ## Version
 
-`6.2.0` — Qdebate, Qperspective, Qplan micro-task support, 167 skills.
+`6.3.0` — Plugin-based installation, Qdebate, Qperspective, Qplan micro-task support, 167 skills.
 
 ## License
 

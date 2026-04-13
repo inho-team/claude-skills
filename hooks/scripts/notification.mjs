@@ -100,6 +100,28 @@ STEP 3 — FALLBACK:
       hints.push(hint);
     }
 
+    // --- Codex error detection for graceful fallback ---
+    if (match === 'codex-rescue' || match === 'codex-review') {
+      const errorPatterns = [
+        { pattern: /rate.?limit/i, type: 'rate_limit' },
+        { pattern: /quota.?exceed/i, type: 'quota_exceeded' },
+        { pattern: /timeout|timed?\s*out/i, type: 'timeout' },
+        { pattern: /connection.?(?:refused|reset|error)/i, type: 'connection_error' },
+        { pattern: /unauthorized|403|401/i, type: 'auth_error' },
+      ];
+      for (const { pattern, type } of errorPatterns) {
+        if (pattern.test(messageStr)) {
+          try {
+            const errState = readUnifiedState(cwd);
+            errState.codex_last_error = { type, timestamp: new Date().toISOString() };
+            writeUnifiedState(cwd, errState);
+          } catch {}
+          hints.push(`[CODEX ERROR] Detected ${type}. Codex will be marked unreachable for 5 minutes. Claude fallback will be allowed for SIVS-codex stages.`);
+          break;
+        }
+      }
+    }
+
     break;  // One chain action per notification
   }
 }

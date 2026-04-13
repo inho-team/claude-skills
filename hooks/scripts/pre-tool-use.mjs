@@ -3,7 +3,7 @@
 
 import { readFileSync, existsSync, readdirSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { loadConfig } from './lib/config.mjs';
 import { checkContextPressure } from './context-monitor.mjs';
 import { loadPendingContext } from './lib/context-loader.mjs';
@@ -100,7 +100,7 @@ if (fb) {
   }
 }
 
-// --- Skill Usage Tracking ---
+// --- Skill Usage Tracking + SIVS Skill Entry Guard ---
 if (toolName === 'Skill') {
   const skillInput = data.tool_input || data.toolInput || {};
   const skillName = skillInput.skill || '';
@@ -108,6 +108,44 @@ if (toolName === 'Skill') {
     if (!Array.isArray(stats.skills_used)) stats.skills_used = [];
     if (!stats.skills_used.includes(skillName)) {
       stats.skills_used.push(skillName);
+    }
+
+    // SIVS Skill Entry Guard: inject mandatory engine hint before skill loads
+    const SKILL_STAGE_MAP = {
+      'Qgenerate-spec': 'spec', 'qe-framework:Qgenerate-spec': 'spec',
+      'Qgs': 'spec', 'qe-framework:Qgs': 'spec',
+      'Qrun-task': 'implement', 'qe-framework:Qrun-task': 'implement',
+      'Qrt': 'implement', 'qe-framework:Qrt': 'implement',
+      'Qatomic-run': 'implement', 'qe-framework:Qatomic-run': 'implement',
+      'Qcode-run-task': 'verify', 'qe-framework:Qcode-run-task': 'verify',
+    };
+    const sivsStage = SKILL_STAGE_MAP[skillName];
+    if (sivsStage) {
+      try {
+        const bridgePath = join(__dirname, '..', '..', 'scripts', 'lib', 'codex_bridge.mjs');
+        const { loadSivsConfig, isCodexReachable } = await import(
+          pathToFileURL(bridgePath).href
+        );
+        const sivsConfig = loadSivsConfig();
+        const stageEntry = sivsConfig && sivsConfig[sivsStage];
+        if (stageEntry && stageEntry.engine === 'codex') {
+          const reachable = isCodexReachable(state);
+          if (reachable.reachable) {
+            hints.push(
+              `[SIVS MANDATORY] ${sivsStage} stage is configured for Codex engine. ` +
+              `You MUST delegate to codex:codex-rescue subagent. Do NOT implement directly with Write/Edit. ` +
+              `Do NOT spawn Claude-only agents (Etask-executor) for this stage.`
+            );
+          } else {
+            hints.push(
+              `[SIVS FALLBACK] ${sivsStage} stage configured for codex but codex is unreachable (${reachable.reason}). ` +
+              `Claude fallback is allowed for this invocation.`
+            );
+          }
+        }
+      } catch {
+        // Fault-tolerant: never let SIVS guard crash the hook
+      }
     }
   }
 }
@@ -322,6 +360,36 @@ if (toolName === 'Agent' || toolName.includes('Agent')) {
     updateDelegationStats(state, result.action);
   } catch {
     // Fault-tolerant: ignore delegation enforcer errors
+  }
+}
+
+// --- SIVS Routing Enforcer (Agent tool calls) ---
+if (toolName === 'Agent' || toolName.includes('Agent')) {
+  try {
+    const { enforceRouting, appendAuditLog } = await import('./lib/sivs-enforcer.mjs');
+    const bridgePath = join(__dirname, '..', '..', 'scripts', 'lib', 'codex_bridge.mjs');
+    const { loadSivsConfig, isCodexReachable } = await import(
+      pathToFileURL(bridgePath).href
+    );
+    const sivsConfig = loadSivsConfig();
+    if (sivsConfig && Object.keys(sivsConfig).length > 0) {
+      const toolInput = data.tool_input || data.toolInput || {};
+      const reachable = isCodexReachable(state);
+      const result = enforceRouting(toolInput, sivsConfig, reachable);
+      appendAuditLog(cwd, result);
+      if (result.action === 'block') {
+        process.stderr.write(
+          `[QE] SIVS routing violation: ${result.stage} stage requires ${result.configuredEngine} engine. ` +
+          `Current agent (${result.actualEngine}) blocked. Use ${result.configuredEngine === 'codex' ? 'codex:codex-rescue' : 'Etask-executor'} subagent instead.`
+        );
+        process.exit(2);
+      }
+      if (result.action === 'fallback') {
+        hints.push(`[SIVS FALLBACK] ${result.stage} stage configured for codex but falling back to claude: ${result.reason}. Fix: ensure codex-plugin-cc is installed and operational.`);
+      }
+    }
+  } catch {
+    // Fault-tolerant: never let SIVS enforcer crash the hook
   }
 }
 

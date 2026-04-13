@@ -241,6 +241,25 @@ export function resolveCodexStateDir(cwd) {
 }
 
 /**
+ * Check if Codex is reachable (plugin available + no recent errors).
+ * @param {object} [state] - Unified state object containing codex_last_error field
+ * @returns {{ reachable: boolean, reason?: string }}
+ */
+export function isCodexReachable(state = {}) {
+  if (!isCodexPluginAvailable()) {
+    return { reachable: false, reason: 'plugin_missing' };
+  }
+  const lastError = state.codex_last_error;
+  if (lastError && lastError.timestamp) {
+    const ageMs = Date.now() - new Date(lastError.timestamp).getTime();
+    if (ageMs < 300000) { // 5 minutes TTL
+      return { reachable: false, reason: `recent_error:${lastError.type || 'unknown'}` };
+    }
+  }
+  return { reachable: true };
+}
+
+/**
  * Get the latest Codex companion job status for the given workspace.
  * @param {string} cwd - Project root directory
  * @returns {{ found: boolean, jobId?: string, status?: string, phase?: string, completedAt?: string, error?: string }}

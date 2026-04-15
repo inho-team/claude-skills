@@ -21,7 +21,23 @@ recommendedModel: haiku
 
 ---
 
-## Step 0: Detect Input Source
+## Step 0: Pre-checks
+
+### 0-0. DESIGN.md Gate (Mandatory)
+
+**Check for `DESIGN.md` in the project root FIRST.**
+
+- **If `DESIGN.md` exists**: Use it as the design token source for the conversion. Proceed.
+- **If `DESIGN.md` does NOT exist**: **STOP.** Do not proceed with Stitch conversion.
+  ```
+  ⚠️ DESIGN.md가 없습니다.
+  Stitch 변환 전에 /Qdesign을 먼저 실행하세요.
+  designmd.ai에서 프로젝트에 맞는 디자인 시스템을 찾아볼 수 있습니다.
+
+  Run /Qdesign to create a design system specification first.
+  ```
+
+### 0-1. Detect Input Source
 
 Determine how Stitch HTML is available:
 

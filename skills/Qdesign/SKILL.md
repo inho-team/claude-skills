@@ -38,7 +38,15 @@ Before defining any design decisions, understand the project.
 3. Check `package.json` for UI framework (React, Vue, Svelte, etc.) and CSS approach (Tailwind, CSS Modules, styled-components)
 4. Scan existing components for implicit design patterns already in use
 
-### 0-2. Ask the User (if no existing assets found)
+**If `DESIGN.md` already exists**: Do NOT proceed to Step 1. Instead:
+- Read the existing DESIGN.md and summarize its current state to the user
+- Ask whether they want to **update** specific sections or **keep it as-is**
+- If updating, apply changes only to the requested sections — preserve everything else
+- Skip Step 0-2 and 0-3 entirely
+
+**If `.impeccable.md` exists but no `DESIGN.md`**: Suggest migrating to DESIGN.md format — `.impeccable.md` contains useful tokens but DESIGN.md is the canonical format used by all QE frontend skills.
+
+### 0-2. Ask the User (if no existing DESIGN.md found)
 
 Ask these questions — skip any already answered by existing assets:
 
@@ -48,6 +56,24 @@ Ask these questions — skip any already answered by existing assets:
 4. **Target platforms** — Desktop-first, mobile-first, or both equally
 5. **Dark mode** — Required, optional, or not needed
 6. **Accessibility level** — WCAG AA (default) or AAA
+
+### 0-3. Browse designmd.ai (if no existing DESIGN.md found)
+
+Before defining tokens from scratch, check if a community design system fits the project:
+
+1. Use **WebFetch** to browse `https://designmd.ai` — a community library of 100+ curated DESIGN.md files
+2. Search by relevant tags matching the project (e.g., `SaaS`, `dashboard`, `clean`, `dark`, `landing`, `portfolio`, `e-commerce`)
+3. Present 3-5 matching design systems to the user with their names and descriptions
+4. If the user selects one:
+   - Fetch the full DESIGN.md content from designmd.ai
+   - Use it as a **base template** — customize colors, fonts, and brand identity for the user's project
+   - Proceed to Step 1 to review and adjust each token section
+5. If the user declines or prefers a custom design: proceed to Step 1 normally
+
+**Rules:**
+- designmd.ai is a reference, not a copy-paste source — always customize to the project
+- Never use a community design system without adapting brand colors and typography
+- If WebFetch fails (network issue), skip gracefully and proceed to Step 1
 
 ---
 

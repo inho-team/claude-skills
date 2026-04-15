@@ -52,36 +52,27 @@ Before executing task items, check SIVS engine configuration:
 - After Codex returns Done, run **Materialization Check** before proceeding
 
 **Codex Materialization Check (Mandatory after Codex Done):**
-Codex may return `Done` before files are actually written (async companion pattern). The companion can take 15–30+ minutes for complex tasks.
+Codex may return `Done` before files are actually written (async companion pattern). The notification hook (`notification.mjs`) handles initial detection and writes state to `unified-state.json` under the `codex_materialization` key.
 
-**Primary method — Codex Job State polling:**
-Codex companion tracks jobs in `state.json` under its plugin data directory. Each job has a status file at `jobs/{job-id}.json` with `{ status, phase, completedAt }`.
+**After every Codex `Done`, execute this sequence:**
 
-After every Codex `Done`:
-1. Resolve the Codex state directory via `CLAUDE_PLUGIN_DATA` env or `$TMPDIR/codex-companion/`
-2. Find the most recent job in `state.json` → `jobs[]` sorted by `updatedAt`
-3. Read the job's status:
-   - `status: "completed"` + `phase: "done"` → Codex finished, check `git diff --stat` for file changes
-   - `status: "running"` → companion still working, start polling
-   - `status: "failed"` → report error to user, offer retry or Claude fallback
-4. **Polling loop** (when status is "running"):
-   - Interval: 30 seconds
-   - Read job file for status update
-   - Duration: 1 hour (120 polls), silent except every 10th poll log to user
-   - On every 10th poll: `[codex-job] polling... Xm elapsed`
-5. On `completed` → verify files via `git diff --stat`, proceed to Verify
-6. After 1 hour with no completion → `AskUserQuestion`:
-   - "Codex companion has not completed after 1 hour."
-   - (a) Keep waiting 1 more hour
-   - (b) Retry with Codex
-   - (c) Fallback to Claude
-   - (d) Check Codex process
-7. If user chooses (a), repeat the 1-hour loop. Keep repeating as long as user extends.
+1. **Read unified state** — check `.qe/state/unified-state.json` → `codex_materialization` field:
+   - `status: "completed"` → notification hook already confirmed files written. Run `git diff --stat` and proceed to **Verify**.
+   - `status: "failed"` → report error to user, offer retry or Claude fallback.
+   - `status: "running"` → poll watcher is active, proceed to step 2.
+   - Field missing → notification hook did not fire, proceed to step 2.
 
-**Fallback method — git diff polling:**
-If Codex state directory is not found, fall back to `git diff --stat` polling with same 30s/1h/ask pattern.
+2. **Read signal file** — `cat .qe/agent-results/codex-ready.signal 2>/dev/null`:
+   - `"detected": true` → files written. Run `git diff --stat`, proceed to **Verify**.
+   - File not found → watcher still polling. Wait 30s, re-read. Repeat up to 120 times (1h).
+   - `"timeout": true` → no changes after 1h. Go to step 3.
 
-Log result to `.qe/agent-results/codex-materialization.md`
+3. **Fallback** — use `AskUserQuestion`:
+   - "Codex companion did not produce file changes after 1 hour."
+   - (a) Keep waiting +1h  (b) Retry with Codex  (c) Implement with Claude  (d) Check Codex process
+   - If user chooses (a), repeat the 1-hour polling loop.
+
+Results are logged to `.qe/agent-results/codex-materialization.md` automatically.
 
 **Fallback guarantee**: Missing `.qe/sivs-config.json` → all stages default to Claude. Zero impact on existing workflows.
 

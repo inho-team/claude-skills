@@ -12,14 +12,27 @@ This skill creates distinctive, production-grade frontend interfaces that avoid 
 
 Before any design work, gather essential context. Code tells you what was built, not who it's for or what it should feel like.
 
-1. **Check for `DESIGN.md`** in project root — if found, use it as the single source of truth for all design tokens, colors, typography, spacing, and component guidelines. Skip questions already answered there.
-2. Check current instructions for existing Design Context
-3. Review `.impeccable.md` from project root (if exists)
-4. **Check for Stitch project** — if the user designed screens in Stitch, run Step 0-S before proceeding
-5. If none of the above exists, suggest running `/Qdesign` first, or ask the user:
-   - **Target audience** and usage context
-   - **Use cases** and user jobs
-   - **Brand personality and tone**
+### 0-0. DESIGN.md Gate (Mandatory)
+
+**Check for `DESIGN.md` in the project root FIRST.**
+
+- **If `DESIGN.md` exists**: Use it as the single source of truth for all design tokens, colors, typography, spacing, and component guidelines. Proceed to Step 0-1.
+- **If `DESIGN.md` does NOT exist**: **STOP.** Do not proceed with frontend implementation.
+  ```
+  ⚠️ DESIGN.md가 없습니다.
+  프론트엔드 작업 전에 /Qdesign을 먼저 실행하세요.
+  designmd.ai에서 프로젝트에 맞는 디자인 시스템을 찾아볼 수 있습니다.
+
+  Run /Qdesign to create a design system specification first.
+  ```
+  - If `.impeccable.md` exists but no `DESIGN.md`: still STOP, but note that `/Qdesign` can migrate `.impeccable.md` tokens into the canonical DESIGN.md format.
+  - Do NOT fall back to asking the user design questions — `/Qdesign` handles that with full context including designmd.ai references.
+
+### 0-1. Additional Context (after DESIGN.md confirmed)
+
+1. Check current instructions for existing Design Context
+2. Review `.impeccable.md` from project root (if exists) — merge any extra tokens not in DESIGN.md
+3. **Check for Stitch project** — if the user designed screens in Stitch, run Step 0-S before proceeding
 
 ### Step 0-S: Stitch Design Context Extraction (When Stitch project exists)
 

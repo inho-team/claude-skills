@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { readStdinJson, getCwd, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { isPersistentModeActiveFromState, getPersistentModeMessageFromState } from './lib/persistent-mode.mjs';
+import { checkCodexResult, formatResultInstruction, isPollWatcherActive } from './lib/codex-result-handler.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -55,46 +56,72 @@ for (const { match, hint, action } of chains) {
     agentChainMatched = true;
 
     if (action === 'codex-poll') {
-      // --- Spawn background poll watcher ---
+      // --- Check immediate result first, then spawn watcher if needed ---
       const signalFile = join(cwd, '.qe', 'agent-results', 'codex-ready.signal');
 
-      // Clean up any stale signal from previous run
-      try { if (existsSync(signalFile)) unlinkSync(signalFile); } catch {}
+      // Check if Codex already finished (companion state or prior signal)
+      const immediateResult = checkCodexResult(cwd);
 
-      const watcherScript = join(__dirname, 'lib', 'codex-poll-watcher.mjs');
-      try {
-        const child = spawn('node', [watcherScript, cwd, '--interval', '30', '--timeout', '3600'], {
-          cwd,
-          detached: true,
-          stdio: 'ignore',
-        });
-        child.unref();
+      if (immediateResult.status === 'completed') {
+        // Codex already done — no need to poll, pass result directly
+        try {
+          const st = readUnifiedState(cwd);
+          st.codex_materialization = { ...immediateResult, checkedAt: new Date().toISOString() };
+          writeUnifiedState(cwd, st);
+        } catch {}
+        hints.push(`[CODEX] ${formatResultInstruction(immediateResult)}`);
+        codexPollStarted = true; // skip watcher spawn
+      } else if (immediateResult.status === 'failed') {
+        try {
+          const st = readUnifiedState(cwd);
+          st.codex_materialization = { ...immediateResult, checkedAt: new Date().toISOString() };
+          writeUnifiedState(cwd, st);
+        } catch {}
+        hints.push(`[CODEX] ${formatResultInstruction(immediateResult)}`);
         codexPollStarted = true;
-      } catch {
-        // If spawn fails, fall back to manual hint
-        codexPollStarted = false;
-      }
-
-      if (codexPollStarted) {
-        hints.push(`[CODEX] Codex rescue returned Done. IMPORTANT: Done does NOT mean files are written. Execute these steps IN ORDER:
-
-STEP 1 — DIAGNOSE (run immediately, do NOT skip):
-  Run: ps aux | grep -i codex | grep -v grep
-  - If NO codex process found → Codex companion is NOT running. Skip to STEP 3 fallback.
-  - If codex process found → companion is alive, proceed to STEP 2.
-
-STEP 2 — WAIT FOR SIGNAL:
-  A background watcher is polling git diff every 30s (1h timeout).
-  Run: cat ${join(cwd, '.qe', 'agent-results', 'codex-ready.signal')} 2>/dev/null || echo "still polling"
-  - If "detected: true" → Codex wrote files. Run git diff --stat and proceed to Verify stage.
-  - If "still polling" → wait 60s and check again. Repeat up to 60 times (1h).
-  - If "detected: false, timeout: true" → 1 hour passed with no changes. Go to STEP 3.
-
-STEP 3 — FALLBACK:
-  Use AskUserQuestion: "Codex companion did not produce file changes. Options: (a) Retry with Codex (b) Implement with Claude instead (c) Check Codex logs"
-  If user picks (c): run find $TMPDIR/codex-companion -name "*.log" 2>/dev/null | tail -5 | xargs tail -30`);
       } else {
-        hints.push('[CODEX] Codex rescue returned Done but watcher failed to start. Run `ps aux | grep codex` to check if companion is alive, then `git diff --stat` for changes. If nothing, implement with Claude instead.');
+        // Not yet done — spawn background poll watcher
+        try { if (existsSync(signalFile)) unlinkSync(signalFile); } catch {}
+
+        const watcherScript = join(__dirname, 'lib', 'codex-poll-watcher.mjs');
+        try {
+          const child = spawn('node', [watcherScript, cwd, '--interval', '30', '--timeout', '3600'], {
+            cwd,
+            detached: true,
+            stdio: 'ignore',
+          });
+          child.unref();
+          codexPollStarted = true;
+        } catch {
+          codexPollStarted = false;
+        }
+
+        // Record pending state so skills know to check back
+        try {
+          const st = readUnifiedState(cwd);
+          st.codex_materialization = {
+            status: 'running',
+            source: 'poll-watcher',
+            startedAt: new Date().toISOString(),
+            signalFile,
+          };
+          writeUnifiedState(cwd, st);
+        } catch {}
+
+        if (codexPollStarted) {
+          hints.push(`[CODEX] Codex rescue returned Done — materialization pending. A background watcher is polling every 30s (1h timeout). To check status NOW, read the result with these steps:
+
+1. Run: cat ${signalFile} 2>/dev/null || echo "still polling"
+   - "detected: true" → files written, proceed to Verify stage
+   - "still polling" → companion still working, check again in 30s
+   - "timeout: true" → 1h passed, use AskUserQuestion for fallback
+
+2. Or check companion directly: import { checkCodexResult } from codex-result-handler.mjs
+
+FALLBACK: If no progress after 2 checks, use AskUserQuestion: (a) Retry Codex (b) Implement with Claude (c) Check Codex logs`);
+        } else {
+          hints.push(`[CODEX] Codex rescue returned Done but poll watcher failed to start. Run \`git diff --stat\` to check for changes. If none, implement with Claude instead.`);
+        }
       }
     } else if (hint) {
       hints.push(hint);

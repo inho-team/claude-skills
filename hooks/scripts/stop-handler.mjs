@@ -9,6 +9,15 @@ import { loadConfig } from './lib/config.mjs';
 import { captureFailure } from './lib/failure-capture.mjs';
 import { appendRating } from './lib/rating-capture.mjs';
 import { isPersistentModeActiveFromState } from './lib/persistent-mode.mjs';
+import {
+  readRalphState,
+  cleanupRalphState,
+  checkRateLimit,
+  recordCircuitBreaker,
+  formatProgressMessage,
+  generateReport,
+} from './lib/ralph-state.mjs';
+import { isAllComplete, parseChecklist } from './lib/checklist-parser.mjs';
 
 const data = readStdinJson();
 if (!data) {
@@ -19,6 +28,61 @@ if (!data) {
 const cwd = getCwd(data);
 const cfg = loadConfig(cwd);
 const sessionId = data.session_id || null;
+
+// --- Ralph Mode Check (highest priority) ---
+// Ralph mode: auto-loops PSE Chain until VERIFY_CHECKLIST is fully complete.
+// Uses checklist completion as the stop criterion, protected by rate limit + circuit breaker.
+let ralphActive = false;
+let ralphBlockReason = null;
+try {
+  const ralphState = readRalphState(cwd);
+  if (ralphState && ralphState.enabled && ralphState.taskSource) {
+    // Check all safety limits first
+    const rateCheck = checkRateLimit(cwd);
+    const cb = ralphState.circuitBreaker || {};
+    const cbTripped = (cb.consecutiveFailures || 0) >= (cb.maxConsecutiveFailures || 3);
+    if (!rateCheck.allowed) {
+      // Rate limit hit → abort loop with warning
+      process.stderr.write(`[Ralph] Rate limit exceeded (${rateCheck.remaining}/h). Loop aborted. Resets in ${Math.round(rateCheck.resetIn/60000)}min.\n`);
+      generateReport(cwd);
+      cleanupRalphState(cwd);
+    } else if (cbTripped) {
+      // Circuit breaker tripped → abort loop with error
+      process.stderr.write(`[Ralph] Circuit breaker tripped (${cb.consecutiveFailures} consecutive failures). Aborting loop.\n`);
+      generateReport(cwd);
+      cleanupRalphState(cwd);
+    } else {
+      // Check VERIFY_CHECKLIST completion
+      const parsed = parseChecklist(ralphState.taskSource);
+      if (parsed.total > 0 && parsed.remaining === 0) {
+        // All items complete → final report + cleanup + allow stop
+        process.stderr.write(`[Ralph] Complete — ${parsed.completed}/${parsed.total} tasks done\n`);
+        generateReport(cwd);
+        cleanupRalphState(cwd);
+      } else if (parsed.total === 0) {
+        // Checklist file missing or empty → safety abort
+        process.stderr.write(`[Ralph] Checklist not readable (${ralphState.taskSource}). Aborting loop.\n`);
+        cleanupRalphState(cwd);
+      } else {
+        // Items still remaining → block stop and reinforce
+        ralphActive = true;
+        const progressMsg = formatProgressMessage(cwd);
+        ralphBlockReason = `[QE Ralph] ${progressMsg} — Continue with next remaining item from ${ralphState.taskSource}. Do not stop.`;
+      }
+    }
+  }
+} catch {
+  // Fault tolerance — never let Ralph check crash the stop handler
+}
+
+if (ralphActive && ralphBlockReason) {
+  console.log(JSON.stringify({
+    continue: false,
+    decision: "block",
+    reason: ralphBlockReason
+  }));
+  process.exit(0);
+}
 
 // Check QE modes in priority order (ultra modes first)
 const modes = [

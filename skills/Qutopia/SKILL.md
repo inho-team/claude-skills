@@ -15,6 +15,8 @@ recommendedModel: haiku
 | `/Qutopia` | Auto mode — classify simple/complex, auto-select work or qa |
 | `/Qutopia --work` | Force work mode (spec pipeline, no quality loop) |
 | `/Qutopia --qa` | Force qa mode (spec pipeline + quality loop) |
+| `/Qutopia --ralph` | Ralph loop — auto-repeat PSE Chain until VERIFY_CHECKLIST is fully complete |
+| `/Qutopia --ralph off` | Stop Ralph loop (manual interrupt) |
 | `/Qutopia off` | Disable autonomous mode |
 | `/Qutopia status` | Show current state |
 
@@ -98,6 +100,53 @@ Request → Gate → Qgenerate-spec → Qrun-task → Qcode-run-task → Verify 
   - Code + security keywords (auth/crypto/payment/JWT/password/secret/token/credential/bcrypt): auto-invoke `Esecurity-officer` before marking verification complete
 - Cross-task audit (after ALL tasks complete): see below
 - Output QA report (per-task results, overall score)
+
+#### `--ralph` mode (autonomous loop)
+
+Extends `--work` / `--qa` with a **session-level repeat loop**: the Stop hook detects incomplete VERIFY_CHECKLIST items and automatically re-injects the next item until all items are marked `[x]`.
+
+```
+Request → Gate → Qgenerate-spec → Qrun-task → Verify ──┐
+                                                         │
+        ┌────────────────────────────────────────────────┘
+        │  (Stop hook detects remaining [ ] items)
+        ↓
+   Re-inject next item → Qrun-task → Verify ──┐
+                                                │
+        ┌───────────────────────────────────────┘
+        │  (all items [x])
+        ↓
+     Generate report → Done
+```
+
+State file: `.qe/state/ralph-state.json` — persists across stop events.
+
+**Auto mode selection:** `--ralph` auto-picks `work` or `qa` using the same rules as default mode (test presence + security keywords).
+
+**Safety limits:**
+
+| Limit | Default | Behavior |
+|-------|---------|----------|
+| `maxLoops` | 50 | Hard stop when exceeded |
+| `maxPerHour` | 100 | Rate limit per wall-clock hour |
+| `maxConsecutiveFailures` | 3 | Circuit breaker — same item failing N times → skip + log |
+| Stale guard | 30 min | Auto-expire via persistent-mode stale guard |
+
+**Context pressure handling:**
+When `tool_calls > 200` in a single loop iteration, the loop automatically:
+1. Invokes `/Qcompact` to compress context
+2. Resumes from the next remaining item with the preserved ralph-state
+
+**Progress output** (every loop cycle):
+```
+[Ralph] 7/12 done (58%) — Loop #4
+```
+
+**Final report** (on completion): `.qe/state/ralph-report.json` with total loops, duration, skipped/failed counts.
+
+**Mutual exclusion:** `--ralph` is **mutually exclusive** with `--work` and `--qa` flags. Internally it selects one of them automatically. Specifying `--ralph --work` is an error.
+
+**Manual interrupt:** `/Qutopia --ralph off` clears ralph-state and exits persistent mode immediately.
 
 ### Retry Loop (both work and qa)
 
@@ -199,6 +248,7 @@ After ALL tasks in a session complete, run cross-task consistency check:
 - **Error handling**: log failure, skip to next task, report all at end
 - **No intermediate user prompts** after activation
 - **Progress output**: periodic reports (e.g., "3/7 tasks complete")
+- **Ralph loop**: When `--ralph` is active, the Stop hook blocks premature termination until VERIFY_CHECKLIST is fully complete. See `--ralph` mode section for safety limits.
 
 ## Execution Procedure
 

@@ -1,6 +1,6 @@
 {
   "name": "qe-framework",
-  "version": "6.3.6",
+  "version": "6.4.0",
   "description": "QE Framework v5 — Claude-first SIVS (Spec-Implement-Verify-Supervise) loop with optional Codex bridge via codex-plugin-cc.",
   "author": { "name": "inho-team" },
   "skills": "./skills/",

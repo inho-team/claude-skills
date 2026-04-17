@@ -1,6 +1,6 @@
 ---
 name: Qdesign
-description: "Creates a DESIGN.md specification that defines the visual identity, design system, and component guidelines for a project. All frontend skills (Qfrontend-design, Qstitch-apply, coding-experts) reference this file as the single source of truth. Distinct from Qfrontend-design which implements UI code — this skill defines the design spec before any code is written."
+description: "Creates a DESIGN.md specification that defines the visual identity, design system, and component guidelines for a project. All frontend skills (Qfrontend-design, Qstitch-apply, coding-experts) reference this file as the single source of truth. Distinct from Qfrontend-design which implements UI code — this skill defines the design spec before any code is written. Supports live extraction from reference URLs via Chrome MCP for automated token generation."
 metadata:
   author: qe-framework
   version: "1.0.0"
@@ -74,6 +74,52 @@ Before defining tokens from scratch, check if a community design system fits the
 - designmd.ai is a reference, not a copy-paste source — always customize to the project
 - Never use a community design system without adapting brand colors and typography
 - If WebFetch fails (network issue), skip gracefully and proceed to Step 1
+
+### 0-R. Reference Site Live Extraction (Optional)
+
+When the user provides reference URLs in Step 0-2 question #3, automatically extract design tokens from those live pages.
+
+**Prerequisites:** Chrome MCP connection active (`mcp__claude-in-chrome__*` tools available). If Chrome MCP is not connected, skip this step and proceed to Step 1 with manual token definition.
+
+**Procedure:**
+
+1. Navigate to the reference URL using `mcp__claude-in-chrome__navigate`
+2. Execute `skills/Qdesign/lib/extract-styles.js` via `mcp__claude-in-chrome__javascript_tool`
+3. Pass the extracted JSON to `skills/Qdesign/lib/normalize-tokens.mjs`'s `normalizeAll()` function
+4. Present the normalized tokens to the user for review:
+
+```
+Extracted from [URL]:
+
+Colors:
+  Primary: [color] (oklch)  — used [N] times
+  Secondary: [color] (oklch)
+  Accent: [color] (oklch)
+  Neutrals: [50..950 scale preview]
+
+Typography:
+  Headings: [font-family]
+  Body: [font-family]
+  [Blacklist warnings if any]
+
+Spacing: [base unit] with [N] scale steps detected
+Border Radius: [dominant style]
+Motion: [fast/normal/slow durations]
+
+Site Profile: [surface type] for [audience type] (confidence: [N]%)
+```
+
+5. Ask the user: "Use these tokens as the starting point for DESIGN.md?" (Yes / Adjust / Ignore)
+6. If Yes: pre-fill Step 1 token sections with extracted values
+7. If Adjust: proceed to Step 1 with extracted values as suggestions (user modifies)
+8. If Ignore: proceed to Step 1 with manual definition (original flow)
+
+**Multi-reference support:** If multiple URLs provided, extract from each and merge:
+- Colors: union with frequency-weighted ranking
+- Typography: prefer the primary reference site
+- Spacing/radius/shadows: prefer the site with most consistent system
+
+**Fallback:** If Chrome MCP is unavailable or extraction fails, log a warning and continue with manual flow. Never block Qdesign on extraction failure.
 
 ---
 
@@ -269,6 +315,19 @@ Compile all decisions into a single `DESIGN.md` at the project root.
 3. Contrast ratios documented for text on primary surfaces — **FAIL** if missing
 4. Dark mode mapping defined (if dark mode required) — **FAIL** if missing
 5. At least 6 core components specified — **FAIL** if fewer
+6. Run `skills/Qdesign/lib/validate-design-md.mjs`'s `validateContent()` on the generated markdown
+7. **PASS** (score ≥ 80): proceed to Step 4
+8. **WARN** (score 60-79): show warnings, ask user whether to fix or proceed
+9. **FAIL** (score < 60): show failures, fix automatically, re-validate (max 2 iterations)
+
+Validation output format:
+```
+DESIGN.md Validation: [PASS/WARN/FAIL] (score: [N]/100)
+
+Passed: [N] | Warned: [N] | Failed: [N]
+
+[List of WARN/FAIL items with details]
+```
 
 ---
 

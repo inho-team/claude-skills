@@ -393,3 +393,31 @@ export function updateClaudeStatus(cwd, uuid, newStatus) {
 export function getCwd() {
   return process.cwd();
 }
+
+/**
+ * Get a namespace from unified state. Returns the namespace object,
+ * or an empty object if the namespace does not exist.
+ *
+ * @param {object} state - Unified state object (from readUnifiedState)
+ * @param {string} ns - Namespace key (e.g., 'ralph', 'utopia', 'sivs')
+ * @returns {object} The namespace data
+ */
+export function getNamespace(state, ns) {
+  if (!state || !ns) return {};
+  return state[ns] || {};
+}
+
+/**
+ * Set a namespace in unified state and persist to disk.
+ * Merges the data into state[ns] and writes the full state.
+ *
+ * @param {string} cwd - Project root directory
+ * @param {object} state - Unified state object (from readUnifiedState)
+ * @param {string} ns - Namespace key
+ * @param {object} data - Data to set in the namespace
+ */
+export function setNamespace(cwd, state, ns, data) {
+  if (!state || !ns) return;
+  state[ns] = data;
+  writeUnifiedState(cwd, state);
+}

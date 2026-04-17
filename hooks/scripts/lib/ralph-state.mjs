@@ -5,12 +5,13 @@
  * Ralph State — Qutopia Ralph integration state management, rate limiting,
  * progress tracking, and report generation.
  *
- * Ralph state is stored in `.qe/state/ralph-state.json` and provides:
+ * Ralph state is stored in `.qe/state/unified-state.json`'s `ralph` namespace and provides:
  *   - Initialization with mode, task source, and configuration
  *   - Rate limiting (max requests per hour)
  *   - Circuit breaker (consecutive failure tracking)
  *   - Loop counting and progress updates
  *   - Report generation with duration and completion stats
+ *   - Auto-migration from legacy ralph-state.json
  *
  * Integration pattern:
  *
@@ -72,19 +73,10 @@
  * @module ralph-state
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { readUnifiedState, writeUnifiedState } from './state.mjs';
+import { readFileSync, existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
+import { readUnifiedState, writeUnifiedState, getNamespace, setNamespace, atomicWriteJson } from './state.mjs';
 import { exitPersistentMode } from './persistent-mode.mjs';
-
-/**
- * Get ralph state file path.
- * @param {string} cwd - Project root directory
- * @returns {string} Absolute path to .qe/state/ralph-state.json
- */
-function getRalphStatePath(cwd) {
-  return join(cwd, '.qe', 'state', 'ralph-state.json');
-}
 
 /**
  * Get ralph report file path
@@ -96,25 +88,27 @@ function getRalphReportPath(cwd) {
 }
 
 /**
- * Atomically write ralph state JSON file
- * @param {string} filePath - Target file path
- * @param {object} data - JSON data to write
+ * Auto-migrate from standalone ralph-state.json to unified-state namespace.
+ * Called once on first read; deletes the standalone file after migration.
+ * @param {string} cwd - Project root directory
  */
-function atomicWriteRalphFile(filePath, data) {
-  const dir = dirname(filePath);
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
-
-  try {
-    writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (err) {
-    throw err;
+function migrateIfNeeded(cwd) {
+  const legacyPath = join(cwd, '.qe', 'state', 'ralph-state.json');
+  if (existsSync(legacyPath)) {
+    try {
+      const legacy = JSON.parse(readFileSync(legacyPath, 'utf8'));
+      const state = readUnifiedState(cwd);
+      if (!state.ralph || !state.ralph.enabled) {
+        state.ralph = legacy;
+        writeUnifiedState(cwd, state);
+      }
+      unlinkSync(legacyPath);
+    } catch {}
   }
 }
 
 /**
- * Create ralph state in .qe/state/ralph-state.json with defaults.
+ * Create ralph state in unified-state.json's `ralph` namespace with defaults.
  * Initializes a new ralph state object with mode, task source, and configuration
  * for rate limiting, loop counting, and circuit breaker tracking.
  *
@@ -129,7 +123,7 @@ function atomicWriteRalphFile(filePath, data) {
  */
 export function createRalphState(cwd, options) {
   const now = new Date().toISOString();
-  const state = {
+  const ralphData = {
     enabled: true,
     mode: options.mode || 'work',
     taskSource: options.taskSource || '',
@@ -154,88 +148,91 @@ export function createRalphState(cwd, options) {
     lastLoopAt: now,
   };
 
-  const filePath = getRalphStatePath(cwd);
-  atomicWriteRalphFile(filePath, state);
+  const state = readUnifiedState(cwd);
+  setNamespace(cwd, state, 'ralph', ralphData);
 
-  return state;
+  return ralphData;
 }
 
 /**
- * Read ralph state from .qe/state/ralph-state.json.
- * Returns parsed JSON state object or null if file does not exist.
+ * Read ralph state from unified-state.json's `ralph` namespace.
+ * Auto-migrates from legacy ralph-state.json if needed.
+ * Returns parsed state object or null if not enabled or missing.
  *
  * @param {string} cwd - Project root directory
- * @returns {object|null} Parsed state object, or null if file missing
+ * @returns {object|null} Parsed state object, or null if not enabled
  */
 export function readRalphState(cwd) {
-  const filePath = getRalphStatePath(cwd);
+  migrateIfNeeded(cwd);
 
-  if (!existsSync(filePath)) {
+  const state = readUnifiedState(cwd);
+  const ralph = getNamespace(state, 'ralph');
+
+  if (!ralph.enabled) {
     return null;
   }
 
-  try {
-    const raw = readFileSync(filePath, 'utf8');
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  return ralph;
 }
 
 /**
- * Update ralph progress with given progress object
- * Merges progress fields and updates lastLoopAt timestamp
+ * Update ralph progress with given progress object.
+ * Merges progress fields and updates lastLoopAt timestamp.
+ *
  * @param {string} cwd - Project root directory
  * @param {object} progress - Progress delta/updates (completed, remaining, skipped, etc.)
  * @returns {object|null} Updated state, or null if state missing
  */
 export function updateRalphProgress(cwd, progress) {
-  const state = readRalphState(cwd);
-  if (!state) return null;
+  const unifiedState = readUnifiedState(cwd);
+  const ralph = getNamespace(unifiedState, 'ralph');
 
-  state.progress = {
-    ...state.progress,
+  if (!ralph.enabled) return null;
+
+  ralph.progress = {
+    ...ralph.progress,
     ...progress,
   };
-  state.lastLoopAt = new Date().toISOString();
+  ralph.lastLoopAt = new Date().toISOString();
 
-  const filePath = getRalphStatePath(cwd);
-  atomicWriteRalphFile(filePath, state);
+  setNamespace(cwd, unifiedState, 'ralph', ralph);
 
-  return state;
+  return ralph;
 }
 
 /**
- * Check rate limit: compare current time against hourStart
- * If > 1h has elapsed, reset currentHourCount to 0 and update hourStart
+ * Check rate limit: compare current time against hourStart.
+ * If > 1h has elapsed, reset currentHourCount to 0 and update hourStart.
+ *
  * @param {string} cwd - Project root directory
  * @returns {object} { allowed: boolean, remaining: number, resetIn: number }
  */
 export function checkRateLimit(cwd) {
-  const state = readRalphState(cwd);
-  if (!state) {
+  const unifiedState = readUnifiedState(cwd);
+  const ralph = getNamespace(unifiedState, 'ralph');
+
+  if (!ralph.enabled) {
     return { allowed: true, remaining: -1, resetIn: 0 };
   }
 
   const now = new Date();
-  const hourStart = new Date(state.rateLimit.hourStart);
+  const hourStart = new Date(ralph.rateLimit.hourStart);
   const elapsedMs = now - hourStart;
   const HOUR_MS = 60 * 60 * 1000;
 
   // If > 1 hour has elapsed, reset
   if (elapsedMs > HOUR_MS) {
-    state.rateLimit.currentHourCount = 0;
-    state.rateLimit.hourStart = now.toISOString();
-    state.lastLoopAt = now.toISOString();
+    ralph.rateLimit.currentHourCount = 0;
+    ralph.rateLimit.hourStart = now.toISOString();
+    ralph.lastLoopAt = now.toISOString();
 
-    const filePath = getRalphStatePath(cwd);
-    atomicWriteRalphFile(filePath, state);
+    setNamespace(cwd, unifiedState, 'ralph', ralph);
 
-    const remaining = state.rateLimit.maxPerHour;
+    const remaining = ralph.rateLimit.maxPerHour;
     return { allowed: true, remaining, resetIn: 0 };
   }
 
-  const remaining = state.rateLimit.maxPerHour - state.rateLimit.currentHourCount;
+  const remaining = ralph.rateLimit.maxPerHour - ralph.rateLimit.currentHourCount;
   const allowed = remaining > 0;
   const resetIn = HOUR_MS - elapsedMs;
 
@@ -243,71 +240,73 @@ export function checkRateLimit(cwd) {
 }
 
 /**
- * Increment loop count and rate limit counter
- * Updates lastLoopAt and increments rateLimit.currentHourCount
+ * Increment loop count and rate limit counter.
+ * Updates lastLoopAt and increments rateLimit.currentHourCount.
+ *
  * @param {string} cwd - Project root directory
  * @returns {object} { exceeded: boolean, loopCount: number, maxLoops: number }
  */
 export function incrementLoop(cwd) {
-  const state = readRalphState(cwd);
-  if (!state) {
+  const unifiedState = readUnifiedState(cwd);
+  const ralph = getNamespace(unifiedState, 'ralph');
+
+  if (!ralph.enabled) {
     return { exceeded: true, loopCount: 0, maxLoops: 50 };
   }
 
-  state.loopCount += 1;
-  state.rateLimit.currentHourCount += 1;
-  state.lastLoopAt = new Date().toISOString();
+  ralph.loopCount += 1;
+  ralph.rateLimit.currentHourCount += 1;
+  ralph.lastLoopAt = new Date().toISOString();
 
-  const filePath = getRalphStatePath(cwd);
-  atomicWriteRalphFile(filePath, state);
+  setNamespace(cwd, unifiedState, 'ralph', ralph);
 
-  const exceeded = state.loopCount >= state.maxLoops;
-  return { exceeded, loopCount: state.loopCount, maxLoops: state.maxLoops };
+  const exceeded = ralph.loopCount >= ralph.maxLoops;
+  return { exceeded, loopCount: ralph.loopCount, maxLoops: ralph.maxLoops };
 }
 
 /**
- * Record circuit breaker state: reset on success, increment on failure
- * If consecutiveFailures >= maxConsecutiveFailures, circuit is tripped
+ * Record circuit breaker state: reset on success, increment on failure.
+ * If consecutiveFailures >= maxConsecutiveFailures, circuit is tripped.
+ *
  * @param {string} cwd - Project root directory
  * @param {boolean} success - True if operation succeeded, false otherwise
  * @returns {object} { tripped: boolean, consecutiveFailures: number, max: number }
  */
 export function recordCircuitBreaker(cwd, success) {
-  const state = readRalphState(cwd);
-  if (!state) {
+  const unifiedState = readUnifiedState(cwd);
+  const ralph = getNamespace(unifiedState, 'ralph');
+
+  if (!ralph.enabled) {
     return { tripped: false, consecutiveFailures: 0, max: 3 };
   }
 
   if (success) {
-    state.circuitBreaker.consecutiveFailures = 0;
+    ralph.circuitBreaker.consecutiveFailures = 0;
   } else {
-    state.circuitBreaker.consecutiveFailures += 1;
+    ralph.circuitBreaker.consecutiveFailures += 1;
   }
 
-  state.lastLoopAt = new Date().toISOString();
+  ralph.lastLoopAt = new Date().toISOString();
 
-  const filePath = getRalphStatePath(cwd);
-  atomicWriteRalphFile(filePath, state);
+  setNamespace(cwd, unifiedState, 'ralph', ralph);
 
-  const tripped = state.circuitBreaker.consecutiveFailures >= state.circuitBreaker.maxConsecutiveFailures;
+  const tripped = ralph.circuitBreaker.consecutiveFailures >= ralph.circuitBreaker.maxConsecutiveFailures;
   return {
     tripped,
-    consecutiveFailures: state.circuitBreaker.consecutiveFailures,
-    max: state.circuitBreaker.maxConsecutiveFailures,
+    consecutiveFailures: ralph.circuitBreaker.consecutiveFailures,
+    max: ralph.circuitBreaker.maxConsecutiveFailures,
   };
 }
 
 /**
- * Clean up ralph state: deletes ralph-state.json and exits persistent mode
+ * Clean up ralph state: deletes the ralph namespace and exits persistent mode.
+ *
  * @param {string} cwd - Project root directory
  */
 export function cleanupRalphState(cwd) {
-  const filePath = getRalphStatePath(cwd);
-  if (existsSync(filePath)) {
-    try {
-      unlinkSync(filePath);
-    } catch {}
-  }
+  const state = readUnifiedState(cwd);
+  delete state.ralph;
+  writeUnifiedState(cwd, state);
 
   // Exit persistent mode
   try {
@@ -317,47 +316,53 @@ export function cleanupRalphState(cwd) {
 
 /**
  * Generate completion report: reads current state, computes duration,
- * writes .qe/state/ralph-report.json with completion metadata
+ * writes .qe/state/ralph-report.json with completion metadata.
+ *
  * @param {string} cwd - Project root directory
  * @returns {object|null} Report object, or null if state missing
  */
 export function generateReport(cwd) {
-  const state = readRalphState(cwd);
-  if (!state) return null;
+  const unifiedState = readUnifiedState(cwd);
+  const ralph = getNamespace(unifiedState, 'ralph');
+
+  if (!ralph.enabled) return null;
 
   const now = new Date();
-  const startedAt = new Date(state.startedAt);
+  const startedAt = new Date(ralph.startedAt);
   const durationMs = now - startedAt;
 
   const report = {
     completedAt: now.toISOString(),
-    totalLoops: state.loopCount,
+    totalLoops: ralph.loopCount,
     durationMs,
-    progress: state.progress,
-    skipped: state.progress.skipped || 0,
-    failed: state.circuitBreaker.consecutiveFailures,
-    circuitBreakerTripped: state.circuitBreaker.consecutiveFailures >= state.circuitBreaker.maxConsecutiveFailures,
+    progress: ralph.progress,
+    skipped: ralph.progress.skipped || 0,
+    failed: ralph.circuitBreaker.consecutiveFailures,
+    circuitBreakerTripped: ralph.circuitBreaker.consecutiveFailures >= ralph.circuitBreaker.maxConsecutiveFailures,
   };
 
   const filePath = getRalphReportPath(cwd);
-  atomicWriteRalphFile(filePath, report);
+  atomicWriteJson(filePath, report);
 
   return report;
 }
 
 /**
- * Format a progress message from current ralph state
- * Returns string like "7/12 done (58%) — Loop #4" or empty string if state missing
+ * Format a progress message from current ralph state.
+ * Returns string like "7/12 done (58%) — Loop #4" or empty string if state missing.
+ *
  * @param {string} cwd - Project root directory
  * @returns {string} Formatted progress message
  */
 export function formatProgressMessage(cwd) {
-  const state = readRalphState(cwd);
-  if (!state) return '';
+  const unifiedState = readUnifiedState(cwd);
+  const ralph = getNamespace(unifiedState, 'ralph');
 
-  const { completed, total } = state.progress;
+  if (!ralph.enabled) return '';
+
+  const { completed, total } = ralph.progress;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const loopNum = state.loopCount;
+  const loopNum = ralph.loopCount;
 
   return `${completed}/${total} done (${percent}%) — Loop #${loopNum}`;
 }

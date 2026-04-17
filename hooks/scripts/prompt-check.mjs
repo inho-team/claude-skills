@@ -245,15 +245,30 @@ if (!isAmbiguous) try {
     }
   }
 
-  if (bestMatch && bestScore >= cfg.intent_confidence_threshold) {
+  // --- 3-Tier Confidence Classification ---
+  const threshold = cfg.intent_confidence_threshold || 10;
+  let confidence_level = 'LOW';
+  if (bestScore >= threshold * 1.5) {
+    confidence_level = 'HIGH';
+  } else if (bestScore >= threshold) {
+    confidence_level = 'MEDIUM';
+  }
+
+  if (bestMatch && confidence_level !== 'LOW') {
     state.intent_route = {
       intent: bestMatch.intent,
       routed_to: bestMatch.routed_to,
       confidence: bestScore,
+      confidence_level: confidence_level,
       classified_at: new Date().toISOString()
     };
     writeUnifiedState(cwd, state);
-    hints.push(`[INTENT] SKILL REQUIRED: Invoke /${bestMatch.routed_to} BEFORE generating any response. Do NOT answer without the skill. (intent: ${bestMatch.intent})`);
+
+    if (confidence_level === 'HIGH') {
+      hints.push(`[INTENT] SKILL REQUIRED: Invoke /${bestMatch.routed_to} BEFORE generating any response. Do NOT answer without the skill. (intent: ${bestMatch.intent})`);
+    } else {
+      hints.push(`[INTENT] Skill suggested: /${bestMatch.routed_to} may be relevant to this request. (intent: ${bestMatch.intent}, confidence: MEDIUM)`);
+    }
   }
 } catch {
   // Fault-tolerant: skip classification on error

@@ -10,6 +10,7 @@ import { loadPendingContext } from './lib/context-loader.mjs';
 import { atomicWriteJson, readUnifiedState, writeUnifiedState, getContextMemo, isMemoValid, incrementBlockedReads, getBlockedReads } from './lib/state.mjs';
 import { getTeamContext } from './lib/team-detect.mjs';
 import { checkDelegation, updateDelegationStats } from './lib/delegation-enforcer.mjs';
+import { emitBlock } from './lib/block-emitter.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -45,11 +46,11 @@ if (toolName === 'Read') {
     const blockedCount = incrementBlockedReads(state);
     // Persist state before exiting so the counter is saved
     try { writeUnifiedState(cwd, state); } catch {}
-    process.stderr.write(
-      `[QE] MEMO HIT: ${filePath} — cached content available, skipping redundant read. ` +
-      `Use the content from your earlier read of this file. (${blockedCount} reads blocked this session)`
-    );
-    process.exit(2);
+    emitBlock({
+      skill: '_memo',
+      reason: `MEMO HIT: ${filePath} — cached content available`,
+      action: `Use the content from your earlier read of this file. (${blockedCount} reads blocked this session)`,
+    });
   }
 }
 
@@ -85,7 +86,11 @@ if (isEarlySession) {
 
   const route = state.intent_route;
   if (route && route.routed_to && route.intent) {
-    hints.push(`SKILL REQUIRED: You MUST invoke /${route.routed_to} before responding. (intent: ${route.intent})`);
+    if (route.confidence_level === 'HIGH') {
+      hints.push(`SKILL REQUIRED: You MUST invoke /${route.routed_to} before responding. (intent: ${route.intent})`);
+    } else {
+      hints.push(`Skill suggested: /${route.routed_to} may be relevant. (intent: ${route.intent}, confidence: MEDIUM)`);
+    }
   }
 }
 
@@ -257,8 +262,12 @@ if (['Glob', 'Grep', 'Read'].includes(toolName) && !stats._analysis_hinted) {
   // Uses exit code 2 = hard block. The harness refuses the tool call — no negotiation.
   for (const rule of overrideRules) {
     if (bypassSkill !== rule.skill) {
-      process.stderr.write(`[QE] ${rule.msg}`);
-      process.exit(2);
+      emitBlock({
+        skill: rule.skill,
+        reason: rule.msg,
+        action: `Use /${rule.skill} instead`,
+        bypass: `skill-bypass.json with skill:"${rule.skill}"`,
+      });
     }
   }
 
@@ -288,12 +297,11 @@ if (toolName === 'AskUserQuestion') {
       const labels = (q.options || []).map(o => (o.label || '').toLowerCase());
       const hasCodexOption = labels.some(l => l.includes('codex') || l.includes('hybrid'));
       if (!hasCodexOption) {
-        process.stderr.write(
-          '[QE] SIVS option guard: "Claude + Codex Hybrid" option is MISSING. ' +
-          'All three SIVS options (Claude Only, Claude + Codex Hybrid, Configure Later) are mandatory. ' +
-          'Re-call AskUserQuestion with all three options included.'
-        );
-        process.exit(2);
+        emitBlock({
+          skill: '_sivs_options',
+          reason: 'SIVS option guard: "Claude + Codex Hybrid" option is MISSING',
+          action: 'Re-call AskUserQuestion with all three options: Claude Only, Claude + Codex Hybrid, Configure Later',
+        });
       }
     }
   }
@@ -350,7 +358,7 @@ if (['Write', 'Edit'].includes(toolName)) {
 }
 
 // --- Delegation Enforcer (Agent tool calls) ---
-if (toolName === 'Agent' || toolName.includes('Agent')) {
+if (toolName === 'Agent') {
   const toolInput = data.tool_input || data.toolInput || {};
   try {
     const result = checkDelegation(cwd, toolInput);
@@ -364,7 +372,7 @@ if (toolName === 'Agent' || toolName.includes('Agent')) {
 }
 
 // --- SIVS Routing Enforcer (Agent tool calls) ---
-if (toolName === 'Agent' || toolName.includes('Agent')) {
+if (toolName === 'Agent') {
   try {
     const { enforceRouting, appendAuditLog } = await import('./lib/sivs-enforcer.mjs');
     const bridgePath = join(__dirname, '..', '..', 'scripts', 'lib', 'codex_bridge.mjs');
@@ -378,11 +386,12 @@ if (toolName === 'Agent' || toolName.includes('Agent')) {
       const result = enforceRouting(toolInput, sivsConfig, reachable);
       appendAuditLog(cwd, result);
       if (result.action === 'block') {
-        process.stderr.write(
-          `[QE] SIVS routing violation: ${result.stage} stage requires ${result.configuredEngine} engine. ` +
-          `Current agent (${result.actualEngine}) blocked. Use ${result.configuredEngine === 'codex' ? 'codex:codex-rescue' : 'Etask-executor'} subagent instead.`
-        );
-        process.exit(2);
+        emitBlock({
+          skill: result.configuredEngine === 'codex' ? 'codex:codex-rescue' : 'Etask-executor',
+          reason: `SIVS routing violation: ${result.stage} stage requires ${result.configuredEngine} engine`,
+          action: `Use ${result.configuredEngine === 'codex' ? 'codex:codex-rescue' : 'Etask-executor'} subagent instead`,
+          bypass: `sivs-config.json — change ${result.stage}.engine to claude`,
+        });
       }
       if (result.action === 'fallback') {
         hints.push(`[SIVS FALLBACK] ${result.stage} stage configured for codex but falling back to claude: ${result.reason}. Fix: ensure codex-plugin-cc is installed and operational.`);

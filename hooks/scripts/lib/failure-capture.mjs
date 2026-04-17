@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+
+// Maximum failure captures per UUID to prevent log bloat
+const MAX_FAILURES_PER_UUID = 5;
 
 // CONTEXT.md line limit
 const CONTEXT_MAX_LINES = 200;
@@ -214,6 +217,12 @@ export function captureFailure(cwd) {
     const yearMonth = now.toISOString().slice(0, 7); // YYYY-MM
 
     const slug = makeSlug(detection.taskUuid, detection.reasons);
+
+    // Enforce per-UUID cap: remove oldest failures if at limit
+    if (slug) {
+      pruneFailuresForSlug(cwd, yearMonth, slug);
+    }
+
     const dirName = `${timestamp}_${slug}`;
     const failureDir = join(getFailuresDir(cwd), yearMonth, dirName);
     mkdirSync(failureDir, { recursive: true });
@@ -243,6 +252,26 @@ export function captureFailure(cwd) {
  * Read the most recent N failure CONTEXT.md files for session injection.
  * Returns compact summary string or empty string if no failures.
  */
+/**
+ * Remove oldest failure directories for a given slug when count exceeds MAX_FAILURES_PER_UUID.
+ * Keeps the most recent entries, deletes the rest (FIFO).
+ */
+function pruneFailuresForSlug(cwd, yearMonth, slug) {
+  try {
+    const monthDir = join(getFailuresDir(cwd), yearMonth);
+    if (!existsSync(monthDir)) return;
+    const dirs = readdirSync(monthDir)
+      .filter(d => d.endsWith(`_${slug}`))
+      .sort(); // chronological (timestamp prefix)
+    const excess = dirs.length - (MAX_FAILURES_PER_UUID - 1); // -1 because we're about to add one
+    if (excess > 0) {
+      for (let i = 0; i < excess; i++) {
+        try { rmSync(join(monthDir, dirs[i]), { recursive: true, force: true }); } catch {}
+      }
+    }
+  } catch {}
+}
+
 export function readRecentFailures(cwd, limit = 3) {
   const failuresDir = getFailuresDir(cwd);
   if (!existsSync(failuresDir)) return '';

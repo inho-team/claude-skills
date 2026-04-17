@@ -202,7 +202,14 @@ Sets the character budget for slash command tool descriptions so all skills fit 
 ├── agent-results/
 ├── agent-triggers/
 ├── .archive/
+├── config.json
 ├── context/
+├── docs/
+├── handoffs/
+├── learning/
+│   ├── failures/
+│   └── signals/
+├── MISTAKE.md
 ├── profile/
 ├── tasks/
 │   └── pending/

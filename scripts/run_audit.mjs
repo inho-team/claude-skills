@@ -135,7 +135,24 @@ function validateStepOrder(body) {
  */
 function validateCodeBlockLanguageTags(body) {
   const lines = body.split('\n');
-  const untaggedCount = lines.filter(line => line.trim() === '```').length;
+  let insideBlock = false;
+  let untaggedCount = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (insideBlock) {
+      // Closing fence
+      if (trimmed === '```') {
+        insideBlock = false;
+      }
+    } else if (trimmed.startsWith('```')) {
+      insideBlock = true;
+      // Opening fence without language tag (just ```)
+      if (trimmed === '```') {
+        untaggedCount++;
+      }
+    }
+  }
 
   if (untaggedCount > 0) {
     return { valid: false, warning: `WARN: Found ${untaggedCount} code blocks without language tag` };

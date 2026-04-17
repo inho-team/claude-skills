@@ -193,6 +193,43 @@ After test+review, verify documentation coverage of changed code:
 - After fix, re-run comment checker and return to verification
 - If coverage reaches 80%+, proceed to Step 5
 
+### Step 4.9: Adversarial Gate
+
+After all verification passes (Steps 4–4.8), run an adversarial stress-test before final completion.
+
+**Skip conditions (fast path):** `type: docs`/`analysis`, checklist items ≤ 3, or Utopia `--work` mode → skip entirely, proceed to Step 5.
+In Utopia `--qa` mode: this step is **MANDATORY** — never skip.
+
+**Procedure:**
+
+1. Invoke `/Qcritical-review --stage verify` with:
+   - Changed files list (from Step 1)
+   - TASK_REQUEST goals and constraints
+   - VERIFY_CHECKLIST validation criteria
+2. Qcritical-review spawns adversarial sub-agents (Devil's Advocate, Edge Case Hunter) that stress-test:
+   - Unhandled edge cases in the implementation
+   - Assumptions that were never validated
+   - Security implications of the changes
+   - Regression risks for adjacent functionality
+3. Results feed back into judgment:
+
+| Verdict | Action |
+|---------|--------|
+| **PASS** | Proceed to Step 5 (Report) |
+| **WARN** | Show warnings to user via `AskUserQuestion`: "Fix and re-verify" / "Accept warnings" / "Stop" |
+| **FAIL** | Treat as Step 4 failure — enter fix loop (Ecode-debugger), then return to Step 2 |
+
+**Output:**
+```
+[Adversarial Gate] PASS — no critical issues found
+```
+or
+```
+[Adversarial Gate] WARN — 2 edge cases identified:
+- {issue 1}
+- {issue 2}
+```
+
 ### Step 5: Report Results
 
 Summarize and report final results.

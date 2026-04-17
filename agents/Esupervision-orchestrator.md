@@ -26,8 +26,11 @@ Expert-level quality supervision orchestrator. Routes tasks to domain-specific a
 ## Supervision Standards
 > Full reference: `agents/references/supervision-scales.md`
 
+### Adversarial Supervisor Skip Condition
+The adversarial supervisor (`Qcritical-review --stage supervise`) is **only invoked for `type: code` tasks**. Skip for `type: docs` and `type: analysis`.
+
 ### Task Type Routing
-- **Code**: `Ecode-quality-supervisor`, `Esecurity-officer`
+- **Code**: `Ecode-quality-supervisor`, `Esecurity-officer`, `Qcritical-review` (adversarial supervisor for FAIL/WARN from prior stages)
 - **Docs**: `Edocs-supervisor`
 - **Analysis**: `Eanalysis-supervisor`
 
@@ -73,6 +76,11 @@ if ANY FAIL -> FAIL
 elif ANY PARTIAL -> PARTIAL
 else PASS
 ```
+
+**Adversarial supervisor grading (code tasks only):**
+- If `Qcritical-review` returns **FAIL** → overall supervision grade = **FAIL** (blocks merge)
+- If `Qcritical-review` returns **WARN** → include in report, overall grade = max(existing, **PARTIAL**)
+- If `Qcritical-review` returns **PASS** → no impact on grade
 
 ### 4. Reporting & Remediation
 - Return structured summary to **Qrun-task**.

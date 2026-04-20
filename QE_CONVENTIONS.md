@@ -79,9 +79,9 @@ Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows 
 2. **PSE Chain status, one line** — Show current completion/progress status
 3. **Task description line** — One-line natural language summary of what the next command does, placed directly above the `Next:` line
 4. **`Next command:` block** — Place alone in a code block for easy copying, **must include UUID or Phase argument**
-5. **No explanations** — Do not add alternatives, elaborations, or choices after the command
+5. **No explanations** — Do not add alternatives, elaborations, or choices after the command. **Never include a fallback line** (`or: /Qgenerate-spec ...`, `If that doesn't work: ...`). `/Qgs` is the registered alias for `/Qgenerate-spec` — a duplicate line is noise.
 6. **Task type branching** — Guide only `type: code` to `/Qcode-run-task`. For docs/analysis/deletion tasks, guide to the next Phase
-7. **Shortcut fallback** — `/Qgs` may not be recognized, so always include `If not: /Qgenerate-spec ...`
+7. **Short alias only** — Use the short phase label (e.g., `Phase 2: Codex Bridge`), not a copy of the full phase description. Max ~6 words.
 
 ### Phase Progress Display
 
@@ -121,9 +121,9 @@ Roadmap
 PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
 Codex CLI 브릿지 연동 및 fallback 로직 구현
-Next: /Qgs Phase 2: Codex Bridge
-  or: /Qgenerate-spec Phase 2: Codex Bridge
+다음: /Qgs Phase 2: Codex Bridge
 ```
+(Note: `Next:` label above is shown in Korean as `다음:` because the task description is in Korean. Always localize the label to match user input language.)
 
 ### When entire Roadmap is complete
 ```
@@ -144,7 +144,7 @@ All phases done. Finalize with /Qcommit
 ## Global Output Rules
 
 ### Response Language
-All skills MUST respond in the same language the user used in their most recent message. If the user writes in Korean, all output — section titles, descriptions, summaries, handoff messages — must be in Korean. Only the following are exempt and stay in English:
+All skills MUST respond in the same language the user used in their most recent message. If the user writes in Korean, all output — section titles, descriptions, summaries, handoff messages, **and handoff labels (e.g., `Next:` → `다음:`)** — must be in Korean. Only the following are exempt and stay in English:
 - File names and paths (e.g., `TASK_REQUEST_abc123.md`)
 - Code and code blocks
 - Skill/command names (e.g., `/Qgs`, `/Qatomic-run`)

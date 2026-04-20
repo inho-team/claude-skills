@@ -232,9 +232,9 @@ Roadmap
 PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
 {NextPhaseDescription — 다음 Phase 작업 내용 한 줄 요약}
-Next: /Qgs Phase {X+1}: {NextPhaseName}
-  or: /Qgenerate-spec Phase {X+1}: {NextPhaseName}
+{Next label — 사용자 입력 언어로, 예: "다음:" / "Next:"}: /Qgs Phase {X+1}: {짧은 별칭, 최대 6단어}
 ```
+(Fallback line 금지 — `/Qgs`는 `/Qgenerate-spec`의 alias이므로 중복이다.)
 When all Phases are complete:
 ```
 All phases done. Finalize with /Qcommit

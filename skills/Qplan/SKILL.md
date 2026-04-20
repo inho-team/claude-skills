@@ -154,15 +154,17 @@ PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 ### Section 4: Next Command (always last, must be easy to copy)
 
 ```
-{PhaseDescription — 해당 Phase 작업 내용 한 줄 요약}
-Next Command:
+{Phase 한 줄 요약 — 사용자 입력 언어로}
+{다음 명령 라벨 — 사용자 입력 언어로, 예: "다음 명령:" / "Next Command:" / "次のコマンド:"}
 
-  /Qgs Phase {X}: {PhaseName}
-
-  If that doesn't work: /Qgenerate-spec Phase {X}: {PhaseName}
+  /Qgs Phase {X}: {짧은 별칭}
 ```
 
-This must be the **last thing displayed** — no trailing explanation, no alternatives. The user copies and pastes this. **If the response does not end with a `Next Command:` block, the handoff has failed.**
+**Rules:**
+- `{짧은 별칭}`: Phase의 짧은 이름만 쓴다 (예: "인증 모듈", "JPA Audit"). Phase의 전체 설명/요구사항/긴 문장을 복사하지 않는다. 최대 6단어.
+- **라벨 언어는 사용자 입력 언어를 따른다**. 사용자가 한글로 말하면 "다음 명령:", 영어로 말하면 "Next Command:".
+- Fallback 줄(`If that doesn't work: /Qgenerate-spec ...`)은 **쓰지 않는다** — `/Qgs`는 `/Qgenerate-spec`의 공식 alias이므로 중복이다.
+- 이 블록이 **응답의 마지막**이어야 한다. 뒤에 설명/대안 금지. **`Next Command` 블록 없이 응답이 끝나면 handoff 실패다.**
 
 ## Will
 - Create roadmap, requirements, and phase structure.

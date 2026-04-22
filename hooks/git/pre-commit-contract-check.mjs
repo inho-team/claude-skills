@@ -12,7 +12,7 @@
 //   node hooks/git/pre-commit-contract-check.mjs || exit 1
 //
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { verifyLock } from '../scripts/lib/contract-lock.mjs';
 
@@ -21,10 +21,12 @@ import { verifyLock } from '../scripts/lib/contract-lock.mjs';
  */
 async function main() {
   try {
-    // Get staged files (ACM = added/copied/modified)
+    // Get staged files (ACM = added/copied/modified).
+    // execFileSync (argv array, no shell) blocks filename-injection — git permits
+    // metacharacters in filenames which would be executed by shell interpolation.
     let stagedFiles;
     try {
-      const output = execSync('git diff --cached --name-only --diff-filter=ACM', {
+      const output = execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=ACM'], {
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe']
       });
@@ -52,8 +54,9 @@ async function main() {
       let content;
 
       try {
-        // Get the staged content from git index
-        content = execSync(`git show :${file}`, {
+        // Get the staged content from git index — execFileSync argv form so that
+        // filenames with shell metachars (`;`, backticks, `$()`) cannot be executed.
+        content = execFileSync('git', ['show', `:${file}`], {
           encoding: 'utf8',
           stdio: ['pipe', 'pipe', 'pipe']
         });

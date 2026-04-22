@@ -187,6 +187,33 @@ TASK_REQUEST and VERIFY_CHECKLIST must match the user's language.
 - After completing tasks, if recurring patterns found, suggest template improvements
 - On user approval, reflect patterns in future generation
 
+## Contract Candidate Extraction (Optional)
+
+After draft creation (Step 2) and before handing off, check whether the TASK_REQUEST opts into **contract candidate extraction**.
+
+**Opt-in marker**: If the TASK_REQUEST body contains the exact HTML-comment marker `<!-- contract-candidates: auto -->`, enter this flow. If absent, skip entirely.
+
+**Flow**:
+1. Read the newly drafted TASK_REQUEST text.
+2. Call `extractCandidates(taskRequestText)` from `hooks/scripts/lib/contract-candidate-extractor.mjs`.
+3. For each candidate `{name, targetPath, suggestedSignature}`:
+   - Read `.qe/contracts/TEMPLATE.md` as the base.
+   - Fill in a draft:
+     - Replace the example `Signature` body with a code block containing `suggestedSignature` (empty string initially — user fills in later).
+     - Replace the example `Purpose` with a single line: `Business-logic contract for \`${targetPath}\``
+     - Leave `Constraints`, `Invariants`, `Error Modes` as lightly pre-filled placeholders (e.g., `- TBD (candidate draft)`).
+     - Omit `Flow` (optional section) unless the user fills it.
+   - Write to `.qe/contracts/pending/${name}.md`.
+4. **Do not write to `.qe/contracts/active/`** — user must review and promote manually. This preserves the opt-in, user-in-the-loop principle (D011).
+5. Report to the user: a bulleted list of newly created pending drafts with their paths, and a note that they can be promoted via `/Qcontract approve` after review.
+
+**Skip conditions**:
+- Marker absent → skip silently.
+- `extractCandidates` returns `[]` → skip with a short note ("Marker present but no `.mjs` output items found in checklist.").
+- A pending draft with the same name already exists → skip that one, warn the user ("Draft already pending: {name}.md").
+
+**Reference**: See `.qe/contracts/README.md` and D011 in `.qe/planning/DECISION_LOG.md`.
+
 ## Handoff
 After generating spec files (on "Generate Only"), display using the standard handoff format from `QE_CONVENTIONS.md`:
 

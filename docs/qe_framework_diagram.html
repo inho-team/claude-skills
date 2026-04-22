@@ -543,7 +543,7 @@
     list-style:none; padding:0; margin:0;
     display:grid;
     grid-template-columns: repeat(6, 1fr);
-    gap:6px 12px;
+    gap:4px 8px;
   }
   .skill-group li{
     font-family:var(--mono);
@@ -1511,10 +1511,48 @@
     .io-flow{grid-template-columns:1fr; gap:14px}
     .io-arrow{transform:rotate(90deg); text-align:center}
   }
+
+  /* ── Top nav (intro ↔ reference) ─────────────────── */
+  .top-nav{
+    display:flex; gap:2px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.15em;
+    margin-bottom:24px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .top-nav a{
+    color:var(--ink-faint); text-decoration:none;
+    padding:6px 12px; border-radius:3px;
+  }
+  .top-nav a.active{ color:var(--accent); background:rgba(110,231,183,.08) }
+  .top-nav a:hover{ color:var(--ink) }
+
+  /* ── Section TL;DR ───────────────────────────────── */
+  .tldr{
+    background:var(--bg-soft);
+    border-left:3px solid var(--accent-2);
+    border-radius:3px;
+    padding:10px 16px;
+    margin:0 0 20px;
+    font-size:13px; color:var(--ink-dim);
+    line-height:1.6;
+  }
+  .tldr::before{
+    content:"TL;DR";
+    font-family:var(--mono); font-size:10px;
+    color:var(--accent-2); letter-spacing:.2em;
+    margin-right:10px;
+    font-weight:600;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <div class="top-nav">
+    <a href="qe_framework_intro.html">← 처음이라면 · INTRO</a>
+    <a href="qe_framework_diagram.html" class="active">전체 구조 · REFERENCE</a>
+  </div>
 
   <!-- HEADER -->
   <header>
@@ -1564,6 +1602,8 @@
     <span class="tag">4-STEP PIPELINE</span>
   </div>
 
+  <div class="tldr">사용자 동선 4단계 — 큰 작업이든 버그 하나든 같은 파이프라인. 각 단계는 기본 모델이 정해져 있지만 <code>/Qsivs-config</code>로 자유 변경 가능. <b style="color:var(--accent)">Qplan이 Micro 규모로 판정하면 로드맵 없이 곧바로 /Qgs로 자동 핸드오프</b> — 사용자가 규모 판단을 안 해도 됨.</div>
+
   <div class="pse">
     <div class="stage plan">
       <div class="idx">STEP 01 / PLAN</div>
@@ -1612,6 +1652,8 @@
     <div class="rule"></div>
     <span class="tag">SYSTEM STRUCTURE</span>
   </div>
+
+  <div class="tldr">프레임워크는 6개 레이어로 구성. 위(User)일수록 사용자 가시영역, 아래(Engine Bridge)일수록 실행 기반. 레이어 간 통신은 오직 아티팩트(파일) 경유.</div>
 
   <p style="margin:0 0 18px; color:var(--ink-dim); font-size:14px">
     프레임워크는 명확한 6개 레이어로 분리된다. 위 레이어(User)일수록 사용자 가시영역, 아래 레이어(Engine Bridge)일수록 실행 기반.
@@ -1669,6 +1711,8 @@
     <div class="rule"></div>
     <span class="tag">QUALITY GATE + SUPPORT SYSTEMS</span>
   </div>
+
+  <div class="tldr">SIVS는 PSE 파이프라인 안에서 도는 품질 게이트. Spec → Implement → Verify → Supervise 4단계. Verify(했나?)와 Supervise(잘 했나?)는 다른 일. FAIL이면 REMEDIATION으로 루프 재진입(최대 3회).</div>
 
   <div class="two-col">
     <!-- SIVS -->
@@ -1770,6 +1814,8 @@
     <span class="tag">FOUNDATIONAL AXIOMS</span>
   </div>
 
+  <div class="tldr">모든 스킬·에이전트·훅이 따르는 5 공리 + 5 의무. 핵심: "토큰 낭비는 드리프트", "병렬이 기본, 순차는 폴백", "Spec 없이 실행 금지".</div>
+
   <p style="margin:0 0 18px; color:var(--ink-dim); font-size:14px">
     SIVS 루프 외에도 프레임워크 전반에 스며든 5가지 공리. 모든 스킬·에이전트·훅은 이 공리에 어긋나면 <code>Ttune</code>으로 교정된다.
   </p>
@@ -1807,16 +1853,16 @@
     </div>
   </div>
 
-  <div style="margin-top:22px; padding:14px 18px; background:var(--panel); border:1px solid var(--line-bright); border-radius:6px">
-    <div style="font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.15em; margin-bottom:10px">MANDATORY OBLIGATIONS (5)</div>
-    <ol style="margin:0; padding-left:20px; font-size:12.5px; color:var(--ink-dim); line-height:1.8">
+  <details style="margin-top:22px; padding:14px 18px; background:var(--panel); border:1px solid var(--line-bright); border-radius:6px">
+    <summary style="font-family:var(--mono); font-size:11px; color:var(--accent); letter-spacing:.15em; cursor:pointer; list-style:none">▸ MANDATORY OBLIGATIONS (5) — 펼치기</summary>
+    <ol style="margin:12px 0 0; padding-left:20px; font-size:12.5px; color:var(--ink-dim); line-height:1.8">
       <li><b style="color:var(--ink)">Respect the spec</b> — TASK_REQUEST 없이 실행 금지. 없으면 먼저 생성.</li>
       <li><b style="color:var(--ink)">Do not skip verification</b> — VERIFY_CHECKLIST 미완료 상태에서 complete 금지.</li>
       <li><b style="color:var(--ink)">Parallel first</b> — 의존 없는 두 작업은 반드시 병렬로.</li>
       <li><b style="color:var(--ink)">Remediation is a new spec</b> — ad-hoc 수정 금지, REMEDIATION_REQUEST 생성.</li>
       <li><b style="color:var(--ink)">The loop is the product</b> — 기능·스킬·에이전트는 수단, spec→구현→검증 루프가 목적.</li>
     </ol>
-  </div>
+  </details>
 
   <!-- SECTION 5: Multi-Engine Routing -->
   <div class="section-head">
@@ -1825,6 +1871,8 @@
     <div class="rule"></div>
     <span class="tag">/Qsivs-config</span>
   </div>
+
+  <div class="tldr">SIVS 4단계 각각을 Claude 또는 Codex에 독립 할당 가능. 동일 엔진이 자기 결과를 채점하는 "자가 평가 편향" 회피. 기본값은 모두 Claude.</div>
 
   <div class="routing">
     <p style="margin:0; color:var(--ink-dim); font-size:14px">
@@ -1869,6 +1917,8 @@
     <span class="tag">.qe/context/</span>
   </div>
 
+  <div class="tldr">프로젝트 컨텍스트를 폴더별로 분할 저장. 작업 디렉토리와 매칭되는 파일만 자동 로드 — 단일 CLAUDE.md 방식 대비 약 60% 토큰 절약.</div>
+
   <div class="ctx-demo">
 <span class="cmt"># 작업 위치: src/frontend/components/Button.tsx</span><br>
 .qe/context/<br>
@@ -1887,6 +1937,8 @@
     <div class="rule"></div>
     <span class="tag">Q* + M* + coding-experts</span>
   </div>
+
+  <div class="tldr">165+ 스킬을 12 카테고리로 분류. PSE Core, Meta, PM, Docs/Writing, Coding Experts(71명), QA/Testing, Data/Analysis 등. 각 스킬은 frontmatter + Role + Workflow + Handoff의 4-part 표준.</div>
 
   <!-- Coding experts breakdown -->
   <div class="skill-grid">
@@ -2088,6 +2140,8 @@ PSE: [x] Plan [x] Spec [x] Execute [x] Complete
     <span class="tag">21 AGENTS · 3 TIERS</span>
   </div>
 
+  <div class="tldr">21개 백그라운드 에이전트(E* 접두사) + 3 모델 티어 — Haiku(빠름·병렬), Sonnet(균형·구현), Opus(깊이·전략). Delegation Enforcer 훅이 용도에 맞는 모델을 자동 주입.</div>
+
   <div class="skill-group" style="margin-top:0">
     <div class="title">Agent Fleet · E* Agents (21)</div>
     <ul style="grid-template-columns: repeat(4, 1fr)">
@@ -2140,11 +2194,17 @@ PSE: [x] Plan [x] Spec [x] Execute [x] Complete
     <span class="tag">DETERMINISTIC CONTROL</span>
   </div>
 
-  <p style="margin:0 0 20px; color:var(--ink-dim); font-size:14px; max-width:900px">
-    Hook은 Claude의 라이프사이클 각 지점에서 트리거되는 <b style="color:var(--accent)">결정론적 실행 지점</b>이다.
-    프롬프트가 "~하지 마"라고 <b style="color:var(--ink)">제안</b>한다면, Hook은 <b style="color:var(--ink)">강제</b>한다.
-    QE Framework는 Claude Code의 표준 훅에 올라타서 모델 라우팅·중복 읽기 차단·자동 압축·파이프라인 지속성을 구현한다.
+  <div class="tldr">9종 이벤트 훅(SessionStart·PreToolUse·PostToolUse·Stop 등)으로 LLM 판단과 독립된 게이트 제공 — 컨텍스트 주입·권한 체크·상태 동기화·압축 트리거를 결정론적으로 처리.</div>
+
+  <p style="margin:0 0 10px; color:var(--ink); font-size:14px; max-width:900px">
+    Hook은 Claude 라이프사이클의 <b style="color:var(--accent)">결정론적 실행 지점</b> — 프롬프트가 "제안"이라면 Hook은 "강제"다.
   </p>
+  <ul style="margin:0 0 20px; padding-left:20px; color:var(--ink-dim); font-size:13px; line-height:1.7; max-width:900px">
+    <li>모델 라우팅 — Delegation Enforcer가 에이전트별 recommendedModel 자동 주입</li>
+    <li>중복 I/O 차단 — ContextMemo로 같은 파일 재읽기 방지</li>
+    <li>자동 압축 — 140k 토큰 돌파 시 Ecompact 트리거, 170k에서 강제</li>
+    <li>파이프라인 지속성 — Stop 시 task 상태 보존, 재시작 시 이어서</li>
+  </ul>
 
   <div class="hook-layout">
     <!-- LEFT: Session Lifecycle -->
@@ -2328,6 +2388,8 @@ PSE: [x] Plan [x] Spec [x] Execute [x] Complete
     <div class="rule"></div>
     <span class="tag">USER QUERY → FINAL RESPONSE</span>
   </div>
+
+  <div class="tldr">한 번의 사용자 쿼리가 프레임워크의 6 레이어를 어떻게 통과하는지 전체 경로 스냅샷 — 프롬프트 수신부터 최종 응답까지 어떤 훅·스킬·에이전트가 언제 개입하는지 한눈에.</div>
 
   <p style="margin:0 0 20px; color:var(--ink-dim); font-size:14px; max-width:900px">
     사용자가 한 줄 입력하고 검증된 응답을 받기까지, Context·Hook·PSE Chain·SIVS Loop가

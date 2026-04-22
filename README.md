@@ -4,6 +4,16 @@
 
 > 165 skills | 21 agents | Folder-aware context memory | SIVS quality gate
 
+---
+
+### 📖 5분 만에 이해하기
+
+[**처음이라면 · Intro →**](https://inho-team.github.io/qe-framework/qe_framework_intro.html) · [**전체 구조 · Reference →**](https://inho-team.github.io/qe-framework/qe_framework_diagram.html)
+
+브라우저로 렌더된 가이드. 설치 없이 누구든 바로 볼 수 있습니다.
+
+---
+
 ```
 /Qplan  →  /Qgs  →  /Qatomic-run  →  /Qcode-run-task
  Plan       Spec     Execute          Verify

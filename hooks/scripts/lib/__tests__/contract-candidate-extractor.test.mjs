@@ -336,3 +336,49 @@ test('extractCandidates: sanitizes special characters in name', async (t) => {
   assert.equal(result.length, 1);
   assert.equal(result[0].name, 'foobar');
 });
+
+// ============================================================================
+// Regression: section-terminator lookahead must handle end-of-input AND must
+// not truncate on any character (previous bug: `\Z` was literal /z/i in the
+// section regex, which truncated paths containing `z`/`Z`).
+// ============================================================================
+
+test('extractCandidates: extracts when checklist is the last section (no trailing heading)', async (t) => {
+  const text = `# Task Request
+<!-- contract-candidates: auto -->
+## Checklist
+- [ ] alpha → output: src/alpha.mjs
+- [ ] beta  → output: src/beta.mjs`;
+  const result = extractCandidates(text);
+  assert.equal(result.length, 2, 'should extract both items even without trailing ## heading');
+  assert.equal(result[0].targetPath, 'src/alpha.mjs');
+  assert.equal(result[1].targetPath, 'src/beta.mjs');
+});
+
+test('extractCandidates: paths containing z/Z characters are not truncated', async (t) => {
+  const text = `# Task Request
+<!-- contract-candidates: auto -->
+## Checklist
+- [ ] analyzer   → output: src/analyzer.mjs
+- [ ] serializer → output: src/foo-bar_baz.mjs
+- [ ] zone       → output: src/Zone.mjs
+## Other`;
+  const result = extractCandidates(text);
+  assert.equal(result.length, 3, 'z/Z in paths must not terminate section capture');
+  assert.equal(result[0].targetPath, 'src/analyzer.mjs');
+  assert.equal(result[1].targetPath, 'src/foo-bar_baz.mjs');
+  assert.equal(result[2].targetPath, 'src/Zone.mjs');
+});
+
+test('extractCandidates: hyphen/underscore filenames extract correctly', async (t) => {
+  const text = `<!-- contract-candidates: auto -->
+## Checklist
+- [ ] hyphen     → output: src/my-module.mjs
+- [ ] underscore → output: src/my_module.mjs
+- [ ] mixed      → output: src/foo-bar_baz.mjs`;
+  const result = extractCandidates(text);
+  assert.equal(result.length, 3);
+  assert.equal(result[0].targetPath, 'src/my-module.mjs');
+  assert.equal(result[1].targetPath, 'src/my_module.mjs');
+  assert.equal(result[2].targetPath, 'src/foo-bar_baz.mjs');
+});

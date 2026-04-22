@@ -1,10 +1,12 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { computeContractHash } from './contract-hash.mjs';
+import { assertValidContractName } from './contract-manifest.mjs';
 
 /**
  * Approval lock file manager for contract layer.
  * Maintains `.qe/contracts/.lock` (JSON) tracking approved contract hashes.
+ * All name-accepting entry points validate via assertValidContractName (defense-in-depth).
  */
 
 const LOCK_PATH = '.qe/contracts/.lock';
@@ -52,6 +54,7 @@ export function writeLock(lockData, baseDir) {
  * @returns {{hash: string, approved_at: string, reason: string}} — the entry written
  */
 export function updateLockEntry(name, hash, reason, baseDir) {
+  assertValidContractName(name);
   const lockData = readLock(baseDir);
 
   const entry = {
@@ -73,6 +76,7 @@ export function updateLockEntry(name, hash, reason, baseDir) {
  * @returns {boolean} — true if removed, false if not present
  */
 export function removeLockEntry(name, baseDir) {
+  assertValidContractName(name);
   const lockData = readLock(baseDir);
 
   if (!(name in lockData)) {
@@ -93,6 +97,7 @@ export function removeLockEntry(name, baseDir) {
  * @returns {{status: 'match'} | {status: 'mismatch', expected: string, actual: string} | {status: 'unapproved'}}
  */
 export function verifyLock(name, content, baseDir) {
+  assertValidContractName(name);
   const lockData = readLock(baseDir);
 
   if (!(name in lockData)) {

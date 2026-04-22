@@ -247,3 +247,63 @@ test('contract-lock: reason truncation to 500 chars max', () => {
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test('contract-lock: updateLockEntry rejects reserved names (TEMPLATE, README)', () => {
+  const tempDir = makeTempDir();
+  try {
+    assert.throws(
+      () => updateLockEntry('TEMPLATE', 'sha256:abc', 'should fail', tempDir),
+      /Invalid contract name/
+    );
+    assert.throws(
+      () => updateLockEntry('template', 'sha256:abc', 'should fail', tempDir),
+      /Invalid contract name/
+    );
+    assert.throws(
+      () => updateLockEntry('README', 'sha256:abc', 'should fail', tempDir),
+      /Invalid contract name/
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('contract-lock: lock-layer rejects prototype-pollution vectors', () => {
+  const tempDir = makeTempDir();
+  try {
+    assert.throws(
+      () => updateLockEntry('__proto__', 'sha256:abc', 'should fail', tempDir),
+      /Invalid contract name/
+    );
+    assert.throws(
+      () => verifyLock('constructor', 'content', tempDir),
+      /Invalid contract name/
+    );
+    assert.throws(
+      () => removeLockEntry('prototype', tempDir),
+      /Invalid contract name/
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('contract-lock: lock-layer rejects path traversal and separators', () => {
+  const tempDir = makeTempDir();
+  try {
+    assert.throws(
+      () => updateLockEntry('../etc/passwd', 'sha256:abc', 'should fail', tempDir),
+      /Invalid contract name/
+    );
+    assert.throws(
+      () => updateLockEntry('foo/bar', 'sha256:abc', 'should fail', tempDir),
+      /Invalid contract name/
+    );
+    assert.throws(
+      () => verifyLock('foo\\bar', 'content', tempDir),
+      /Invalid contract name/
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});

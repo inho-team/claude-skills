@@ -9,9 +9,14 @@
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
+// Names that must never be usable as contract identifiers.
+// TEMPLATE/README are authoring docs; __proto__/constructor/prototype are JS special keys.
+const RESERVED_NAMES = new Set(['template', 'readme', '__proto__', 'constructor', 'prototype']);
+
 /**
- * Validate a contract name: alphanumeric, hyphen, underscore only.
- * Rejects path separators and parent-directory traversal.
+ * Validate a contract name: alphanumeric, hyphen, underscore only; not reserved.
+ * Rejects path separators, parent-directory traversal, and reserved authoring filenames
+ * (TEMPLATE, README) plus JS prototype-pollution vectors.
  * @param {string} name
  * @returns {boolean}
  */
@@ -19,7 +24,13 @@ export function isValidContractName(name) {
   if (!name || typeof name !== 'string' || name.length === 0 || name.length > 64) {
     return false;
   }
-  return /^[a-zA-Z0-9_-]+$/.test(name);
+  if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+    return false;
+  }
+  if (RESERVED_NAMES.has(name.toLowerCase())) {
+    return false;
+  }
+  return true;
 }
 
 /**

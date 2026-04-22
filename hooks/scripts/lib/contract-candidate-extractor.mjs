@@ -51,9 +51,13 @@ export function extractCandidates(taskRequestText) {
     return [];
   }
 
-  // Locate the checklist section
+  // Locate the checklist section.
+  // Match from the "## 체크리스트" / "## Checklist" heading up to the next "## "
+  // heading or end-of-input. Note: JS regex does not support \Z; use $ with the
+  // /s-equivalent [\s\S] class so the lookahead alternates between next heading
+  // and true end-of-input.
   const checklistMatch = taskRequestText.match(
-    /##\s+(?:체크리스트|Checklist)\s*\n([\s\S]*?)(?=\n##\s+|\Z)/i
+    /##\s+(?:체크리스트|Checklist)\s*\n([\s\S]*?)(?=\n##\s+|$)/i
   );
 
   if (!checklistMatch) {

@@ -86,3 +86,16 @@ $Qinit
 
 - quota 차단 시 임시 대체 runner는 `--role-override`로 재실행합니다.
 - 이 override는 현재 실행에만 적용되고 `team-config.json`은 바꾸지 않습니다.
+
+## ⚠️ 자율 실행 모드 (`/Qutopia`)
+
+`/Qutopia`는 **모든 확인 프롬프트를 건너뛰고** 자동으로 진행하는 세션 스위치입니다. 작업은 빨라지지만, 잘못된 파일을 커밋하거나 `main`에 직접 push할 수 있는 위험이 있습니다.
+
+**켜기 전 필수 체크**:
+1. 요구사항이 명확한가 (원자적 checklist 있음)
+2. 모든 단계가 되돌릴 수 있는가 (force-push · 마이그레이션 · 파괴적 삭제 없음)
+3. working tree가 깨끗한가 (무관한 변경 섞이지 않음)
+4. 공유 branch(`main`/`master`)가 아닌가
+5. 자동 커밋·자동 iteration을 허용하는가
+
+전체 가이드와 켜고 끄는 권장 패턴은 [USAGE_GUIDE.md §10](USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling)에서 확인하세요. **세션 종료 전에는 반드시 `/Qutopia off`를 실행**하세요.

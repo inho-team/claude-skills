@@ -86,3 +86,16 @@ $Qinit
 
 - 如果 Codex 或 Gemini 因 quota 限制暂时不可用，可以使用 `--role-override` 做一次性重分配。
 - 这个 override 只影响当前运行，不会修改 `team-config.json`。
+
+## ⚠️ 自主执行模式 (`/Qutopia`)
+
+`/Qutopia` 是一个会话开关，会**跳过所有确认提示**并自动推进。任务会加速完成，但也会带来提交错误文件、直接向 `main` push 等风险。
+
+**启用前必须确认**:
+1. 需求是否明确（存在原子化的 checklist）
+2. 每一步是否都可回滚（无 force-push、迁移、破坏性删除）
+3. working tree 是否干净（没有无关改动混入）
+4. 不是共享分支（`main`/`master`）
+5. 是否接受自动提交与自动迭代
+
+完整指南及建议的开关使用模式请参阅 [USAGE_GUIDE.md §10](USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling)。**会话结束前务必执行 `/Qutopia off`**。

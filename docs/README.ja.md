@@ -86,3 +86,16 @@ $Qinit
 
 - quota 制限で runner が使えない場合は `--role-override` で一時的に再割り当てします。
 - この override は現在の実行だけに適用され、`team-config.json` は書き換えません。
+
+## ⚠️ 自律実行モード (`/Qutopia`)
+
+`/Qutopia` は **すべての確認プロンプトをスキップ** して自動で進行させるセッションスイッチです。作業は速くなりますが、誤ったファイルのコミットや `main` への直接 push といったリスクも伴います。
+
+**有効化前の必須チェック**:
+1. 要件が明確か（アトミックな checklist あり）
+2. すべてのステップがロールバック可能か（force-push・マイグレーション・破壊的削除なし）
+3. working tree がクリーンか（無関係な変更が混入していない）
+4. 共有ブランチ（`main`/`master`）ではないか
+5. 自動コミット・自動イテレーションを許容できるか
+
+全ガイドと ON/OFF の推奨パターンは [USAGE_GUIDE.md §10](USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling) を参照してください。**セッション終了前に必ず `/Qutopia off` を実行**してください。

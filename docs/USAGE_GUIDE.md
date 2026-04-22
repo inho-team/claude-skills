@@ -194,6 +194,7 @@ This does not rewrite `team-config.json`.
 /Qhelp
 /Qsecret
 /Qmcp-sync
+/Qutopia status   # check autonomous mode (read section 11 first!)
 ```
 
 ## 9. Secret Management
@@ -207,7 +208,76 @@ Capabilities:
 
 See [SECRETS.md](SECRETS.md) for commands and backend behavior.
 
-## 10. When To Read Which Doc
+## 10. Autonomous Mode (`/Qutopia`) — ⚠️ Read Before Enabling
+
+`/Qutopia` turns on a session-level flag that tells **every** QE skill to stop asking questions and drive itself. It is the single fastest way to finish a well-scoped task, and also the single fastest way to commit the wrong files, push to `main`, or chain into destructive operations you didn't approve.
+
+### What it actually does
+
+When `.qe/state/utopia-state.json` is `enabled: true`:
+
+- `AskUserQuestion` calls auto-select the **first (recommended)** option.
+- `Qgenerate-spec` skips the "Generate & Execute / Generate Only / Needs Revision" prompt and proceeds to Atomic-Run.
+- `Qrun-task` skips Step 2 approval and moves files straight to `in-progress`.
+- `Qcommit` runs automatically after task completion.
+- `--ralph` loops the PSE Chain until `VERIFY_CHECKLIST` is fully green, without human gate between rounds.
+- `.claude/settings.json` gains broad tool permissions: `Bash(*)`, `Agent(*)`, `WebFetch`, `WebSearch`, `NotebookEdit`.
+
+### Commands
+
+| Command | Behavior |
+|---------|----------|
+| `/Qutopia status` | Show current state — run this **before** toggling |
+| `/Qutopia` | Auto-classify SIMPLE vs COMPLEX, pick work/qa mode |
+| `/Qutopia --work` | Spec → Run → Verify (no quality loop) |
+| `/Qutopia --qa` | Spec → Run → Verify + full code-quality loop |
+| `/Qutopia --ralph` | Loop until VERIFY_CHECKLIST is fully checked (⚠ no human gate between rounds) |
+| `/Qutopia --ralph off` | Stop Ralph loop |
+| `/Qutopia off` | Disable — **always run this before ending the session** |
+
+### ⚠️ Pre-flight Checklist (ALL must be true)
+
+Do not enable Qutopia unless you can honestly say yes to every one of these:
+
+1. **Requirements are explicit.** You have a concrete `TASK_REQUEST` with atomic checklist items, not a vague goal. Ambiguity + autonomy = wrong answer fast.
+2. **Every planned step is reversible.** No `push --force`, no schema migrations against prod, no `rm -rf`, no operations that mutate external systems (Slack, Jira, deploys). If something goes sideways you can `git reset`, revert the PR, and move on.
+3. **Commit scope is narrow.** The working tree only contains changes related to this task. Stray edits from other work will end up in the auto-commit.
+4. **You're not on a shared branch.** Never enable Qutopia while sitting on `main`/`master` on a team repo. Create a feature branch first.
+5. **You accept auto-commit and (with `--ralph`) auto-iteration** without re-confirmation per round.
+
+If any of these is false, keep Qutopia OFF and accept the prompts — the 10 extra minutes of `AskUserQuestion` wait is cheaper than one wrong push.
+
+### Safe patterns
+
+- ✅ **Batch patch across files** on a feature branch (e.g., applying a known rename across 30 files).
+- ✅ **Re-run a known-good PSE chain** after a minor spec tweak.
+- ✅ **Overnight `--ralph` loop** on an isolated branch with CI gating the PR.
+
+### Unsafe patterns (leave Qutopia OFF)
+
+- ❌ New project kick-off, `/Qinit` bootstrapping, ambiguous requirements.
+- ❌ First time using a skill or agent — you don't yet know what its "recommended" option is.
+- ❌ Any task that touches production configs, secrets, or external services.
+- ❌ Working on `main` directly, or with uncommitted unrelated changes in the tree.
+- ❌ Using a new/untrusted MCP server (auto-allowed tool permissions widen the blast radius).
+
+### Recommended lifecycle
+
+```
+git checkout -b feat/<scope>       # isolate blast radius
+/Qutopia status                    # confirm it's OFF
+/Qplan "do X"                      # interactive planning (still wants you in the loop here)
+/Qgs Phase 1: ...                  # generates TASK_REQUEST + VERIFY_CHECKLIST
+# Review the generated spec manually — this is your last chance to catch wrong defaults
+/Qutopia --work                    # NOW flip the switch, for this bounded run only
+# ... skills execute without prompting ...
+/Qutopia off                       # ALWAYS disable when the bounded run ends
+git log && git diff origin/main    # audit what Qutopia committed before pushing
+```
+
+Leaving Qutopia on across sessions is the single most common way to get surprise commits.
+
+## 11. When To Read Which Doc
 
 - Philosophy and design intent: [PHILOSOPHY.md](PHILOSOPHY.md)
 - Detailed role routing and config: [MULTI_MODEL_SETUP.md](MULTI_MODEL_SETUP.md)

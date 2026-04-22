@@ -397,6 +397,9 @@
 
     <dt>Handoff</dt>
     <dd>スキル終了時に次のコマンドを知らせる標準ブロック。ユーザーが貼り付けられるよう短く。</dd>
+
+    <dt>⚠️ Qutopia Mode</dt>
+    <dd>全てのスキルが確認プロンプトをスキップし、最初のオプションを自動選択するようにする自律実行スイッチ。高速だが、誤ったファイルのコミット、<code>main</code> への push、破壊的操作の連鎖実行のリスクあり。<strong>要件が明確で、全ステップがロールバック可能で、独立したフィーチャーブランチ上のときのみ</strong>有効化。完全な事前チェックリストは <a href="USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling">USAGE_GUIDE §10</a> を参照。セッション終了前には必ず <code>/Qutopia off</code> を実行。</dd>
   </dl>
 
   <!-- NEXT -->

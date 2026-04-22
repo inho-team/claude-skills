@@ -260,6 +260,7 @@ Delegation Enforcer auto-injects the correct model via pre-tool-use hook.
 | Category | Skills | Count |
 |----------|--------|-------|
 | **Core PSE** | `Qplan` `Qgs` `Qatomic-run` `Qrun-task` `Qcode-run-task` `Qinit` | 6 |
+| **Autonomy** ⚠️ | `Qutopia` *(auto-approves everything — read warning below before using)* | 1 |
 | **Context & Config** | `Qcontext` `Qsivs-config` `Qrefresh` `Qmemory` `Qcompact` | 5 |
 | **Project** | `Qmap-codebase` `Qcommit` `Qbranch` `Qarchive` `Qproject-sync` | 5 |
 | **PM** | `Qpm-prd` `Qpm-roadmap` `Qpm-okr` `Qpm-retro` `Qpm-strategy` `Qpm-gtm` | 6 |
@@ -268,6 +269,27 @@ Delegation Enforcer auto-injects the correct model via pre-tool-use hook.
 | **Academic** | `Qgrad-paper-write` `Qgrad-research-plan` `Qgrad-seminar-prep` `Qgrad-thesis-manage` | 4 |
 | **Research** | `Qautoresearch` `Qfact-checker` `Qsource-verifier` `Qdata-analysis` | 4 |
 | **More** | `/Qfind-skills` or `/Qhelp` to discover all | 54+ |
+
+#### ⚠️ Autonomous Mode (`/Qutopia`) — Use With Caution
+
+`/Qutopia` flips a session-level switch (`.qe/state/utopia-state.json`) that makes **every** subsequent skill:
+
+- **Skip `AskUserQuestion`** and auto-pick the first (recommended) option
+- **Auto-approve** `Qrun-task` execution and `Qgenerate-spec` outputs
+- **Auto-commit** (and, with `--ralph`, loop until `VERIFY_CHECKLIST` is fully green)
+- Merge broad tool permissions (`Bash(*)`, `Agent(*)`, `WebFetch`, …) into `.claude/settings.json`
+
+**Why this is dangerous.** The "recommended" option is not always what *you* would pick. In an ambiguous spec or a mixed-scope commit, the default can silently commit wrong files, push to `main`, or chain into irreversible steps. Qutopia trades your oversight for wall-clock speed.
+
+**Only enable Qutopia when ALL of the following hold:**
+
+1. The task is well-defined and repetitive (e.g., applying a known fix across many files)
+2. Every step is reversible (no `push --force`, no schema migrations on prod, no destructive deletes)
+3. You accept that commits/pushes may happen without re-confirmation
+
+**Do NOT enable Qutopia for:** exploratory work, new project kick-offs, ambiguous requirements, first-time tools, or anything on a shared/production branch.
+
+**Recommended lifecycle:** `/Qutopia status` → `/Qutopia` (or `--work` / `--qa`) → do one bounded task → `/Qutopia off`. Leaving it on across sessions is how accidents happen.
 
 ### Coding Expert Skills (71 experts)
 

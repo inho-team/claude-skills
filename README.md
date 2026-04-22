@@ -504,6 +504,7 @@ qe-framework/
 | Conventions | [QE_CONVENTIONS.md](QE_CONVENTIONS.md) |
 | Secret Management | [docs/SECRETS.md](docs/SECRETS.md) |
 | Multi-Model Setup | [docs/MULTI_MODEL_SETUP.md](docs/MULTI_MODEL_SETUP.md) |
+| Contract Layer | [docs/contract-layer.md](docs/contract-layer.md) |
 
 | Language | Path |
 |----------|------|

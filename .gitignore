@@ -9,6 +9,7 @@ CLAUDE.md
 AGENTS.md
 .qe/*
 !.qe/contracts/
+.qe/contracts/.verdicts/
 test-routing.js
 test-translate.js
 test-framework.js

@@ -40,8 +40,9 @@ Execute contract conformance verification. Compute a 3-hash (contract/impl/test)
 7. **Cache MISS flow:**
    - Call `buildJudgePrompt({contractName: name, contractText, implText, testText})` from `contract-judge-prompt.mjs` to construct the prompt
    - Invoke the `Econtract-judge` agent via the Agent tool with `subagent_type: 'Econtract-judge'`, passing the built prompt as the agent's input
-   - Parse the agent's output for a single ```json code fence
-   - If JSON parse fails: return `{verdict: "FAIL", summary: "judge returned unparseable output", findings: [{ section: "Judge Output", expected: "valid JSON verdict", actual: "<first 200 chars of agent output>", severity: "critical" }]}`
+   - Parse the agent's output by extracting the **last** ```json code fence (the judge is instructed to emit exactly one; using the last occurrence tolerates accidental earlier example fences without silently accepting a stray first-fence from summary text)
+   - If NO ```json fence is found, OR the extracted JSON does not parse, OR the parsed object lacks the required keys (`verdict`, `summary`, `findings`): return `{verdict: "FAIL", summary: "judge returned unparseable output", findings: [{ section: "Judge Output", expected: "single valid JSON verdict fence with verdict/summary/findings", actual: "<first 200 chars of agent output>", severity: "critical" }]}`
+   - If MORE than one ```json fence is found: proceed with the last fence's JSON but add a minor finding: `{ section: "Judge Output", expected: "exactly one JSON fence", actual: "N fences found (took the last)", severity: "minor" }` to the parsed findings array before caching
    - On successful parse, enrich the JSON verdict with:
      - `contract_hash` (from step 5)
      - `impl_hash` (from step 5)

@@ -6,11 +6,14 @@
 
 ---
 
-### 📖 5분 만에 이해하기
+### 📖 Try it in your browser — 5-minute tour
 
-[**처음이라면 · Intro →**](https://inho-team.github.io/qe-framework/qe_framework_intro.html) · [**전체 구조 · Reference →**](https://inho-team.github.io/qe-framework/qe_framework_diagram.html)
+**English** · [**Intro →**](https://inho-team.github.io/qe-framework/qe_framework_intro.en.html) · [**Reference →**](https://inho-team.github.io/qe-framework/qe_framework_diagram.en.html)
+**한국어** · [**Intro →**](https://inho-team.github.io/qe-framework/qe_framework_intro.ko.html) · [**Reference →**](https://inho-team.github.io/qe-framework/qe_framework_diagram.ko.html)
+**日本語** · [**Intro →**](https://inho-team.github.io/qe-framework/qe_framework_intro.ja.html) · [**Reference →**](https://inho-team.github.io/qe-framework/qe_framework_diagram.ja.html)
+**中文** · [**Intro →**](https://inho-team.github.io/qe-framework/qe_framework_intro.zh.html) · [**Reference →**](https://inho-team.github.io/qe-framework/qe_framework_diagram.zh.html)
 
-브라우저로 렌더된 가이드. 설치 없이 누구든 바로 볼 수 있습니다.
+Rendered guides — view in any browser, no install needed.
 
 ---
 

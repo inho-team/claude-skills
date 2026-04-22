@@ -1,5 +1,9 @@
 ﻿# QE Framework ドキュメント案内
 
+> 📖 **ブラウザで今すぐ見る**: [入門 Intro →](https://inho-team.github.io/qe-framework/qe_framework_intro.ja.html) · [全体 Reference →](https://inho-team.github.io/qe-framework/qe_framework_diagram.ja.html)
+>
+> **他の言語**: [English](https://inho-team.github.io/qe-framework/qe_framework_intro.en.html) · [한국어](https://inho-team.github.io/qe-framework/qe_framework_intro.ko.html) · [中文](https://inho-team.github.io/qe-framework/qe_framework_intro.zh.html)
+
 QE Framework は Claude Code と Codex の両方を対象にしたスペック駆動タスク実行フレームワークです。
 
 基本フロー:

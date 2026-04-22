@@ -1,5 +1,9 @@
 ﻿# QE Framework 문서 안내
 
+> 📖 **브라우저로 바로 보기**: [입문 Intro →](https://inho-team.github.io/qe-framework/qe_framework_intro.ko.html) · [전체 Reference →](https://inho-team.github.io/qe-framework/qe_framework_diagram.ko.html)
+>
+> **다른 언어**: [English](https://inho-team.github.io/qe-framework/qe_framework_intro.en.html) · [日本語](https://inho-team.github.io/qe-framework/qe_framework_intro.ja.html) · [中文](https://inho-team.github.io/qe-framework/qe_framework_intro.zh.html)
+
 QE Framework는 Claude Code와 Codex를 함께 지원하는 스펙 기반 작업 프레임워크입니다.
 
 기본 흐름:

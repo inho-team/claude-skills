@@ -1,5 +1,9 @@
 ﻿# QE Framework 文档导航
 
+> 📖 **在浏览器中查看**: [入门 Intro →](https://inho-team.github.io/qe-framework/qe_framework_intro.zh.html) · [整体 Reference →](https://inho-team.github.io/qe-framework/qe_framework_diagram.zh.html)
+>
+> **其他语言**: [English](https://inho-team.github.io/qe-framework/qe_framework_intro.en.html) · [한국어](https://inho-team.github.io/qe-framework/qe_framework_intro.ko.html) · [日本語](https://inho-team.github.io/qe-framework/qe_framework_intro.ja.html)
+
 QE Framework 是同时面向 Claude Code 和 Codex 的规范驱动任务执行框架。
 
 基础流程:

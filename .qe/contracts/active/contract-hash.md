@@ -1,5 +1,7 @@
 # Contract Hash Library
 
+<!-- tests: hooks/scripts/lib/__tests__/contract-lock.test.mjs -->
+
 Compute stable SHA-256 hashes of canonicalized contract text for deterministic identity and change detection.
 
 ---

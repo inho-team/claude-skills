@@ -1,5 +1,7 @@
 # Contract Manifest
 
+<!-- tests: hooks/scripts/lib/__tests__/contract-lock.test.mjs -->
+
 File-listing and name-validation utilities for `.qe/contracts/`. Acts as the single gateway that turns a contract name into a filesystem path, enforcing name-safety rules.
 
 ---

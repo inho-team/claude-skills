@@ -1,5 +1,7 @@
 # Contract Validator
 
+<!-- tests: hooks/scripts/lib/__tests__/contract-parser.test.mjs -->
+
 계약 파서의 출력을 검증하는 모듈의 동작을 정의합니다.
 
 ---

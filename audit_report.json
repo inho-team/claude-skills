@@ -6,7 +6,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7",
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Mcreate-agent/SKILL.md",
@@ -14,7 +36,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 36 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 36 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Mcreate-skill/SKILL.md",
@@ -22,7 +65,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Mmigrate-tasks/SKILL.md",
@@ -30,7 +95,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Mqe-audit/SKILL.md",
@@ -38,7 +125,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3",
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Mrefactor-agent-md/SKILL.md",
@@ -46,7 +155,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Mtest-skill/SKILL.md",
@@ -54,7 +184,59 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 10 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/QCodexUpdate/SKILL.md",
+      "name": "QCodexUpdate",
+      "invocation_trigger": "When checking or updating the Codex plugin, or when Codex integration needs diagnosis.",
+      "recommendedModel": "haiku",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qagent-browser/SKILL.md",
@@ -62,7 +244,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qagentation/SKILL.md",
@@ -70,7 +273,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3",
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qalias/SKILL.md",
@@ -78,7 +303,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 2 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 2 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qarchive/SKILL.md",
@@ -86,7 +332,59 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 4 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qatomic-run/SKILL.md",
+      "name": "Qatomic-run",
+      "invocation_trigger": "When a TASK_REQUEST contains many atomic items that can be executed in parallel by low-reasoning agents.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": true,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qaudio-transcriber/SKILL.md",
@@ -94,7 +392,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 20 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5",
+        "WARN: Found 20 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qautoresearch/SKILL.md",
@@ -102,7 +422,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10, 1, 2, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10, 1, 2, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10",
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qbranch/SKILL.md",
@@ -110,7 +452,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qc4-architecture/SKILL.md",
@@ -118,7 +481,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 22 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 22 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qcc-setup/SKILL.md",
@@ -126,7 +510,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 2, 1, 2, 2"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 2, 1, 2, 2",
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qchrome/SKILL.md",
@@ -134,7 +540,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 20 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 20 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qcode-run-task/SKILL.md",
@@ -142,7 +570,29 @@
       "invocation_trigger": "When code has been modified and needs a quality loop (test-review-fix).",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 4, 4, 4, 4, 4, 4, 5, 1, 2, 4, 4, 4, 4, 4, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 22 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 4, 4, 4, 4, 4, 4, 5, 1, 2, 4, 4, 4, 4, 4, 4, 5",
+        "WARN: Found 22 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qcommand-creator/SKILL.md",
@@ -150,7 +600,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 2 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 2 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qcommit/SKILL.md",
@@ -158,7 +630,29 @@
       "invocation_trigger": "When changes are ready to be staged and committed to git.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 1, 2"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 1, 2",
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qcompact/SKILL.md",
@@ -166,7 +660,28 @@
       "invocation_trigger": "When the context window is full or under pressure (Orange/Red zone).",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qcontent-research-writer/SKILL.md",
@@ -174,7 +689,117 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 16 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qcontext/SKILL.md",
+      "name": "Qcontext",
+      "invocation_trigger": "When the user wants to create, view, update, or refresh folder-aware context files.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 0"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 28 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 0",
+        "WARN: Found 28 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qcritical-review/SKILL.md",
+      "name": "Qcritical-review",
+      "invocation_trigger": "When critical verification is needed at any SIVS stage, or when the user wants adversarial review of a spec, implementation, or merge candidate.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": false,
+          "warning": "WARN: Skill has plan/spec/execute trigger but missing Next Command: or Next:"
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Skill has plan/spec/execute trigger but missing Next Command: or Next:",
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 16 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qcron/SKILL.md",
+      "name": "Qcron",
+      "invocation_trigger": "When the user wants to run repetitive tasks in the background without blocking the main terminal.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": []
     },
     {
       "path": "skills/Qdata-analysis/SKILL.md",
@@ -182,7 +807,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+      ]
     },
     {
       "path": "skills/Qdatabase-schema-designer/SKILL.md",
@@ -190,7 +836,89 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qdebate/SKILL.md",
+      "name": "Qdebate",
+      "invocation_trigger": "When the user wants to debate, discuss, argue pros/cons, or have a structured back-and-forth on a decision.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5",
+        "WARN: Found 12 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qdesign/SKILL.md",
+      "name": "Qdesign",
+      "invocation_trigger": "When a project needs a design system defined before frontend work begins. Trigger phrases: 'create design system', 'define design spec', 'set up DESIGN.md', 'design foundation', 'visual identity'.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": false,
+          "warning": "WARN: Skill has plan/spec/execute trigger but missing Next Command: or Next:"
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 2, 3, 4, 0, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Skill has plan/spec/execute trigger but missing Next Command: or Next:",
+        "WARN: Steps not in order: 0, 1, 2, 3, 4, 0, 1, 2, 3, 4",
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qdesign-audit/SKILL.md",
@@ -198,7 +926,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7",
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qdoc-comment/SKILL.md",
@@ -206,7 +956,29 @@
       "invocation_trigger": "When improving prose or documentation clarity.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3",
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qdoc-converter/SKILL.md",
@@ -214,7 +986,28 @@
       "invocation_trigger": "When improving prose or documentation clarity.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qdocx/SKILL.md",
@@ -222,7 +1015,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qfact-checker/SKILL.md",
@@ -230,7 +1044,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qfinance-analyst/SKILL.md",
@@ -238,7 +1074,26 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": []
     },
     {
       "path": "skills/Qfind-skills/SKILL.md",
@@ -246,7 +1101,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5",
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qfrontend-design/SKILL.md",
@@ -254,7 +1131,59 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 0, 1, 2, 3, 0, 0, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 0, 1, 2, 3, 0, 0, 1, 2, 3",
+        "WARN: Found 10 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qgc/SKILL.md",
+      "name": "Qgc",
+      "invocation_trigger": "When the user wants to clean up code, check for stale code, audit quality, or says \"garbage collection\", \"cleanup\", \"dead code\", \"drift\".",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qgenerate-spec/SKILL.md",
@@ -262,7 +1191,29 @@
       "invocation_trigger": "When a new project, task, or bug fix spec needs to be defined.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 2, 2, 3, 1, 2, 2, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 2, 2, 3, 1, 2, 2, 2, 3",
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qgrad-paper-review/SKILL.md",
@@ -270,7 +1221,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5",
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qgrad-paper-write/SKILL.md",
@@ -278,7 +1251,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5",
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qgrad-research-plan/SKILL.md",
@@ -286,7 +1281,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qgrad-seminar-prep/SKILL.md",
@@ -294,7 +1310,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 2 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5",
+        "WARN: Found 2 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qgrad-thesis-manage/SKILL.md",
@@ -302,15 +1340,59 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qgs/SKILL.md",
       "name": "Qgs",
-      "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
+      "invocation_trigger": "When the user wants to generate a spec, create a task, or types /Qgs. Also triggered from PSE Chain handoffs after /Qplan.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": false,
+          "warning": "WARN: Skill has plan/spec/execute trigger but missing Next Command: or Next:"
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Skill has plan/spec/execute trigger but missing Next Command: or Next:",
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qhelp/SKILL.md",
@@ -318,15 +1400,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
-    },
-    {
-      "path": "skills/Qhumanizer/SKILL.md",
-      "name": "Qhumanizer",
-      "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
-      "recommendedModel": "haiku",
-      "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qi18n-audit/SKILL.md",
@@ -334,7 +1429,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qimage-analyzer/SKILL.md",
@@ -342,7 +1459,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qinit/SKILL.md",
@@ -350,7 +1489,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 1, 2, 3, 4, 0, 1, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 1, 1, 2, 3, 4, 0, 1, 1, 2, 3, 4",
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qjira-cli/SKILL.md",
@@ -358,7 +1519,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qlesson-learned/SKILL.md",
@@ -366,15 +1548,58 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
-      "path": "skills/Qmcp-builder/SKILL.md",
-      "name": "Qmcp-builder",
-      "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
-      "recommendedModel": "haiku",
+      "path": "skills/Qmap-codebase/SKILL.md",
+      "name": "Qmap-codebase",
+      "invocation_trigger": "When onboarding to an existing project, starting work on unfamiliar code, or running /Qmap-codebase.",
+      "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 20 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3",
+        "WARN: Found 20 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qmcp-setup/SKILL.md",
@@ -382,7 +1607,88 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5",
+        "WARN: Found 14 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qmcp-sync/SKILL.md",
+      "name": "Qmcp-sync",
+      "invocation_trigger": "When the user wants to unify MCP configuration across Claude, Codex, Gemini, or other QE-managed clients.",
+      "recommendedModel": "haiku",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qmemory/SKILL.md",
+      "name": "Qmemory",
+      "invocation_trigger": null,
+      "recommendedModel": "haiku",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3",
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qmermaid-diagrams/SKILL.md",
@@ -390,7 +1696,58 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qmistake/SKILL.md",
+      "name": "Qmistake",
+      "invocation_trigger": "When the user says something was wrong, points out a mistake, corrects behavior, or says \"don't do that again\". Also triggered by /Qmistake directly.",
+      "recommendedModel": "haiku",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpdf/SKILL.md",
@@ -398,7 +1755,88 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 28 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 28 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qperspective/SKILL.md",
+      "name": "Qperspective",
+      "invocation_trigger": "When the user wants to see multiple viewpoints, different angles, or alternative perspectives on a problem or decision.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 16 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qplan/SKILL.md",
+      "name": "Qplan",
+      "invocation_trigger": "When the user wants to plan any work — small fixes, single features, or full projects. Also when moving to the next phase.",
+      "recommendedModel": "opus",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 0, 1, 2, 3, 4, 0, 0, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 28 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 0, 1, 2, 3, 4, 0, 0, 1, 2, 3, 4",
+        "WARN: Found 28 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-discovery/SKILL.md",
@@ -406,7 +1844,28 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 22 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 22 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-gtm/SKILL.md",
@@ -414,7 +1873,28 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-okr/SKILL.md",
@@ -422,7 +1902,28 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-prd/SKILL.md",
@@ -430,7 +1931,28 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-retro/SKILL.md",
@@ -438,7 +1960,28 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-roadmap/SKILL.md",
@@ -446,7 +1989,28 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-strategy/SKILL.md",
@@ -454,7 +2018,28 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpm-user-story/SKILL.md",
@@ -462,7 +2047,29 @@
       "invocation_trigger": "When product discovery, requirements, or roadmap planning is required.",
       "recommendedModel": "sonnet",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 1, 2, 3, 4, 5",
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qpptx/SKILL.md",
@@ -470,7 +2077,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qprofessional-communication/SKILL.md",
@@ -478,7 +2106,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qprofile/SKILL.md",
@@ -486,7 +2135,26 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": []
     },
     {
       "path": "skills/Qproject-sync/SKILL.md",
@@ -494,7 +2162,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qqa-test-planner/SKILL.md",
@@ -502,7 +2192,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qrefresh/SKILL.md",
@@ -510,7 +2221,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 1, 2, 3, 1, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 1, 2, 3, 1, 1, 2, 3"
+      ]
     },
     {
       "path": "skills/Qrequirements-clarity/SKILL.md",
@@ -518,7 +2250,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qresume/SKILL.md",
@@ -526,7 +2280,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+      ]
     },
     {
       "path": "skills/Qrt/SKILL.md",
@@ -534,7 +2309,26 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": []
     },
     {
       "path": "skills/Qrun-task/SKILL.md",
@@ -542,7 +2336,29 @@
       "invocation_trigger": "When a TASK_REQUEST or checklist needs implementation or verification.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 4, 5, 1, 2, 3, 4, 4, 5"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 4, 5, 1, 2, 3, 4, 4, 5",
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qscenario-test/SKILL.md",
@@ -550,7 +2366,88 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 2, 3, 4, 0, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 1, 2, 3, 4, 0, 1, 2, 3, 4",
+        "WARN: Found 14 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qsecret/SKILL.md",
+      "name": "Qsecret",
+      "invocation_trigger": "When the user wants to store, rotate, list, delete, or safely use API keys, tokens, or other credentials in QE Framework.",
+      "recommendedModel": "haiku",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qsivs-config/SKILL.md",
+      "name": "Qsivs-config",
+      "invocation_trigger": "When the user wants to view, modify, or reset SIVS engine routing configuration.",
+      "recommendedModel": "haiku",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 0, 1"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 28 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 1, 0, 1",
+        "WARN: Found 28 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qsource-verifier/SKILL.md",
@@ -558,7 +2455,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 1, 2, 3, 4",
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qspringboot-security/SKILL.md",
@@ -566,7 +2485,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qstitch-apply/SKILL.md",
@@ -574,7 +2514,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qstitch-cli/SKILL.md",
@@ -582,7 +2544,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 22 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 22 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qsummary/SKILL.md",
@@ -590,7 +2573,29 @@
       "invocation_trigger": "When work summary is needed or the session is concluding.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 2 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3",
+        "WARN: Found 2 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qsystematic-debugging/SKILL.md",
@@ -598,7 +2603,26 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": []
     },
     {
       "path": "skills/Qtest-driven-development/SKILL.md",
@@ -606,7 +2630,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qupdate/SKILL.md",
@@ -614,15 +2659,58 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 1, 2, 3"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 1, 2, 3",
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qutopia/SKILL.md",
       "name": "Qutopia",
-      "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
+      "invocation_trigger": "When the user wants fully autonomous, no-confirmation execution mode.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 38 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 38 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qversion/SKILL.md",
@@ -630,7 +2718,29 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 1, 2"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 1, 2",
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qvisual-qa/SKILL.md",
@@ -638,7 +2748,59 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6",
+        "WARN: Found 24 code blocks without language tag"
+      ]
+    },
+    {
+      "path": "skills/Qvisual-redesign/SKILL.md",
+      "name": "Qvisual-redesign",
+      "invocation_trigger": "When user wants to visually improve UI against the design system. Trigger: 'visual redesign', 'fix UI to match design', 'screen looks off', 'redesign pages', 'visual audit and fix', 'UI doesn't match design'.",
+      "recommendedModel": "sonnet",
+      "hasContextMemo": false,
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": false,
+          "warning": "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7"
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 38 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Steps not in order: 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7",
+        "WARN: Found 38 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qweb-design-guidelines/SKILL.md",
@@ -646,15 +2808,55 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qwriting-clearly/SKILL.md",
       "name": "Qwriting-clearly",
-      "invocation_trigger": "When improving prose or documentation clarity.",
+      "invocation_trigger": "When improving prose or documentation clarity, humanize, remove AI patterns, de-AI.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": true,
+          "warning": null
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": []
     },
     {
       "path": "skills/Qxlsx/SKILL.md",
@@ -662,7 +2864,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/Qyoutube-transcript-api/SKILL.md",
@@ -670,7 +2893,28 @@
       "invocation_trigger": "When framework initialization, maintenance, or audit is required.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qapi-designer/SKILL.md",
@@ -678,7 +2922,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 6 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 6 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qarchitecture-designer/SKILL.md",
@@ -686,7 +2951,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 6 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 6 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qdjango-expert/SKILL.md",
@@ -694,7 +2980,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qdotnet-core-expert/SKILL.md",
@@ -702,7 +3009,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qfastapi-expert/SKILL.md",
@@ -710,7 +3038,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qgraphql-architect/SKILL.md",
@@ -718,7 +3067,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qlaravel-specialist/SKILL.md",
@@ -726,7 +3096,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 32 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 32 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qlegacy-modernizer/SKILL.md",
@@ -734,7 +3125,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qmcp-developer/SKILL.md",
@@ -742,7 +3154,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qmicroservices-architect/SKILL.md",
@@ -750,7 +3183,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qnestjs-expert/SKILL.md",
@@ -758,7 +3212,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qrails-expert/SKILL.md",
@@ -766,7 +3241,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qspring-boot-engineer/SKILL.md",
@@ -774,7 +3270,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/backend/Qwebsocket-engineer/SKILL.md",
@@ -782,7 +3299,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/data/Qfine-tuning-expert/SKILL.md",
@@ -790,7 +3328,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/data/Qml-pipeline/SKILL.md",
@@ -798,7 +3357,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/data/Qpandas-pro/SKILL.md",
@@ -806,7 +3386,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 6 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 6 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/data/Qprompt-engineer/SKILL.md",
@@ -814,7 +3415,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/data/Qrag-architect/SKILL.md",
@@ -822,7 +3444,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 6 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 6 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/data/Qspark-engineer/SKILL.md",
@@ -830,7 +3473,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qangular-architect/SKILL.md",
@@ -838,7 +3502,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qflutter-expert/SKILL.md",
@@ -846,7 +3531,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qgame-developer/SKILL.md",
@@ -854,7 +3560,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qnextjs-developer/SKILL.md",
@@ -862,7 +3589,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 6 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 6 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qreact-best-practices/SKILL.md",
@@ -870,7 +3618,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qreact-expert/SKILL.md",
@@ -878,7 +3647,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 28 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 28 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qreact-native-expert/SKILL.md",
@@ -886,7 +3676,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 6 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 6 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qvite/SKILL.md",
@@ -894,7 +3705,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qvue-best-practices/SKILL.md",
@@ -902,7 +3734,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qvue-expert/SKILL.md",
@@ -910,7 +3763,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qvue-expert-js/SKILL.md",
@@ -918,7 +3792,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/frontend/Qweb-design-guidelines-vercel/SKILL.md",
@@ -926,7 +3821,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qatlassian-mcp/SKILL.md",
@@ -934,7 +3850,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qchaos-engineer/SKILL.md",
@@ -942,7 +3879,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 6 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 6 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qcli-developer/SKILL.md",
@@ -950,7 +3908,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qcloud-architect/SKILL.md",
@@ -958,7 +3937,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qdatabase-optimizer/SKILL.md",
@@ -966,7 +3966,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qdevops-engineer/SKILL.md",
@@ -974,7 +3995,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qkubernetes-specialist/SKILL.md",
@@ -982,7 +4024,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 26 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 26 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qmonitoring-expert/SKILL.md",
@@ -990,7 +4053,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qpostgres-pro/SKILL.md",
@@ -998,7 +4082,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qsalesforce-developer/SKILL.md",
@@ -1006,7 +4111,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qshopify-expert/SKILL.md",
@@ -1014,7 +4140,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qsre-engineer/SKILL.md",
@@ -1022,7 +4169,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qterraform-engineer/SKILL.md",
@@ -1030,7 +4198,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/infra/Qwordpress-pro/SKILL.md",
@@ -1038,7 +4227,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qcpp-pro/SKILL.md",
@@ -1046,7 +4256,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 20 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 20 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qcsharp-developer/SKILL.md",
@@ -1054,7 +4285,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 22 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 22 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qembedded-systems/SKILL.md",
@@ -1062,7 +4314,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 20 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 20 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qgolang/SKILL.md",
@@ -1070,7 +4343,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qgolang-pro/SKILL.md",
@@ -1078,7 +4372,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qjava-architect/SKILL.md",
@@ -1086,15 +4401,57 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
-      "path": "skills/coding-experts/languages/Qjavascript-pro/SKILL.md",
-      "name": "Qjavascript-pro",
-      "invocation_trigger": "When specialized language or framework best practices are needed.",
+      "path": "skills/coding-experts/languages/Qjs-ts-expert/SKILL.md",
+      "name": "Qjs-ts-expert",
+      "invocation_trigger": "When specialized JavaScript or TypeScript best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qkotlin-specialist/SKILL.md",
@@ -1102,7 +4459,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 24 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 24 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qphp-pro/SKILL.md",
@@ -1110,7 +4488,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 18 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 18 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qpython-pro/SKILL.md",
@@ -1118,7 +4517,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qrust-engineer/SKILL.md",
@@ -1126,7 +4546,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 22 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 22 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qsql-pro/SKILL.md",
@@ -1134,7 +4575,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/languages/Qswift-expert/SKILL.md",
@@ -1142,15 +4604,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
-    },
-    {
-      "path": "skills/coding-experts/languages/Qtypescript-pro/SKILL.md",
-      "name": "Qtypescript-pro",
-      "invocation_trigger": "When specialized language or framework best practices are needed.",
-      "recommendedModel": "haiku",
-      "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qcode-documenter/SKILL.md",
@@ -1158,7 +4633,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qcode-reviewer/SKILL.md",
@@ -1166,7 +4662,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 16 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 16 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qdebugging-wizard/SKILL.md",
@@ -1174,7 +4691,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qfeature-forge/SKILL.md",
@@ -1182,7 +4720,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qfullstack-guardian/SKILL.md",
@@ -1190,7 +4749,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qplaywright-expert/SKILL.md",
@@ -1198,7 +4778,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qsecure-code-guardian/SKILL.md",
@@ -1206,7 +4807,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qsecurity-reviewer/SKILL.md",
@@ -1214,7 +4836,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 14 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 14 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qspec-miner/SKILL.md",
@@ -1222,7 +4865,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 8 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 8 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qtest-master/SKILL.md",
@@ -1230,7 +4894,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 12 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 12 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qthe-fool/SKILL.md",
@@ -1238,7 +4923,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 4 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 4 code blocks without language tag"
+      ]
     },
     {
       "path": "skills/coding-experts/quality/Qvitest/SKILL.md",
@@ -1246,7 +4952,28 @@
       "invocation_trigger": "When specialized language or framework best practices are needed.",
       "recommendedModel": "haiku",
       "hasContextMemo": false,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false,
+      "validations": {
+        "handoff": {
+          "valid": true,
+          "warning": null
+        },
+        "stepOrder": {
+          "valid": true,
+          "warning": null
+        },
+        "codeBlockLanguage": {
+          "valid": false,
+          "warning": "WARN: Found 10 code blocks without language tag"
+        },
+        "recommendedModel": {
+          "valid": true,
+          "warning": null
+        }
+      },
+      "warnings": [
+        "WARN: Found 10 code blocks without language tag"
+      ]
     }
   ],
   "agents": [
@@ -1257,7 +4984,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Earchive-executor.md",
@@ -1266,7 +4993,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true
     },
     {
       "path": "agents/Ecode-debugger.md",
@@ -1275,7 +5002,7 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Ecode-doc-writer.md",
@@ -1284,7 +5011,7 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Ecode-quality-supervisor.md",
@@ -1293,7 +5020,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Ecode-reviewer.md",
@@ -1302,7 +5029,7 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Ecode-test-engineer.md",
@@ -1311,7 +5038,7 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Ecommit-executor.md",
@@ -1320,7 +5047,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Ecompact-executor.md",
@@ -1329,7 +5056,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Edeep-researcher.md",
@@ -1338,7 +5065,7 @@
       "expectedTier": "HIGH",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Edoc-generator.md",
@@ -1347,7 +5074,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Edocs-supervisor.md",
@@ -1356,7 +5083,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Egrad-writer.md",
@@ -1365,7 +5092,7 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Ehandoff-executor.md",
@@ -1374,7 +5101,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Epm-planner.md",
@@ -1383,7 +5110,7 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Eprofile-collector.md",
@@ -1392,7 +5119,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true
     },
     {
       "path": "agents/Eqa-orchestrator.md",
@@ -1401,7 +5128,7 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Erefresh-executor.md",
@@ -1410,7 +5137,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Esecurity-officer.md",
@@ -1419,7 +5146,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Esupervision-orchestrator.md",
@@ -1428,7 +5155,7 @@
       "expectedTier": "LOW",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": false
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/Etask-executor.md",
@@ -1437,7 +5164,16 @@
       "expectedTier": "MEDIUM",
       "isAligned": true,
       "hasContextMemo": true,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true
+    },
+    {
+      "path": "agents/references/supervision-scales.md",
+      "name": "supervision-scales",
+      "recommendedModel": "sonnet",
+      "expectedTier": "UNKNOWN",
+      "isAligned": false,
+      "hasContextMemo": true,
+      "hasInstructionArtifact": false
     },
     {
       "path": "agents/references/wave-execution.md",
@@ -1446,7 +5182,7 @@
       "expectedTier": "UNKNOWN",
       "isAligned": false,
       "hasContextMemo": true,
-      "hasClaudeMd": true
+      "hasInstructionArtifact": true
     }
   ]
 }

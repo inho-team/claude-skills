@@ -58,6 +58,7 @@
     "migrate-tasks/reorganize-tasks": "Mmigrate-tasks",
     "refactor-instructions/split-CLAUDE.md": "Mrefactor-agent-md",
     "jira/jira-ticket/sprint-manage": "Qjira-cli",
+    "github-issue/feature-request/report-issue/이슈-올려/이슈-작성/버그-리포트/qissue": "Qissue",
     "fact-check/verify-claims": "Qfact-checker",
     "verify-source/credibility-check/SIFT": "Qsource-verifier",
     "format-convert/md-to-docx": "Qdoc-converter",
@@ -72,7 +73,7 @@
     "version-bump/bump-version/release": "Mbump",
     "stitch/stitch-setup/stitch-mcp": "Qstitch-cli",
     "show-version/qe-version/check-version": "Qversion",
-    "audit/evaluate/inspect/health-check/framework-report": "Mqe-audit"
+    "audit/evaluate/inspect/health-check/qe-audit": "Mqe-audit"
   },
   "agent_tiers": {
     "LOW": ["Eprofile-collector", "Earchive-executor", "Ecommit-executor"],

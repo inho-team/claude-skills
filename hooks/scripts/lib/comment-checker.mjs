@@ -260,7 +260,7 @@ function getMatchers(language) {
  * @param {string} filePath
  * @returns {string}
  */
-function extOf(filePath) {
+function getFileExtension(filePath) {
   const dot = filePath.lastIndexOf('.');
   if (dot === -1) return '';
   return filePath.slice(dot).toLowerCase();
@@ -272,7 +272,7 @@ function extOf(filePath) {
  * @returns {boolean}
  */
 export function isCheckableFile(filePath) {
-  const ext = extOf(filePath);
+  const ext = getFileExtension(filePath);
   return LANG_MAP.hasOwnProperty(ext) && !CONFIG_EXTS.has(ext);
 }
 
@@ -334,7 +334,7 @@ function hasCommentAbove(lines, lineIndex, commentPattern) {
  * }}
  */
 export function checkComments(filePath, content) {
-  const ext = extOf(filePath);
+  const ext = getFileExtension(filePath);
   const language = LANG_MAP[ext] ?? null;
 
   // Return a neutral result for unsupported or config files.

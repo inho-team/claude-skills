@@ -41,6 +41,7 @@
 | `/Qmap-codebase` | When onboarding to an existing project or starting work on unfamiliar code. | Spawns 4 parallel agents to map stack, architecture, quality, and concerns. |
 | `/Qmcp-sync` | When MCP settings should be shared across Claude, Codex, and Gemini. | Keeps one QE-managed MCP registry and syncs clients from it. |
 | `/Qsecret` | When API keys or tokens must be stored or used safely. | Keeps plaintext secrets out of the repo while supporting secure env injection. |
+| `/Qissue` | When the user wants to file a bug report, feature request, or question against the qe-framework repo. | Single-command issue filing via `gh` CLI with one-time PAT onboarding. |
 | `/Qupdate` | When the QE framework or its components need updating. | Chooses the right update path for Claude plugin, Codex/npm, or local repo installs. |
 | `/QCodexUpdate` | When checking or updating the Codex plugin. | Checks codex-plugin-cc version and updates if outdated. |
 | `/Qmistake` | When user points out a mistake or corrects behavior. | Records to .qe/MISTAKE.md, loaded every session start. |

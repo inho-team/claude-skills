@@ -1,4 +1,4 @@
----
+cc---
 name: Qlocal-llm-setup
 description: "Local LLM setup and optimization guide. Covers Ollama, vLLM, llama.cpp, SLM, and MCP integration. Use for local AI setup, Ollama install, model serving, GPU config, quantization, local inference, Qwen, DeepSeek, or open-source model deployment."
 invocation_trigger: "When setting up local LLM infrastructure, deploying open-source models, configuring Ollama/vLLM/llama.cpp, or integrating local models with Claude Code via MCP."

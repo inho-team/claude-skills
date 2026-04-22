@@ -39,7 +39,7 @@ function parseFrontmatter(content) {
   return data;
 }
 
-function readText(path) {
+function readFileAsText(path) {
   return readFileSync(path, 'utf8');
 }
 
@@ -49,7 +49,7 @@ function relativeRepoPath(path) {
 
 function loadSkills() {
   return walkForFiles(SKILLS_ROOT, (path) => path.endsWith('SKILL.md')).map((path) => {
-    const content = readText(path);
+    const content = readFileAsText(path);
     const metadata = parseFrontmatter(content);
     return {
       name: basename(resolve(path, '..')),
@@ -65,7 +65,7 @@ function loadSkills() {
 
 function loadAgents() {
   return walkForFiles(AGENTS_ROOT, (path) => path.endsWith('.md')).map((path) => {
-    const content = readText(path);
+    const content = readFileAsText(path);
     return {
       name: basename(path, '.md'),
       path,
@@ -80,7 +80,7 @@ function loadDocs() {
     name: basename(path, '.md'),
     path,
     repoPath: relativeRepoPath(path),
-    content: readText(path),
+    content: readFileAsText(path),
   }));
 }
 
@@ -303,7 +303,7 @@ function readResource(uri) {
         {
           uri,
           mimeType: 'text/markdown',
-          text: readText(join(SKILLS_ROOT, 'CATALOG.md')),
+          text: readFileAsText(join(SKILLS_ROOT, 'CATALOG.md')),
         },
       ],
     };
@@ -315,7 +315,7 @@ function readResource(uri) {
         {
           uri,
           mimeType: 'text/markdown',
-          text: readText(join(DOCS_ROOT, 'USAGE_GUIDE.md')),
+          text: readFileAsText(join(DOCS_ROOT, 'USAGE_GUIDE.md')),
         },
       ],
     };

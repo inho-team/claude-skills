@@ -176,7 +176,7 @@ function buildCliInvocation({ executable, args = [], prompt }) {
   };
 }
 
-function resolveWindowsCmd(baseName) {
+function resolveWindowsCommand(baseName) {
   if (process.platform !== 'win32') return null;
   const appData = process.env.APPDATA;
   if (!appData) return null;
@@ -188,7 +188,7 @@ const registry = {
   claude(context) {
     const prompt = buildUserPrompt(context);
     const systemPrompt = roleDirectives(context.role).join('\n');
-    const executable = resolveWindowsCmd('claude') || 'claude';
+    const executable = resolveWindowsCommand('claude') || 'claude';
     return {
       provider: 'claude',
       mode: 'prompt-bundle',

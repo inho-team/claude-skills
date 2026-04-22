@@ -6,7 +6,7 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 import { readState, readStdinJson, getCwd, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
-import { captureFailure } from './lib/failure-capture.mjs';
+import { captureFailureQuietly } from './lib/failure-capture.mjs';
 import { appendRating } from './lib/rating-capture.mjs';
 import { isPersistentModeActiveFromState } from './lib/persistent-mode.mjs';
 import {
@@ -147,7 +147,7 @@ if (!activeMode) {
 // --- Failure Capture ---
 if (!activeMode) {
   try {
-    captureFailure(cwd);
+    captureFailureQuietly(cwd);
   } catch {
     // Fault tolerance — never let failure capture crash the stop handler
   }

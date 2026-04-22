@@ -7,7 +7,7 @@ import path from 'path';
  * @param {string} pattern - The file suffix/pattern to match (e.g., '.md', 'SKILL.md')
  * @returns {string[]} Array of file paths matching the pattern
  */
-function getFiles(dir, pattern) {
+function findSkillFiles(dir, pattern) {
   let results = [];
   if (!fs.existsSync(dir)) return results;
   const list = fs.readdirSync(dir);
@@ -15,7 +15,7 @@ function getFiles(dir, pattern) {
     file = path.join(dir, file);
     const stat = fs.statSync(file);
     if (stat && stat.isDirectory()) {
-      results = results.concat(getFiles(file, pattern));
+      results = results.concat(findSkillFiles(file, pattern));
     } else {
       if (file.endsWith(pattern)) {
         results.push(file);
@@ -180,7 +180,7 @@ function validateRecommendedModel(recommendedModel) {
 }
 
 // Audit Skills
-const skillFiles = getFiles('skills', 'SKILL.md');
+const skillFiles = findSkillFiles('skills', 'SKILL.md');
 for (const file of skillFiles) {
   const content = fs.readFileSync(file, 'utf-8');
   const { frontmatter, body } = parseMarkdown(content);
@@ -210,7 +210,7 @@ for (const file of skillFiles) {
 }
 
 // Audit Agents
-const agentFiles = getFiles('agents', '.md');
+const agentFiles = findSkillFiles('agents', '.md');
 for (const file of agentFiles) {
   const agentName = path.basename(file, '.md');
   if (agentName === 'AGENT_BASE' || agentName === 'AGENT_TEAMS' || agentName === 'AGENT_TIERS') continue;

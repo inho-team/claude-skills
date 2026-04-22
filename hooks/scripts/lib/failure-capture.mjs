@@ -207,7 +207,7 @@ function collectErrorSummary(cwd) {
  * Main entry point — detect failure and write CONTEXT.md if needed.
  * Returns true if a failure was captured, false if session was clean.
  */
-export function captureFailure(cwd) {
+export function captureFailureQuietly(cwd) {
   const detection = detectFailure(cwd);
   if (!detection.failed) return false;
 

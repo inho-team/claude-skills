@@ -39,7 +39,7 @@ const MAX_FILES = 50;
  * @param {number} [timeout=5000]
  * @returns {string}
  */
-function safeExec(cmd, cwd, timeout = 5000) {
+function execCommandQuietly(cmd, cwd, timeout = 5000) {
   try {
     return execSync(cmd, { cwd, timeout, stdio: 'pipe' }).toString().trim();
   } catch {
@@ -102,7 +102,7 @@ function isBinaryContent(content) {
  * @param {string} absPath
  * @returns {string|null}
  */
-function safeRead(absPath) {
+function readFileOrNull(absPath) {
   try {
     const content = readFileSync(absPath, 'utf8');
     if (isBinaryContent(content)) return null;
@@ -145,7 +145,7 @@ export function analyzeDocDrift(cwd) {
     const claudePath = join(cwd, 'CLAUDE.md');
     let docMentions = new Set();
     if (existsSync(claudePath)) {
-      const content = safeRead(claudePath);
+      const content = readFileOrNull(claudePath);
       if (content) {
         const matches = content.match(TECH_PATTERN) || [];
         for (const m of matches) {
@@ -200,7 +200,7 @@ export function analyzeDocDrift(cwd) {
     const analysisDir = join(cwd, '.qe', 'analysis');
     if (existsSync(analysisDir)) {
       // Get latest commit date
-      const latestCommitDateStr = safeExec('git log -1 --format=%cI', cwd);
+      const latestCommitDateStr = execCommandQuietly('git log -1 --format=%cI', cwd);
       const latestCommitDate = parseGitDate(latestCommitDateStr);
 
       if (latestCommitDate) {
@@ -264,7 +264,7 @@ export function analyzeRuleViolations(cwd) {
 
   try {
     // 1. Get recently changed files (last 20 commits)
-    const diffOutput = safeExec('git diff --name-only HEAD~20', cwd);
+    const diffOutput = execCommandQuietly('git diff --name-only HEAD~20', cwd);
     if (!diffOutput) return aggregate;
 
     const changedFiles = diffOutput
@@ -283,7 +283,7 @@ export function analyzeRuleViolations(cwd) {
         const absPath = join(cwd, relPath);
         if (!existsSync(absPath)) continue;
 
-        const content = safeRead(absPath);
+        const content = readFileOrNull(absPath);
         if (content === null) continue;
 
         // a. Check comments
@@ -333,7 +333,7 @@ export function analyzeDeadCode(cwd) {
     const allSourceFiles = collectSourceFiles(cwd, cwd);
 
     // 2. Get files modified within the last 90 days via git log
-    const logOutput = safeExec(
+    const logOutput = execCommandQuietly(
       'git log --since="90 days ago" --diff-filter=M --name-only --pretty=format:',
       cwd
     );
@@ -346,7 +346,7 @@ export function analyzeDeadCode(cwd) {
     );
 
     // Also include files added recently
-    const addedOutput = safeExec(
+    const addedOutput = execCommandQuietly(
       'git log --since="90 days ago" --diff-filter=A --name-only --pretty=format:',
       cwd
     );
@@ -385,7 +385,7 @@ export function analyzeDeadCode(cwd) {
         const safeName = name.replace(/[^a-zA-Z0-9_\-\.]/g, '');
         if (!safeName) continue;
 
-        const grepOut = safeExec(
+        const grepOut = execCommandQuietly(
           `grep -rl "${safeName}" --include="*.js" --include="*.mjs" --include="*.ts" --include="*.py" --include="*.go" . | head -5`,
           cwd,
           3000

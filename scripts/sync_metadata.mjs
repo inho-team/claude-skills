@@ -6,7 +6,7 @@ const MEMO_INJECTION_BLOCK = `
 Before performing any file I/O (Read, Grep, Glob), check for [MEMO HIT] hints from hooks. If available, use the cached content from your history to save token budget.
 `;
 
-function getFiles(dir, pattern) {
+function findMarkdownFiles(dir, pattern) {
   let results = [];
   if (!fs.existsSync(dir)) return results;
   const list = fs.readdirSync(dir);
@@ -14,7 +14,7 @@ function getFiles(dir, pattern) {
     file = path.join(dir, file);
     const stat = fs.statSync(file);
     if (stat && stat.isDirectory()) {
-      results = results.concat(getFiles(file, pattern));
+      results = results.concat(findMarkdownFiles(file, pattern));
     } else {
       if (file.endsWith(pattern)) {
         results.push(file);
@@ -95,7 +95,7 @@ const skillMetadataMap = {
   }
 };
 
-const skillFiles = getFiles('skills', 'SKILL.md');
+const skillFiles = findMarkdownFiles('skills', 'SKILL.md');
 console.log(`Syncing ${skillFiles.length} skills...`);
 
 for (const file of skillFiles) {
@@ -148,7 +148,7 @@ if (tierRows) {
   });
 }
 
-const agentFiles = getFiles('agents', '.md');
+const agentFiles = findMarkdownFiles('agents', '.md');
 console.log(`Syncing ${agentFiles.length} agents...`);
 
 for (const file of agentFiles) {

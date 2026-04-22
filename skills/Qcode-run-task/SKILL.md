@@ -230,6 +230,39 @@ or
 - {issue 2}
 ```
 
+### Step 4.10: Contract Conformance Gate
+
+After the adversarial gate passes (Step 4.9), run contract conformance verification for any business-logic contracts stored under `.qe/contracts/active/`. This gate protects user-defined business logic from "vibe coding" drift by comparing each contract against its implementation and tests via LLM judge.
+
+**Skip conditions (fast path):**
+- No `.qe/contracts/active/*.md` files exist → skip entirely.
+- `type: docs` / `type: analysis` tasks (no code to verify).
+
+**Procedure:**
+
+1. Invoke `/Qverify-contract --all` (see `skills/Qverify-contract/SKILL.md`).
+2. The skill lists active contracts, computes 3-hash cache keys, returns cached verdicts on hit, or invokes the `Econtract-judge` agent on miss.
+3. Collect aggregated output: `N PASS, M FAIL`.
+4. Results feed back into judgment:
+
+| Verdict | Action |
+|---------|--------|
+| **ALL PASS** | Proceed to Step 5 (Report) |
+| **Any FAIL** | Treat as Step 4 failure — show findings to user via `AskUserQuestion`: "Fix contract drift" / "Accept as-is (accept FAIL)" / "Stop". On "Fix", delegate to `Ecode-debugger` with the failing contract findings and return to Step 2 (loop counter +1). |
+
+**Output example:**
+```
+[Contract Gate] PASS — 7/7 contracts honored by implementation
+```
+or
+```
+[Contract Gate] FAIL — 2 contracts have drift:
+  - sivs-enforcer: Implementation does not handle SIVS_BLOCK_REASON as stated in contract (critical)
+  - user-service: Missing DuplicateEmailError handling (critical)
+```
+
+**Why this gate exists**: Tests verify BEHAVIOR; contracts verify INTENT. A passing test can still silently drift from the contract's declared invariants after an AI refactor. This gate catches that class of regression. (See `docs/contract-layer.md`.)
+
 ### Step 5: Report Results
 
 Summarize and report final results.

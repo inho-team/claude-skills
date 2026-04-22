@@ -133,17 +133,17 @@ Default target repo is `inho-team/qe-framework`. If the invocation included `--r
 
 ```bash
 gh issue create \
-  --repo "${TARGET_REPO:-inho-team/qe-framework}" \
-  --label "$TYPE" \
-  --title -- "$TITLE" \
-  --body  -- "$BODY_WITH_METADATA"
+  --repo="${TARGET_REPO:-inho-team/qe-framework}" \
+  --label="$TYPE" \
+  --title="$TITLE" \
+  --body="$BODY_WITH_METADATA"
 ```
 
 **Shell-construction rules (mandatory).** `gh` does not re-shell its flag values, but the skill must never build the call via string interpolation that gives the shell a second pass:
 
 - **Forbidden**: `bash -c "gh issue create --title $TITLE ..."`, `sh -c "..."`, `eval`, backtick/`$()` substitution of user input.
 - **Required**: pass `$TITLE` / `$BODY_WITH_METADATA` as **direct shell variables** whose values came straight from `AskUserQuestion` — no concatenation into a single command string.
-- **Required**: the `--` separator on `--title` and `--body` so a value starting with `-` / `--` cannot be reparsed as another flag.
+- **Required**: use the `--flag="$VALUE"` form (with `=`) so the value is inline-bound to the flag even if it begins with `-`. Do **not** use `--flag -- "$VALUE"` — `gh` (Cobra) treats `--` as end-of-flags, and `gh issue create` does not accept positional args, so it fails with `unknown arguments`.
 - **Required**: `$TARGET_REPO` is only ever the post-regex-validated literal above.
 
 The command returns the new issue URL on stdout. Capture it and show it to the user as the final output:

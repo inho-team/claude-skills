@@ -53,5 +53,20 @@
     "hash": "sha256:c5da342cf55c944cd6888a78fcd1ee2b041004e1fce2613afea2de03c8913dfe",
     "approved_at": "2026-04-23T06:59:50.668Z",
     "reason": "v6.5.0 Contract Layer Tier 1 dogfooding — 코어 런타임 모듈 계약화 (Qcode-run-task 게이트 관련)"
+  },
+  "delegation-enforcer": {
+    "hash": "sha256:5ba5e8b20aea54782cb0470ead6b923c73d02f4c704c2a66a69d9723c7ca871f",
+    "approved_at": "2026-04-23T07:09:49.508Z",
+    "reason": "v6.5.0 Contract Layer Tier 2 dogfooding — 코어 런타임 모듈 계약화 (delegation/context/gc)"
+  },
+  "context-loader": {
+    "hash": "sha256:dbabd1125200c9665d9c6d5ac9ee97433615bd784bdc3055af135593c58ec0a8",
+    "approved_at": "2026-04-23T07:09:49.510Z",
+    "reason": "v6.5.0 Contract Layer Tier 2 dogfooding — 코어 런타임 모듈 계약화 (delegation/context/gc)"
+  },
+  "gc-analyzer": {
+    "hash": "sha256:e88cc43c4e7a9059dd63ab8bf6971d8cc09f79797fefae698ca84cb91baeaee3",
+    "approved_at": "2026-04-23T07:09:49.511Z",
+    "reason": "v6.5.0 Contract Layer Tier 2 dogfooding — 코어 런타임 모듈 계약화 (delegation/context/gc)"
   }
 }

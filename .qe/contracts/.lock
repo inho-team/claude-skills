@@ -33,5 +33,10 @@
     "hash": "sha256:d2c89de2675b2d4ba78943caafd3c157745e4811f0b8ac9fd22aa6e7f768647f",
     "approved_at": "2026-04-23T06:19:12.802Z",
     "reason": "v6.5.0 release 초기 승인 — Contract Layer v1 baseline"
+  },
+  "comment-checker": {
+    "hash": "sha256:b0a71f609a4da3ba49f94cfaf3bcdda301ef9a7462d3f94919b7e26b9077e72b",
+    "approved_at": "2026-04-23T06:54:31.467Z",
+    "reason": "Initial contract for Qcode-run-task Step 4.8 (Comment Coverage Gate) — covers 13-language regex-based doc comment detection"
   }
 }

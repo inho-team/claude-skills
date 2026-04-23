@@ -9,8 +9,24 @@
 import path from 'node:path';
 import { assertValidContractName } from './contract-manifest.mjs';
 
+// Placeholder patterns that indicate the marker value was a template stub,
+// not a real path. Treat these as "no marker" so resolver falls back to
+// convention instead of erroring on assertPathDoesNotEscape.
+const PLACEHOLDER_PATTERN = /\.{3,}|<[^>]*>|\b(TODO|TBD|WIP|FIXME|PLACEHOLDER)\b/i;
+
+/**
+ * Check whether a marker value is a template placeholder rather than a real path.
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function isPlaceholder(value) {
+  return typeof value === 'string' && PLACEHOLDER_PATTERN.test(value);
+}
+
 /**
  * Extract <!-- target: path --> and <!-- tests: path --> markers from contract text.
+ * Placeholder-shaped values (ellipsis, <brackets>, TODO/TBD/WIP/FIXME) are
+ * treated as absent so callers fall back to convention paths.
  * @param {string} contractText
  * @returns {{target: string | null, tests: string | null}}
  */
@@ -26,9 +42,12 @@ export function extractMarkers(contractText) {
   const targetMatch = contractText.match(targetRegex);
   const testsMatch = contractText.match(testsRegex);
 
+  const target = targetMatch ? targetMatch[1].trim() : null;
+  const tests = testsMatch ? testsMatch[1].trim() : null;
+
   return {
-    target: targetMatch ? targetMatch[1].trim() : null,
-    tests: testsMatch ? testsMatch[1].trim() : null
+    target: isPlaceholder(target) ? null : target,
+    tests: isPlaceholder(tests) ? null : tests
   };
 }
 

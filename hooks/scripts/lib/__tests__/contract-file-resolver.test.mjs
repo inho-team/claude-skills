@@ -156,3 +156,39 @@ test('integration: real contract sivs-enforcer resolves valid paths', () => {
   // Should resolve to convention (no marker in sivs-enforcer.md)
   assert.equal(testPath, 'hooks/scripts/lib/__tests__/sivs-enforcer.test.mjs');
 });
+
+// --- Placeholder-marker handling (regression: Haiku agents sometimes write template stubs) ---
+
+test('extractMarkers: triple-dot placeholder is treated as no marker', () => {
+  const text = '<!-- tests: hooks/scripts/lib/__tests__/... -->';
+  const { target, tests } = extractMarkers(text);
+  assert.equal(tests, null, 'Triple-dot path should be treated as placeholder, not a real marker');
+  assert.equal(target, null);
+});
+
+test('extractMarkers: <bracket> placeholder is treated as no marker', () => {
+  const text = '<!-- target: <path-to-impl> -->';
+  const { target } = extractMarkers(text);
+  assert.equal(target, null);
+});
+
+test('extractMarkers: TODO/TBD/WIP/FIXME placeholders are treated as no marker', () => {
+  assert.equal(extractMarkers('<!-- tests: TODO write tests -->').tests, null);
+  assert.equal(extractMarkers('<!-- target: TBD -->').target, null);
+  assert.equal(extractMarkers('<!-- tests: WIP-test-path -->').tests, null);
+  assert.equal(extractMarkers('<!-- target: src/FIXME/foo.mjs -->').target, null);
+});
+
+test('extractMarkers: real paths with normal dots still work', () => {
+  const text = '<!-- target: hooks/scripts/lib/foo.bar.mjs -->';
+  const { target } = extractMarkers(text);
+  assert.equal(target, 'hooks/scripts/lib/foo.bar.mjs');
+});
+
+test('resolveTestPath: placeholder marker falls back to convention, not error', () => {
+  // This is the exact Haiku-agent-generated bug from v6.5.0 Tier 1 dogfooding.
+  // Before the placeholder fix, this threw "Marker path escapes project root".
+  const text = '<!-- tests: hooks/scripts/lib/__tests__/... -->';
+  const result = resolveTestPath('regression-gate', text);
+  assert.equal(result, 'hooks/scripts/lib/__tests__/regression-gate.test.mjs');
+});

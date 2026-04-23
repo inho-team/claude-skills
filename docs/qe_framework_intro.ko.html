@@ -233,6 +233,7 @@
   <div class="hero">
     <div class="eyebrow">QE FRAMEWORK · 5분 가이드</div>
     <h1>AI에게 <span style="color:var(--accent)">제대로 된 일</span>을 시키는 프레임워크</h1>
+    <div style="background:rgba(255,200,80,0.08); border:1px solid rgba(255,200,80,0.25); border-radius:8px; padding:10px 14px; margin:12px 0; font-size:13px; color:var(--ink-dim)"><strong style="color:var(--accent)">v6.5.0 신규</strong> · Contract Layer — AI가 비즈니스 로직을 몰래 훼손하는 것을 기계적으로 차단하는 계약 기반 검증 레이어. 자세한 내용은 아래 용어집 + <a href="../docs/contract-layer.md" style="color:var(--accent)">전체 가이드</a>.</div>
     <p class="one-liner">
       QE Framework는 AI에게 코딩 일을 시킬 때 <b>스펙·실행·검증</b>을 자동으로 끼워 넣어,
       "대충 했네" 또는 "엉뚱한 걸 만들었네"를 시스템 레벨에서 막아줍니다.
@@ -400,6 +401,15 @@
 
     <dt>⚠️ Qutopia Mode</dt>
     <dd>모든 스킬이 확인 프롬프트를 건너뛰고 첫 번째 옵션을 자동 선택하도록 만드는 자율 실행 스위치. 빠르지만 잘못된 파일을 커밋하거나 <code>main</code>에 push하거나 파괴적 단계를 연쇄 실행할 수 있음. <strong>요구사항이 명확하고, 모든 단계가 되돌릴 수 있고, 독립된 feature branch일 때에만</strong> 활성화. 전체 사전 체크리스트는 <a href="USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling">USAGE_GUIDE §10</a> 참조. 세션 종료 전 반드시 <code>/Qutopia off</code> 실행.</dd>
+
+    <dt>Contract Layer (v6.5+)</dt>
+    <dd>비즈니스 로직을 구조화된 markdown 계약(6섹션: Signature / Purpose / Constraints / Flow / Invariants / Error Modes)으로 고정하고, LLM judge가 계약·구현·테스트 3자를 대조해 일치 여부를 판정하는 검증 레이어. AI 리팩토링이 의도를 몰래 훼손하는 "바이브 코딩"을 기계적으로 차단. <code>/Qcontract</code>와 <code>/Qverify-contract</code>로 사용.</dd>
+
+    <dt><code>/Qcontract</code></dt>
+    <dd>계약 생애주기 관리 스킬. <code>create</code> / <code>edit</code> / <code>list</code> / <code>approve</code> 서브커맨드로 <code>.qe/contracts/active/</code>의 계약을 작성·갱신·승인. 승인은 대화형 게이트(AskUserQuestion) + <code>.qe/contracts/.lock</code> 해시 기록 2층 방어.</dd>
+
+    <dt><code>/Qverify-contract</code></dt>
+    <dd>LLM judge(<code>Econtract-judge</code> 에이전트) 기반 계약 준수 검증 스킬. 3-해시(contract / impl / test) 캐시로 같은 내용 재판정 방지. 단일 계약(<code>&lt;name&gt;</code>) 또는 전체(<code>--all</code>) 모드 지원. <code>/Qcode-run-task</code> Step 4.10에서 자동 호출.</dd>
   </dl>
 
   <!-- NEXT -->

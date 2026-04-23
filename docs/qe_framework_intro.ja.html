@@ -233,6 +233,7 @@
   <div class="hero">
     <div class="eyebrow">QE FRAMEWORK · 5分ガイド</div>
     <h1>AIに <span style="color:var(--accent)">きちんとした仕事</span>をさせるフレームワーク</h1>
+  <div style="background:rgba(255,200,80,0.08); border:1px solid rgba(255,200,80,0.25); border-radius:8px; padding:10px 14px; margin:12px 0; font-size:13px; color:var(--ink-dim)"><strong style="color:var(--accent)">v6.5.0 新機能</strong> · Contract Layer — AI がビジネスロジックを密かに破壊するのを機械的にブロックする契約ベースの検証レイヤー。詳細は下の用語集と<a href="../docs/contract-layer.md" style="color:var(--accent)">完全ガイド</a>を参照。</div>
     <p class="one-liner">
       QE Frameworkは、AIにコーディング作業をさせるときに <b>スペック・実行・検証</b>を自動的に組み込んで、
       「いい加減だった」または「見当違いなものを作った」をシステムレベルで防ぎます。
@@ -400,6 +401,15 @@
 
     <dt>⚠️ Qutopia Mode</dt>
     <dd>全てのスキルが確認プロンプトをスキップし、最初のオプションを自動選択するようにする自律実行スイッチ。高速だが、誤ったファイルのコミット、<code>main</code> への push、破壊的操作の連鎖実行のリスクあり。<strong>要件が明確で、全ステップがロールバック可能で、独立したフィーチャーブランチ上のときのみ</strong>有効化。完全な事前チェックリストは <a href="USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling">USAGE_GUIDE §10</a> を参照。セッション終了前には必ず <code>/Qutopia off</code> を実行。</dd>
+
+    <dt>Contract Layer (v6.5+)</dt>
+    <dd>ビジネスロジックを構造化された markdown 契約(6セクション: Signature / Purpose / Constraints / Flow / Invariants / Error Modes)として固定し、LLM judge が契約・実装・テストの三者を照合して一致を判定する検証レイヤー。AI リファクタが意図を密かに損なう「バイブコーディング」を機械的にブロック。<code>/Qcontract</code> と <code>/Qverify-contract</code> で使用。</dd>
+
+    <dt><code>/Qcontract</code></dt>
+    <dd>契約ライフサイクル管理スキル。サブコマンド <code>create</code> / <code>edit</code> / <code>list</code> / <code>approve</code> で <code>.qe/contracts/active/</code> の契約を作成・更新・承認。承認は対話ゲート(AskUserQuestion)+ <code>.qe/contracts/.lock</code> ハッシュ記録の 2 層防御。</dd>
+
+    <dt><code>/Qverify-contract</code></dt>
+    <dd>LLM judge(<code>Econtract-judge</code> エージェント)による契約準拠検証スキル。3 ハッシュ(contract / impl / test)キャッシュで同内容の再判定を回避。単一契約(<code>&lt;name&gt;</code>)または一括(<code>--all</code>)モードに対応。<code>/Qcode-run-task</code> Step 4.10 で自動呼び出し。</dd>
   </dl>
 
   <!-- NEXT -->

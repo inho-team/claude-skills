@@ -233,6 +233,7 @@
   <div class="hero">
     <div class="eyebrow">QE FRAMEWORK · 5-MINUTE GUIDE</div>
     <h1>A framework that makes AI do work <span style="color:var(--accent)">properly</span></h1>
+  <div style="background:rgba(255,200,80,0.08); border:1px solid rgba(255,200,80,0.25); border-radius:8px; padding:10px 14px; margin:12px 0; font-size:13px; color:var(--ink-dim)"><strong style="color:var(--accent)">NEW in v6.5.0</strong> · Contract Layer — machine-level defense blocking AI from silently drifting business logic. See the glossary below and the <a href="../docs/contract-layer.md" style="color:var(--accent)">full guide</a>.</div>
     <p class="one-liner">
       QE Framework automatically enforces <b>spec definition · execution · verification</b> when you ask AI to code,
       preventing "sloppy work" or "built the wrong thing" at the system level.
@@ -400,6 +401,15 @@
 
     <dt>⚠️ Qutopia Mode</dt>
     <dd>Autonomous execution switch that makes every skill skip confirmations and auto-pick the first option. Fast, but can commit wrong files, push to <code>main</code>, or chain destructive steps. <strong>Do not enable</strong> unless requirements are explicit, every step is reversible, and you're on an isolated feature branch. See <a href="USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling">USAGE_GUIDE §10</a> for the full pre-flight checklist. Always run <code>/Qutopia off</code> before ending the session.</dd>
+
+    <dt>Contract Layer (v6.5+)</dt>
+    <dd>A verification layer that pins business logic as structured markdown contracts (6 sections: Signature / Purpose / Constraints / Flow / Invariants / Error Modes) and uses an LLM judge to compare contract ↔ implementation ↔ tests. Machine-level defense against "vibe coding" — AI refactors silently drifting from the stated intent. Used via <code>/Qcontract</code> and <code>/Qverify-contract</code>.</dd>
+
+    <dt><code>/Qcontract</code></dt>
+    <dd>Contract lifecycle skill. Subcommands <code>create</code> / <code>edit</code> / <code>list</code> / <code>approve</code> author, modify, review, and lock contracts under <code>.qe/contracts/active/</code>. Approval is enforced by a two-layer defense: interactive gate (AskUserQuestion) + hash record in <code>.qe/contracts/.lock</code>.</dd>
+
+    <dt><code>/Qverify-contract</code></dt>
+    <dd>LLM-judge-driven contract conformance check (via the <code>Econtract-judge</code> agent). A 3-hash cache (contract / impl / test) prevents re-judging unchanged content. Supports single-contract (<code>&lt;name&gt;</code>) and bulk (<code>--all</code>) modes. Auto-invoked by <code>/Qcode-run-task</code> at Step 4.10.</dd>
   </dl>
 
   <!-- NEXT -->

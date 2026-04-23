@@ -233,6 +233,7 @@
   <div class="hero">
     <div class="eyebrow">QE FRAMEWORK · 5分钟指南</div>
     <h1>让 AI <span style="color:var(--accent)">正确地</span>完成工作的框架</h1>
+  <div style="background:rgba(255,200,80,0.08); border:1px solid rgba(255,200,80,0.25); border-radius:8px; padding:10px 14px; margin:12px 0; font-size:13px; color:var(--ink-dim)"><strong style="color:var(--accent)">v6.5.0 新功能</strong> · Contract Layer — 从机器层面阻止 AI 悄悄破坏业务逻辑的契约式验证层。详见下方术语表与<a href="../docs/contract-layer.md" style="color:var(--accent)">完整指南</a>。</div>
     <p class="one-liner">
       QE Framework 在让 AI 编码时自动融入<b>规范·执行·验证</b>，
       从系统层面防止"草率完成"或"做错了"的情况。
@@ -400,6 +401,15 @@
 
     <dt>⚠️ Qutopia Mode</dt>
     <dd>让所有技能跳过确认提示并自动选择第一个选项的自主执行开关。速度快，但可能提交错误的文件、直接 push 到 <code>main</code>、或者连锁执行破坏性步骤。<strong>只有在需求明确、每一步都可回滚、处于独立功能分支时</strong>才启用。完整的启用前检查清单参见 <a href="USAGE_GUIDE.md#10-autonomous-mode-qutopia--%EF%B8%8F-read-before-enabling">USAGE_GUIDE §10</a>。会话结束前务必执行 <code>/Qutopia off</code>。</dd>
+
+    <dt>Contract Layer (v6.5+)</dt>
+    <dd>将业务逻辑固定为结构化 markdown 契约(6 个区块:Signature / Purpose / Constraints / Flow / Invariants / Error Modes),通过 LLM judge 三方比对契约、实现、测试以判定一致性的验证层。从机器层面阻止 AI 重构悄悄偏离原意的"氛围编码"。通过 <code>/Qcontract</code> 与 <code>/Qverify-contract</code> 使用。</dd>
+
+    <dt><code>/Qcontract</code></dt>
+    <dd>契约生命周期管理技能。子命令 <code>create</code> / <code>edit</code> / <code>list</code> / <code>approve</code> 用于创建、修改、查看、锁定 <code>.qe/contracts/active/</code> 下的契约。审批采用对话式门控(AskUserQuestion)+ <code>.qe/contracts/.lock</code> 哈希记录的双层防御。</dd>
+
+    <dt><code>/Qverify-contract</code></dt>
+    <dd>基于 LLM judge(<code>Econtract-judge</code> 代理)的契约合规验证技能。三哈希(contract / impl / test)缓存避免对未变更内容重复判定。支持单契约(<code>&lt;name&gt;</code>)与批量(<code>--all</code>)模式。由 <code>/Qcode-run-task</code> 第 4.10 步自动调用。</dd>
   </dl>
 
   <!-- NEXT -->

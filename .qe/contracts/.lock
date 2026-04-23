@@ -38,5 +38,20 @@
     "hash": "sha256:b0a71f609a4da3ba49f94cfaf3bcdda301ef9a7462d3f94919b7e26b9077e72b",
     "approved_at": "2026-04-23T06:54:31.467Z",
     "reason": "Initial contract for Qcode-run-task Step 4.8 (Comment Coverage Gate) — covers 13-language regex-based doc comment detection"
+  },
+  "regression-gate": {
+    "hash": "sha256:b2a0c579b264d4d29757d5eff546a083e72ad39b4d084345848eb3e160660456",
+    "approved_at": "2026-04-23T06:59:50.666Z",
+    "reason": "v6.5.0 Contract Layer Tier 1 dogfooding — 코어 런타임 모듈 계약화 (Qcode-run-task 게이트 관련)"
+  },
+  "config": {
+    "hash": "sha256:c5ac8668c5997f2463066dec6cd45e4c788a52d2af435f5ab2306220160151e8",
+    "approved_at": "2026-04-23T06:59:50.667Z",
+    "reason": "v6.5.0 Contract Layer Tier 1 dogfooding — 코어 런타임 모듈 계약화 (Qcode-run-task 게이트 관련)"
+  },
+  "codex-poll-watcher": {
+    "hash": "sha256:c5da342cf55c944cd6888a78fcd1ee2b041004e1fce2613afea2de03c8913dfe",
+    "approved_at": "2026-04-23T06:59:50.668Z",
+    "reason": "v6.5.0 Contract Layer Tier 1 dogfooding — 코어 런타임 모듈 계약화 (Qcode-run-task 게이트 관련)"
   }
 }

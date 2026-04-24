@@ -23,6 +23,15 @@ const ACTIVE_POINTER = '.qe/planning/ACTIVE_PLAN';
 const FLAT_ROADMAP = '.qe/planning/ROADMAP.md';
 const FLAT_STATE = '.qe/planning/STATE.md';
 
+// Memoize (projectRoot, sessionId) → slug|null for the life of the Node
+// process. HUD renders and several skill paths call resolveActivePlanSlug
+// multiple times per response; session_id is immutable within a Claude
+// session, so the fs reads are redundant. Null results are cached too so
+// negative lookups stay cheap. Call clearPlanResolverCache() to reset
+// (used by tests; production relies on process termination).
+const _slugCache = new Map();
+const _cacheKey = (projectRoot, sessionId) => `${projectRoot}:${sessionId || ''}`;
+
 /**
  * Resolve the active plan slug for a session.
  *
@@ -33,6 +42,15 @@ const FLAT_STATE = '.qe/planning/STATE.md';
 export function resolveActivePlanSlug(projectRoot, sessionId) {
   if (!projectRoot) return null;
 
+  const key = _cacheKey(projectRoot, sessionId);
+  if (_slugCache.has(key)) return _slugCache.get(key);
+
+  const slug = _resolveActivePlanSlugUncached(projectRoot, sessionId);
+  _slugCache.set(key, slug);
+  return slug;
+}
+
+function _resolveActivePlanSlugUncached(projectRoot, sessionId) {
   // 1. Session-scoped binding
   if (sessionId) {
     const sessionFile = join(projectRoot, SESSIONS_DIR, `${sessionId}.json`);
@@ -59,6 +77,14 @@ export function resolveActivePlanSlug(projectRoot, sessionId) {
   }
 
   return null;
+}
+
+/**
+ * Reset the resolver's slug cache. Intended for test isolation — production
+ * callers rely on Node process termination to clear entries.
+ */
+export function clearPlanResolverCache() {
+  _slugCache.clear();
 }
 
 /**

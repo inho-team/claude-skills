@@ -19,7 +19,7 @@ import {
 } from './lib/ralph-state.mjs';
 import { isAllComplete, parseChecklist } from './lib/checklist-parser.mjs';
 import { analyze as sweepAnalyze } from './lib/sweep-analyzer.mjs';
-import { executeVolatileOnly as sweepVolatileOnly } from './lib/sweep-executor.mjs';
+import { execute as sweepExecute, executeVolatileOnly as sweepVolatileOnly } from './lib/sweep-executor.mjs';
 
 const data = readStdinJson();
 if (!data) {
@@ -31,12 +31,22 @@ const cwd = getCwd(data);
 const cfg = loadConfig(cwd);
 const sessionId = data.session_id || null;
 
-// --- .qe volatile cleanup (quiet) ---
-// Only purges files older than agentResultsDays threshold in volatile folders.
-// Archive moves are opt-in via /Qsweep --apply, not auto.
+// --- .qe sweep (auto-apply when cfg.sweep_auto, else volatile-only) ---
+// Archive moves use deterministic signals (completed/ folders, fully-checked pairs,
+// filename-embedded dates). Files go to .archive/vX.Y.Z/ — recoverable, not deleted.
+// Opt-out: .qe/config.json { "hooks": { "sweep_auto": false } }
+let sweepAnnouncement = null;
 try {
   const plan = sweepAnalyze(cwd);
-  if (plan.delete.length > 0) sweepVolatileOnly(cwd, plan);
+  if (cfg.sweep_auto && (plan.archive.length > 0 || plan.delete.length > 0)) {
+    const res = sweepExecute(cwd, plan, { apply: true });
+    const parts = [];
+    if (res.moved.length > 0) parts.push(`archived ${res.moved.length} → .qe/.archive/${res.version}`);
+    if (res.deleted.length > 0) parts.push(`purged ${res.deleted.length} volatile`);
+    if (parts.length > 0) sweepAnnouncement = `[QE Sweep] ${parts.join(', ')}`;
+  } else if (plan.delete.length > 0) {
+    sweepVolatileOnly(cwd, plan);
+  }
 } catch {
   // Fault tolerance — never let sweep crash stop handler
 }
@@ -261,6 +271,11 @@ if (!activeMode) {
   } catch {
     // Fault tolerance — ignore session log errors
   }
+}
+
+if (!activeMode && sweepAnnouncement) {
+  console.log(JSON.stringify({ continue: true, systemMessage: sweepAnnouncement }));
+  process.exit(0);
 }
 
 if (activeMode) {

@@ -35,10 +35,18 @@ Sweeps the `.qe/` directory using **status-based signals** (not just mtime), mov
 `state/`, `planning/`, `contracts/`, `context/`, `profile/`, `ai-team/` — these hold active session/project state.
 
 ### Automation
-- **SessionStart hook**: runs analyzer (read-only), injects one-line summary:
+- **SessionStart hook**: runs analyzer (read-only), injects one-line summary if anything is pending:
   `[QE Sweep] .qe cleanup available: 20 to archive, 3 stale pending.`
-- **Stop hook**: silently applies the *delete* list only (volatile purge). Archive moves never auto-apply.
-- **Manual**: `/Qsweep` shows detailed plan; `/Qsweep --apply` executes archive moves.
+- **Stop hook**: auto-applies archive moves and volatile purges (default). Announces via `systemMessage`:
+  `[QE Sweep] archived 20 → .qe/.archive/v0.2.0, purged 3 volatile`
+- **Manual**: `/Qsweep` shows detailed plan; `/Qsweep --apply` forces execution (useful mid-session).
+
+### Opt-out
+Auto-apply can be disabled by setting `sweep_auto: false` in `.qe/config.json`:
+```json
+{ "hooks": { "sweep_auto": false } }
+```
+With auto off, only volatile (agent-results) purge runs on Stop; archive moves become opt-in via `/Qsweep --apply`.
 
 ## Invocation
 
@@ -66,10 +74,12 @@ Run /Qsweep --apply to execute.
 ```
 
 ## Safety rules
-- Archive moves go to `.qe/.archive/<version>/<category>/` — never deleted
+- Archive moves go to `.qe/.archive/<version>/<category>/` — **recoverable with `mv`**, never deleted
 - Only `agent-results/` is subject to deletion (volatile by design)
-- Unfinished pending tasks are **reported, never moved**
+- Unfinished pending tasks are **reported, never moved** (even in auto mode)
+- Auto-apply uses deterministic signals only (folder name, checkbox count, embedded date)
 - Fault-tolerant: hook failure never blocks session start or stop
+- Every auto-apply announces what moved via `systemMessage` — no silent file movement
 
 ## Related skills
 - **Qarchive** — archives checkbox-complete pending tasks only; kept for backward compat and auto-trigger from Qrun-task
@@ -89,5 +99,5 @@ Run /Qsweep --apply to execute.
 ## Will Not
 - Delete unfinished tasks
 - Touch active folders (state, planning, contracts, context, profile, ai-team)
-- Auto-apply archive moves (always requires `--apply`)
+- Move files without announcing what moved
 - Use mtime as primary signal (only for volatiles)

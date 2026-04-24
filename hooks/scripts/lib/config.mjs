@@ -57,6 +57,12 @@ const DEFAULTS = {
 
   satisfaction_enabled: false,         // opt-in: prompt user for 1-5 rating at session end
 
+  // [why default true]: stuck-completed files accumulate silently if sweep is manual-only.
+  // Auto-apply on Stop hook uses deterministic signals (completed/ folders, fully-checked
+  // pairs, filename-embedded dates) and moves to .archive/ (recoverable). Opt-out via
+  // .qe/config.json { "hooks": { "sweep_auto": false } } for users who prefer manual control.
+  sweep_auto: true,                    // auto-apply Qsweep archive moves on Stop hook
+
   // pre-tool-use.mjs
   // [why this value]: 200 tool calls is the "red zone" where context pressure is
   // severe enough to risk truncation. Warning at this point prompts the user to

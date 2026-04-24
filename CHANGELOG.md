@@ -49,6 +49,9 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 
 ### Security
 
+### Audit
+- **Skill Surface Audit (Framework Optimization P3, task `adbbd672`)** — static routing simulation run against all 106 skills via the `Mtest-skill` algorithm; baseline accuracy **29%** (105/359 prompts), **40 skills unregistered** in `intent-routes.json`, **95 skills below 80%** accuracy. Top confusion clusters: Design (7 skills), Task-exec (4 skills), Perspective (3 skills). Details + recommendations in `.qe/audit/RECOMMENDATIONS.md` (gitignored). Follow-up implementation tracked as a separate decimal phase.
+
 ## [6.6.3] - 2026-04-24
 
 ### Added

@@ -36,12 +36,34 @@ In `cross-model` mode, the most adversarial agent per stage is routed to Codex:
 
 This ensures the strongest critic uses a genuinely independent model, eliminating same-model confirmation bias.
 
+## 9-Step Protocol
+
+Each review session runs a structured sequence of up to 9 steps drawn from the OMC critic protocol. Not every SIVS stage runs all 9 steps — see the stage mapping column in the Stage Detection table below.
+
+| # | Step | Summary |
+|---|------|---------|
+| 1 | Pre-commitment Prediction | Before reading, commit to 3–5 predicted problem areas |
+| 2 | Multi-perspective Review | Examine through SE / Junior / Ops lenses in parallel |
+| 3 | Pre-Mortem | Generate 5–7 failure scenarios assuming exact execution |
+| 4 | Ambiguity Scan | Identify steps with two valid but conflicting interpretations |
+| 5 | Devil's Advocate | Argue the implementation is wrong; hunt for crashes and silent failures |
+| 6 | Self-audit | Re-examine each CRITICAL/MAJOR finding for confidence and bias |
+| 7 | Realist Check | Pressure-test severity against realistic worst-case and mitigations |
+| 8 | Adversarial Escalation | Trigger max-adversarial mode on CRITICAL findings or 3+ MAJOR |
+| 9 | Explicit Gap Analysis | Catalog what is missing — requirements, assumptions, omitted context |
+
+Full definitions (trigger conditions, output schemas, examples): [./reference/nine-step-protocol.md](./reference/nine-step-protocol.md)
+
 ## Stage Detection (when --stage is omitted)
 
-1. If a file argument is given:
-   - `TASK_REQUEST*.md` or spec file → `spec`
-   - Source code or diff → `verify`
-   - PR or merge context → `supervise`
+| Stage | Detected From | 9-Step Mapping |
+|-------|--------------|----------------|
+| `spec` | `TASK_REQUEST*.md` or spec file | Steps 1, 2, 4, 9 (Pre-commitment, Multi-perspective, Ambiguity Scan, Gap Analysis) |
+| `verify` | Source code or diff | Steps 3, 5, 6 (Pre-Mortem, Devil's Advocate, Self-audit) |
+| `supervise` | PR or merge context | Steps 7, 8 (Realist Check, Adversarial Escalation) |
+
+Detection order:
+1. If a file argument is given: match against the Stage column above
 2. If no argument: check `.qe/state/unified-state.json` for last SIVS stage
 3. If ambiguous: ask user via `AskUserQuestion`
 
@@ -216,3 +238,7 @@ Callers invoke via: `/Qcritical-review --stage <stage>`
 - Replace Qperspective for general multi-viewpoint analysis
 - Auto-fix issues (only identify and report)
 - Run more than 3 agents (focused critique over broad coverage)
+
+## Attribution
+
+9-Step Protocol adapted from oh-my-claudecode (MIT, © 2025 Yeachan Heo): https://github.com/Yeachan-Heo/oh-my-claudecode/blob/main/agents/critic.md

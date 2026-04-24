@@ -49,9 +49,28 @@ If no sivs-config.json or all stages are Claude, skip this check entirely.
 
 ## Workflow
 
+### Step 0.6: Derive Plan Slug (silent, automatic)
+
+Before any planning writes, derive a **plan slug** — the identifier that scopes all files under `.qe/planning/plans/{slug}/`. The slug is the 1st-class name of this plan; Phase numbers are plan-local, never part of the global address. This lets multiple terminals run `/Qplan` in parallel without clobbering each other's state.
+
+**Derivation rules** (do NOT ask the user):
+1. Extract 2–4 salient keywords from the user's planning prompt (domain verbs/nouns). Drop stopwords ("the", "a", "for", "에", "를", …), filler ("please", "좀"), and meta words ("plan", "project", "feature").
+2. Transliterate non-Latin tokens to Latin (e.g., "인증" → "auth", "결제" → "payment", "대시보드" → "dashboard"). When a clean transliteration isn't obvious, use the English equivalent.
+3. Lowercase, join with `-`, keep only `[a-z0-9-]`, strip leading/trailing dashes. Max 40 chars.
+4. **Collision**: if `.qe/planning/plans/{slug}/` already exists, append `-2`, `-3`, …
+5. **Micro/Small tasks** still get a slug. Bug fixes with no obvious keywords → `fix-{4-char-hex}` via `openssl rand -hex 2`.
+
+Examples:
+- "인증 모듈 리팩터링" → `auth-refactor`
+- "JPA Audit 걸어줘" → `jpa-audit`
+- "Dashboard v2 기획" → `dashboard-v2`
+- "로그인 버튼 정렬 버그" → `login-button-align` (Small) or `fix-b4c2` (Micro)
+
+Record the chosen slug internally; it appears in the handoff `Next Command` so the user sees it but is not asked to approve.
+
 ### Step 0.7: Assess Scale
 
-Before starting, determine the task scale:
+Determine the task scale:
 
 | Signal | Scale | Workflow |
 |--------|-------|----------|
@@ -60,23 +79,15 @@ Before starting, determine the task scale:
 | Multi-feature, multi-phase, new project | **Full** | Full Planning |
 
 **Micro Plan** (estimated < 30 min of work):
-1. Confirm the task with the user in 1-2 lines
-2. Skip roadmap, phases, and research
-3. Go directly to handoff:
-   ```
-   PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
-
-   {task description — 작업 내용 한 줄 요약}
-   Next Command:
-
-     /Qgs Fix: {task description}
-   ```
+1. Confirm the task with the user in 1-2 lines.
+2. Skip roadmap, phases, and research — but still derive the slug (Step 0.6) and run Step 3.5 (Session Binding) so the HUD and consumer skills can find this plan.
+3. Go directly to handoff with `Next Command: /Qgs {slug}: {task}`.
 
 **Small Plan** (one feature / one component):
-1. Brief discovery: ask 1-2 clarifying questions max
-2. Create a single-phase plan (no ROADMAP.md, no Wave Model)
-3. List 3-7 tasks in plain text
-4. Go to handoff
+1. Brief discovery: ask 1-2 clarifying questions max.
+2. Create a single-phase plan under `.qe/planning/plans/{slug}/` (ROADMAP.md optional, no Wave Model).
+3. List 3-7 tasks in plain text.
+4. Run Step 3.5 (Session Binding) then go to handoff.
 
 **Full Planning** (multi-phase project):
 Continue to Step 1 below.
@@ -84,42 +95,67 @@ Continue to Step 1 below.
 ### Step 1: Deep Discovery & Research (Full Planning only)
 - **Interactive Discovery**: Use the `ask_user` tool (choice/text) to gather initial requirements and constraints. Do not guess; present options.
 - **Requirement Tiering**: Use `ask_user` to let the user select the priority (P0/P1/P2) for each core feature.
-- **Proactive Research**: If the domain is new, run **Edeep-researcher** first. Store findings in `.qe/planning/research/`.
+- **Proactive Research**: If the domain is new, run **Edeep-researcher** first. Store findings in `.qe/planning/research/` (global — shared across all plans).
 
 ### Step 2: Strategic Roadmap Design (Full Planning only)
-Design a phased roadmap in `.qe/planning/ROADMAP.md`:
-- **Phase Goal**: Define a verifiable high-level objective for each phase.
+Design a phased roadmap in `.qe/planning/plans/{slug}/ROADMAP.md`:
+- **Phase Goal**: Define a verifiable high-level objective for each phase. Phase numbers are plan-local (Phase 1, 2, 3… within this slug).
 - **Dependency Mapping**: Use the **Wave Model** to group independent tasks for parallel execution.
-- **Traceability**: Link each Phase to specific Requirement IDs.
+- **Traceability**: Link each Phase to specific Requirement IDs in `plans/{slug}/REQUIREMENTS.md`.
 
 ### Step 3: Activate Phase & Hand Off (MANDATORY)
-- **Activate Phase**: Update `.qe/planning/STATE.md` to reflect the active phase.
+- **Activate Phase**: Write `.qe/planning/plans/{slug}/STATE.md` with the active phase line `- **Active Phase**: Phase {N} — {PhaseName}`.
 - **STOP HERE**: Do NOT invoke /Qgs or /Qatomic-run. You MUST display the full Handoff section below — including the `Next Command:` block. Without it, the user has no way to proceed.
+
+### Step 3.5: Session Binding (MANDATORY — all scales)
+
+Bind this plan to the current terminal session so the HUD and consumer skills (Qgs/Qrun-task/Qcode-run-task/Qatomic-run) resolve to the right plan automatically.
+
+1. **Project-wide pointer** (always): write `{slug}\n` into `.qe/planning/ACTIVE_PLAN`.
+2. **Session-scoped binding** (best-effort): read `.qe/state/current-session.json` written by the session-start hook. If it parses and has a `session_id`, write `.qe/planning/.sessions/{session_id}.json`:
+   ```json
+   { "activePlanSlug": "{slug}", "updatedAt": "{ISO-8601}" }
+   ```
+   If the session file is missing or unreadable, skip silently — the pointer in step 1 is enough for the HUD fallback.
+3. Create the plan directory if absent: `mkdir -p .qe/planning/plans/{slug}/phases` and `mkdir -p .qe/planning/.sessions`.
 
 ### Step 4 (Post-Execution): Verification & Transition
 After execution is complete (by /Qatomic-run + /Qcode-run-task), review the results:
 - **Gap Handling (Decimal Phase)**: If critical gaps or bugs remain, generate a **Decimal Phase** (e.g., Phase 1.1).
-- **Retrospective**: Before moving to the next whole phase, generate `.qe/planning/phases/{X}/RETROSPECTIVE.md`.
+- **Retrospective**: Before moving to the next whole phase, generate `.qe/planning/plans/{slug}/phases/{X}/RETROSPECTIVE.md`.
 - **Transition**: Move to the next phase only after all MUST-HAVEs, UAT items, and the Retro are done.
 
-## Documents to Manage (in `.qe/planning/`)
+## Documents to Manage
+
+**Per-plan** (under `.qe/planning/plans/{slug}/`):
 
 | File / Folder | Purpose |
 |------|---------|
-| `PROJECT.md` | High-level vision, core pillars, and milestone history. |
-| `ROADMAP.md` | Phased waves, success criteria, and requirement traceability. |
-| `REQUIREMENTS.md` | Detailed functional and non-functional requirements (P0/P1/P2). |
-| `DECISION_LOG.md` | Persistent record of all architectural and strategic decisions. |
-| `STATE.md` | Current active phase and status. |
+| `ROADMAP.md` | Phased waves, success criteria, and requirement traceability for this plan. |
+| `STATE.md` | Current active phase for this plan. |
+| `REQUIREMENTS.md` | Functional and non-functional requirements (P0/P1/P2) for this plan. |
+| `phases/{X}/` | Phase artifacts (summaries, retros) for this plan. |
+
+**Global** (under `.qe/planning/`, shared across all plans):
+
+| File / Folder | Purpose |
+|------|---------|
+| `PROJECT.md` | High-level project vision, core pillars, and milestone history. |
+| `DECISION_LOG.md` | Persistent record of architectural and strategic decisions. Decisions usually cut across plans. |
 | `research/` | Deep technical research reports and domain analysis. |
-| `phases/{X}/` | Phase artifacts directory. |
+| `ACTIVE_PLAN` | Single-line pointer to the most-recently-activated plan slug. HUD fallback. |
+| `.sessions/{session_id}.json` | Per-session binding `{ activePlanSlug, updatedAt }`. HUD primary source. |
+
+**Backward compatibility**: If an existing project has flat `.qe/planning/ROADMAP.md` / `STATE.md` (pre-Named-Plan era), leave them untouched. New `/Qplan` invocations always use the `plans/{slug}/` layout. Consumer skills fall back to the flat files only when no plan is resolvable.
 
 ## Handoff (MANDATORY — never skip)
 **CRITICAL**: After completing planning, you MUST display this structured output as the LAST thing in your response. No matter how long the planning or research was, the response MUST end with this handoff. If the handoff is missing, the user cannot proceed to the next step. Fill in the `{...}` placeholders from the actual plan.
 
-### Section 1: Roadmap + PSE Chain (always first)
+### Section 1: Plan ID + Roadmap + PSE Chain (always first)
 
 ```
+Plan:  {slug}
+
 Roadmap:  👉 Phase 1  →  ○ Phase 2  →  ○ Phase 3
           {Name1}        {Name2}        {Name3}
 
@@ -129,7 +165,7 @@ PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 ### Section 2: Plan Summary
 
 ```
-## Plan Summary — {ProjectName}
+## Plan Summary — {slug}
 
 {N} Phases · {M} Waves · ~{T} Tasks
 
@@ -157,11 +193,12 @@ PSE Chain:  ✅ /Qplan  →  👉 /Qgs  →  /Qatomic-run  →  /Qcode-run-task
 {Phase 한 줄 요약 — 사용자 입력 언어로}
 {다음 명령 라벨 — 사용자 입력 언어로, 예: "다음 명령:" / "Next Command:" / "次のコマンド:"}
 
-  /Qgs Phase {X}: {짧은 별칭}
+  /Qgs {slug}: {짧은 별칭}
 ```
 
 **Rules:**
-- `{짧은 별칭}`: Phase의 짧은 이름만 쓴다 (예: "인증 모듈", "JPA Audit"). Phase의 전체 설명/요구사항/긴 문장을 복사하지 않는다. 최대 6단어.
+- **`{slug}`는 Step 0.6에서 자동 생성한 이 plan의 식별자다.** Phase 번호가 아니라 slug가 1차 ID — Qgs/Qrun-task는 slug로 plan을 resolve한다.
+- `{짧은 별칭}`: 현재 Phase의 짧은 이름만 쓴다 (예: "인증 모듈", "JPA Audit"). Phase의 전체 설명/요구사항/긴 문장을 복사하지 않는다. 최대 6단어.
 - **라벨 언어는 사용자 입력 언어를 따른다**. 사용자가 한글로 말하면 "다음 명령:", 영어로 말하면 "Next Command:".
 - Fallback 줄(`If that doesn't work: /Qgenerate-spec ...`)은 **쓰지 않는다** — `/Qgs`는 `/Qgenerate-spec`의 공식 alias이므로 중복이다.
 - 이 블록이 **응답의 마지막**이어야 한다. 뒤에 설명/대안 금지. **`Next Command` 블록 없이 응답이 끝나면 handoff 실패다.**

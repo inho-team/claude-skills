@@ -12,14 +12,18 @@ This is the canonical shortcut for `/Qgenerate-spec`.
 
 ## Behavior
 1. Pass all arguments directly to `/Qgenerate-spec`.
-2. If arguments include a Phase reference (e.g., `Phase 2: Codex Bridge`), Qgenerate-spec will read `.qe/planning/ROADMAP.md` to extract that Phase's tasks.
+2. If the first token looks like a **plan slug** (`[a-z0-9][a-z0-9-]{0,63}` followed by `:`), Qgenerate-spec treats everything before the colon as the plan slug and reads `.qe/planning/plans/{slug}/ROADMAP.md` + `STATE.md` for that plan's active Phase.
+3. Otherwise (no slug, no colon) Qgenerate-spec resolves the active plan automatically via `.qe/state/current-session.json` → `.qe/planning/.sessions/{session_id}.json` → `.qe/planning/ACTIVE_PLAN`, falling back to the flat `.qe/planning/ROADMAP.md` for legacy projects.
 
 ## Usage Examples
 ```
-/Qgs                          # Interactive — asks for project info
-/Qgs Phase 2: Codex Bridge    # Phase-based — reads roadmap for Phase 2
-/Qgs fix login bug            # Freeform — generates spec from description
+/Qgs                              # Interactive — asks for project info
+/Qgs auth-refactor: 인증 모듈     # Slug-based — reads plans/auth-refactor/
+/Qgs dashboard-v2: Polish         # Another plan in parallel — no collision
+/Qgs fix login bug                # Freeform — generates spec from description
 ```
+
+> **Legacy**: `/Qgs Phase 2: Codex Bridge` still works against the flat `.qe/planning/ROADMAP.md` for projects that pre-date Named Plans. New projects always use slug form.
 
 ## Implementation
 Invoke the `Qgenerate-spec` skill with the user's full argument string. Do not modify or interpret the arguments — pass them through as-is.

@@ -228,6 +228,25 @@ try {
   // Fault tolerance — ignore cleanup errors
 }
 
+// Persist session_id so model-side skills (Qplan, Qgs, …) can bind their
+// work to the Named Plan layout under .qe/planning/plans/{slug}/. Skills
+// have no direct access to session_id; reading this file is the bridge.
+// Last-write-wins per project — parallel Claude sessions overwrite each
+// other's pointer, but each plan's own data lives under its slug dir.
+try {
+  const sessionId = data.session_id || data.sessionId;
+  if (sessionId) {
+    const stateDir = join(cwd, '.qe', 'state');
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(
+      join(stateDir, 'current-session.json'),
+      JSON.stringify({ session_id: sessionId, startedAt: new Date().toISOString() }, null, 2)
+    );
+  }
+} catch {
+  // Fault tolerance — session-id persistence is best-effort
+}
+
 // Reset or initialize unified-state for fresh session tracking
 try {
   const state = readUnifiedState(cwd);

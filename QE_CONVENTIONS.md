@@ -85,7 +85,7 @@ Every PSE Chain skill MUST end with a `## Handoff` section. The handoff follows 
 
 ### Phase Progress Display
 
-When handing off, read `.qe/planning/ROADMAP.md` to display the full Phase list and completion status.
+When handing off, resolve the active plan's ROADMAP via the Named Plan resolution order (session binding → `ACTIVE_PLAN` → flat fallback) and read `.qe/planning/plans/{slug}/ROADMAP.md` (or flat `.qe/planning/ROADMAP.md` for legacy projects) to display the full Phase list and completion status.
 
 **Format rules for terminal compatibility:**
 - Use a **vertical table** for Roadmap — never rely on horizontal emoji alignment
@@ -96,7 +96,7 @@ When handing off, read `.qe/planning/ROADMAP.md` to display the full Phase list 
 
 ### Code Task Example
 ```
-Phase 2: Codex Bridge — Implementation complete
+sivs-migration · Phase 2: Codex Bridge — Implementation complete
 
 Roadmap
   [x] Phase 1: Strip & Purify
@@ -111,7 +111,7 @@ Next: /Qcode-run-task a1b2c3d4
 
 ### Non-code Task Complete Example
 ```
-Phase 1: Strip & Purify — Complete
+sivs-migration · Phase 1: Strip & Purify — Complete
 
 Roadmap
   [x] Phase 1: Strip & Purify
@@ -121,13 +121,14 @@ Roadmap
 PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
 Codex CLI 브릿지 연동 및 fallback 로직 구현
-다음: /Qgs Phase 2: Codex Bridge
+다음: /Qgs sivs-migration: Codex Bridge
 ```
-(Note: `Next:` label above is shown in Korean as `다음:` because the task description is in Korean. Always localize the label to match user input language.)
+(Note 1: the `{slug} · ` prefix identifies which plan this belongs to, enabling multi-terminal parallelism. Legacy flat-file projects omit the prefix and use `Phase N: …` as the address.)
+(Note 2: `Next:` label above is shown in Korean as `다음:` because the task description is in Korean. Always localize the label to match user input language.)
 
 ### When entire Roadmap is complete
 ```
-Phase 3: Polish & Release — Complete
+sivs-migration · Phase 3: Polish & Release — Complete
 
 Roadmap
   [x] Phase 1: Strip & Purify
@@ -140,6 +141,30 @@ All phases done. Finalize with /Qcommit
 ```
 
 ---
+
+## Named Plan Layout
+
+Planning state is scoped per plan under `.qe/planning/plans/{slug}/` so multiple terminals can run `/Qplan` in parallel without clobbering each other's STATE/ROADMAP.
+
+**Per-plan files** (under `.qe/planning/plans/{slug}/`):
+- `ROADMAP.md`, `STATE.md`, `REQUIREMENTS.md`, `phases/{X}/SUMMARY_*.md`, `phases/{X}/RETROSPECTIVE.md`.
+
+**Global files** (under `.qe/planning/`, shared across all plans):
+- `PROJECT.md` — project-wide vision and pillars.
+- `DECISION_LOG.md` — architectural decisions that cut across plans.
+- `research/` — reusable research reports.
+- `ACTIVE_PLAN` — single-line pointer to the most-recently-activated slug (HUD fallback).
+- `.sessions/{session_id}.json` — per-session `{ activePlanSlug, updatedAt }` binding (HUD primary).
+
+**Plan resolution order** (used by HUD and all consumer skills):
+1. Explicit slug argument (e.g., `/Qgs auth-refactor: 인증 모듈`).
+2. `.qe/state/current-session.json` → `session_id` → `.qe/planning/.sessions/{session_id}.json` → `activePlanSlug`.
+3. `.qe/planning/ACTIVE_PLAN`.
+4. Legacy flat `.qe/planning/ROADMAP.md` / `STATE.md` (pre-Named-Plan projects).
+
+**Slug shape**: `[a-z0-9][a-z0-9-]{0,63}`. Qplan derives slugs automatically from the task prompt (no user prompt). See `skills/Qplan/SKILL.md` Step 0.6.
+
+**Session bridge**: `hooks/scripts/session-start.mjs` writes `.qe/state/current-session.json` with the current session_id on every session start. Skills read this file to discover their own session_id (which Claude Code does not otherwise expose to the model).
 
 ## Global Output Rules
 

@@ -127,7 +127,7 @@ Assess based on combined test and review results.
 
 ### Step 4.8: Cross-Phase Regression Gate
 Before declaring the Phase complete, verify prior phases have not regressed:
-1. Read `.qe/planning/ROADMAP.md` to identify completed phases
+1. Resolve the active plan (session binding → `.qe/planning/ACTIVE_PLAN` → flat fallback) and read `.qe/planning/plans/{slug}/ROADMAP.md` (or flat `.qe/planning/ROADMAP.md` for legacy projects) to identify completed phases
 2. For each completed phase, re-verify key items from its VERIFY_CHECKLIST (in `.qe/checklists/completed/`)
 3. Focus on: file existence, test suite passes, build success
 4. If regression found, report and block completion until fixed

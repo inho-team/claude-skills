@@ -56,9 +56,14 @@ Format: Markdown with checklist items
 
 ### Step 1: Context Acquisition (Mandatory)
 Before collecting user info, identify the strategic context:
-1. **Check Roadmap**: Read `.qe/planning/ROADMAP.md` and `STATE.md`.
-2. **Identify Phase**: If an active Phase exists, use its **Success Criteria** and **Requirement IDs** as the primary source of truth for the spec.
-3. **Missing Roadmap**: If no roadmap exists, **STOP** and suggest running `/Qplan` first to maintain the PSE Chain integrity.
+1. **Resolve active plan** (slug-based Named Plan layout):
+   - If the first CLI token matches `{slug}:` (where slug is `[a-z0-9][a-z0-9-]{0,63}`), use that as the plan slug and strip it from the argument string.
+   - Else read `.qe/state/current-session.json` → extract `session_id` → read `.qe/planning/.sessions/{session_id}.json` → extract `activePlanSlug`.
+   - Else read `.qe/planning/ACTIVE_PLAN` (single-line slug pointer).
+   - Else (no slug resolvable): fall back to legacy flat `.qe/planning/ROADMAP.md` + `STATE.md` and proceed as before.
+2. **Check Roadmap**: When a slug is resolved, read `.qe/planning/plans/{slug}/ROADMAP.md` and `plans/{slug}/STATE.md`. When falling back, read the flat files.
+3. **Identify Phase**: If an active Phase exists in the resolved STATE.md, use its **Success Criteria** and **Requirement IDs** as the primary source of truth for the spec.
+4. **Missing Roadmap**: If no plan is resolvable and no flat roadmap exists either, **STOP** and suggest running `/Qplan` first to maintain the PSE Chain integrity.
 
 ### Step 2: Information Gathering
 ... (omitted) ...
@@ -212,7 +217,7 @@ After draft creation (Step 2) and before handing off, check whether the TASK_REQ
 - `extractCandidates` returns `[]` → skip with a short note ("Marker present but no `.mjs` output items found in checklist.").
 - A pending draft with the same name already exists → skip that one, warn the user ("Draft already pending: {name}.md").
 
-**Reference**: See `.qe/contracts/README.md` and D011 in `.qe/planning/DECISION_LOG.md`.
+**Reference**: See `.qe/contracts/README.md` and D011 in `.qe/planning/DECISION_LOG.md` (DECISION_LOG stays global across all plans).
 
 ## Handoff
 After generating spec files (on "Generate Only"), display using the standard handoff format from `QE_CONVENTIONS.md`:

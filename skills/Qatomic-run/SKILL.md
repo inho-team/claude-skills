@@ -22,7 +22,7 @@ Read the `TASK_REQUEST` and identify items suitable for parallel execution:
 Create an **Agent Team** using the `Agent` tool:
 - Assign **one Haiku Teammate per atomic item**.
 - **Atomic Commits**: Teammates MUST perform a `git commit` immediately after completing their specific item.
-- **Technical Summary**: Teammates MUST create a `.qe/planning/phases/{X}/SUMMARY_{Item#}.md` describing precisely what changed and any side-effects.
+- **Technical Summary**: Teammates MUST create `SUMMARY_{Item#}.md` under the active plan's phase directory — resolve the slug via `.qe/state/current-session.json` → `.qe/planning/.sessions/{session_id}.json` → `.qe/planning/ACTIVE_PLAN`, then write to `.qe/planning/plans/{slug}/phases/{X}/SUMMARY_{Item#}.md`. Legacy projects with no slug resolvable write to `.qe/planning/phases/{X}/SUMMARY_{Item#}.md`.
 - Set teammates to `haiku` model for maximum speed and efficiency.
 
 ### Step 3: Result Synthesis
@@ -87,7 +87,7 @@ Results are logged to `.qe/agent-results/codex-materialization.md` automatically
 - Synthesize results and handle merges
 
 ## Handoff
-After all Wave items are complete, read `.qe/planning/ROADMAP.md` and display execution summary + handoff. Use the standard handoff format from `QE_CONVENTIONS.md` (vertical table, `[x]`/`[>]`/`[ ]` markers, single code block, lines under 60 chars).
+After all Wave items are complete, resolve the active plan's ROADMAP (session binding → `.qe/planning/ACTIVE_PLAN` → flat fallback) and display execution summary + handoff. Read `.qe/planning/plans/{slug}/ROADMAP.md` when a slug resolves; fall back to flat `.qe/planning/ROADMAP.md` for legacy projects. Use the standard handoff format from `QE_CONVENTIONS.md` (vertical table, `[x]`/`[>]`/`[ ]` markers, single code block, lines under 60 chars).
 
 ### Execution Summary (always show before handoff)
 ```
@@ -100,7 +100,7 @@ Execution Complete: {TaskName}
 
 ### When `type: code`
 ```
-Phase {X}: {PhaseName} — Implementation complete
+{slug} · Phase {X}: {PhaseName} — Implementation complete
 
 Roadmap
   [x] Phase 1: {Name1}
@@ -116,7 +116,7 @@ Next: /Qcode-run-task {UUID}
 ### When `type: docs` / `type: analysis` / deletion-heavy
 After performing SIVS verification inline (VERIFY_CHECKLIST check + supervision gate):
 ```
-Phase {X}: {PhaseName} — Complete
+{slug} · Phase {X}: {PhaseName} — Complete
 
 Roadmap
   [x] Phase 1: {Name1}
@@ -126,9 +126,9 @@ Roadmap
 PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
 {NextPhaseDescription — 다음 Phase 작업 내용 한 줄 요약}
-{Next label — 사용자 입력 언어로, 예: "다음:" / "Next:"}: /Qgs Phase {X+1}: {짧은 별칭, 최대 6단어}
+{Next label — 사용자 입력 언어로, 예: "다음:" / "Next:"}: /Qgs {slug}: {짧은 별칭, 최대 6단어}
 ```
-(Fallback line 금지 — `/Qgs`는 `/Qgenerate-spec`의 alias이므로 중복이다.)
+(Fallback line 금지 — `/Qgs`는 `/Qgenerate-spec`의 alias이므로 중복이다. Legacy flat-file projects drop the `{slug} · ` prefix and use `/Qgs Phase {X+1}: {짧은 별칭}`.)
 When all Phases are complete:
 ```
 All phases done. Finalize with /Qcommit

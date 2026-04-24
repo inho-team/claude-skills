@@ -75,6 +75,64 @@ test('phase: truncates long labels with ellipsis', () => {
   }
 });
 
+test('phase: session binding resolves named plan STATE.md', () => {
+  const root = mkdtempSync(join(tmpdir(), 'hud-phase-'));
+  try {
+    mkdirSync(join(root, '.qe/planning/plans/auth-refactor'), { recursive: true });
+    mkdirSync(join(root, '.qe/planning/.sessions'), { recursive: true });
+    writeFileSync(
+      join(root, '.qe/planning/plans/auth-refactor/STATE.md'),
+      `- **Active Phase**: Phase 2 — Codex Bridge\n`,
+    );
+    writeFileSync(
+      join(root, '.qe/planning/STATE.md'),
+      `- **Active Phase**: Phase 1 — Legacy\n`,
+    );
+    writeFileSync(
+      join(root, '.qe/planning/.sessions/sess-abc.json'),
+      JSON.stringify({ activePlanSlug: 'auth-refactor' }),
+    );
+    assert.equal(pickActivePhase(root, 'sess-abc'), 'Phase 2');
+    // No sessionId → fall back to flat STATE.md
+    assert.equal(pickActivePhase(root), 'Phase 1');
+  } finally {
+    rmSync(root, { recursive: true });
+  }
+});
+
+test('phase: ACTIVE_PLAN pointer resolves when session file missing', () => {
+  const root = mkdtempSync(join(tmpdir(), 'hud-phase-'));
+  try {
+    mkdirSync(join(root, '.qe/planning/plans/dashboard-v2'), { recursive: true });
+    writeFileSync(
+      join(root, '.qe/planning/plans/dashboard-v2/STATE.md'),
+      `- **Active Phase**: Phase 3 — Polish\n`,
+    );
+    writeFileSync(join(root, '.qe/planning/ACTIVE_PLAN'), 'dashboard-v2\n');
+    assert.equal(pickActivePhase(root, 'unknown-session'), 'Phase 3');
+  } finally {
+    rmSync(root, { recursive: true });
+  }
+});
+
+test('phase: rejects path-traversal slug, falls back to flat STATE.md', () => {
+  const root = mkdtempSync(join(tmpdir(), 'hud-phase-'));
+  try {
+    mkdirSync(join(root, '.qe/planning/.sessions'), { recursive: true });
+    writeFileSync(
+      join(root, '.qe/planning/STATE.md'),
+      `- **Active Phase**: Phase 1 — Flat\n`,
+    );
+    writeFileSync(
+      join(root, '.qe/planning/.sessions/sess-bad.json'),
+      JSON.stringify({ activePlanSlug: '../../../etc/passwd' }),
+    );
+    assert.equal(pickActivePhase(root, 'sess-bad'), 'Phase 1');
+  } finally {
+    rmSync(root, { recursive: true });
+  }
+});
+
 // ============================================================================
 // task element
 // ============================================================================

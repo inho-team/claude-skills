@@ -202,11 +202,16 @@ After completion, check for remaining tasks:
 ---
 
 ## Handoff
-After task completion (Step 5), read `.qe/planning/ROADMAP.md` and display handoff. Use the standard handoff format from `QE_CONVENTIONS.md` (vertical table, `[x]`/`[>]`/`[ ]` markers, single code block, lines under 60 chars).
+After task completion (Step 5), resolve the active plan's ROADMAP before rendering handoff:
+1. Read `.qe/state/current-session.json` → `session_id` → `.qe/planning/.sessions/{session_id}.json` → `activePlanSlug`.
+2. Else read `.qe/planning/ACTIVE_PLAN`.
+3. Use the resolved `.qe/planning/plans/{slug}/ROADMAP.md`, falling back to flat `.qe/planning/ROADMAP.md` for legacy projects.
+
+Use the standard handoff format from `QE_CONVENTIONS.md` (vertical table, `[x]`/`[>]`/`[ ]` markers, single code block, lines under 60 chars).
 
 ### When `type: code`
 ```
-Phase {X}: {PhaseName} — Implementation complete
+{slug} · Phase {X}: {PhaseName} — Implementation complete
 
 Roadmap
   [x] Phase 1: {Name1}
@@ -222,7 +227,7 @@ Next: /Qcode-run-task {UUID}
 ### When `type: docs` / `type: analysis` / deletion-heavy
 After performing SIVS verification inline:
 ```
-Phase {X}: {PhaseName} — Complete
+{slug} · Phase {X}: {PhaseName} — Complete
 
 Roadmap
   [x] Phase 1: {Name1}
@@ -232,9 +237,9 @@ Roadmap
 PSE: [x] Plan [x] Spec [x] Execute [x] Complete
 
 {NextPhaseDescription — 다음 Phase 작업 내용 한 줄 요약}
-{Next label — 사용자 입력 언어로, 예: "다음:" / "Next:"}: /Qgs Phase {X+1}: {짧은 별칭, 최대 6단어}
+{Next label — 사용자 입력 언어로, 예: "다음:" / "Next:"}: /Qgs {slug}: {짧은 별칭, 최대 6단어}
 ```
-(Fallback line 금지 — `/Qgs`는 `/Qgenerate-spec`의 alias이므로 중복이다.)
+(Fallback line 금지 — `/Qgs`는 `/Qgenerate-spec`의 alias이므로 중복이다. Legacy flat-file projects drop the `{slug} · ` prefix and use `/Qgs Phase {X+1}: {짧은 별칭}`.)
 When all Phases are complete:
 ```
 All phases done. Finalize with /Qcommit

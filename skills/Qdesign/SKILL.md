@@ -1,6 +1,6 @@
 ---
 name: Qdesign
-description: "Creates a DESIGN.md specification that defines the visual identity, design system, and component guidelines for a project. All frontend skills (Qfrontend-design, Qstitch-apply, coding-experts) reference this file as the single source of truth. Distinct from Qfrontend-design which implements UI code — this skill defines the design spec before any code is written. Supports live extraction from reference URLs via Chrome MCP for automated token generation. Supports `--scan` to auto-bootstrap DESIGN.md from codebase (tailwind config, theme, components)."
+description: "Authors DESIGN.md — the upstream design-system specification (tokens, typography, spacing, component guidelines) that every frontend skill reads as source of truth. Branch points: use THIS for writing/updating the DESIGN.md spec itself; use Qfrontend-design to implement UI code from it; use Qvisual-redesign to reconcile rendered pages against it; use Qdesign-audit to scan source for spec drift; use Qweb-design-guidelines for external heuristics (Vercel WIG) review. Supports live token extraction from reference URLs via Chrome MCP and `--scan` to bootstrap DESIGN.md from an existing codebase (tailwind config, theme, components)."
 metadata:
   author: qe-framework
   version: "1.1.0"

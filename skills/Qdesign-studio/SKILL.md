@@ -1,6 +1,6 @@
 ---
 name: Qdesign-studio
-description: "Unified design orchestrator — takes a single brief and generates multiple artifacts (code + slide deck + one-pager PDF + mockup + rapid prototype). Routes via artifact-dispatcher.mjs keyword analysis; composes Qdesign, Qfrontend-design, Qpptx, Qdocx, Qvisual-qa under one entry point. Beats Claude Design on depth (produces real production code, not only mockups). Distinct from Qfrontend-design (single UI), Qpptx/Qdocx (single format) — this skill fans out one brief to a coordinated artifact set."
+description: "Multi-artifact orchestrator — fans one brief out to a coordinated set (UI code + slide deck + one-pager PDF + mockup + prototype) via artifact-dispatcher.mjs, composing Qdesign/Qfrontend-design/Qpptx/Qdocx/Qvisual-qa under one entry point. Branch points: use THIS only when the user wants 2+ artifact formats from a single brief ('pitch deck and landing page', 'full design package'); use Qfrontend-design for a single UI; use Qpptx/Qdocx for a single document format; use Qdesign to write only the DESIGN.md spec. Produces real production code, not just mockups."
 metadata:
   author: qe-framework
   version: "1.0.0"

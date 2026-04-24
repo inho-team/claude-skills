@@ -1,6 +1,6 @@
 ---
 name: Qvisual-redesign
-description: "Visually audits rendered pages against DESIGN.md and auto-fixes discrepancies. Navigates live URLs, captures screenshots, diagnoses design-system violations (spacing, color, typography, layout), then generates specs and executes code fixes. Playwright MCP preferred; falls back to claude-in-chrome. Distinct from Qvisual-qa (screenshot comparison only, no fixes) and Qdesign-audit (source code scan only, no rendering). Also supports `--tune` mode to expose tunable tokens as markdown sliders for interactive value editing."
+description: "Render-and-auto-fix loop — navigates a live URL, screenshots it, diagnoses DESIGN.md violations (spacing, color, typography, layout), then WRITES code fixes back into the repo. Playwright MCP preferred; falls back to claude-in-chrome. Branch points: use THIS when the user wants both diagnosis AND code fixes ('redesign pages', 'fix UI to match design', 'screen looks off'); use Qvisual-qa when you only want a diff report without edits; use Qdesign-audit for a pure source-code scan (no browser rendering); use Qfrontend-design to build a new UI from scratch rather than fix an existing one. Supports `--tune` to expose tunable tokens as markdown sliders for interactive editing."
 metadata:
   author: qe-framework
   version: "1.1.0"

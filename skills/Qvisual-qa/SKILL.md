@@ -1,6 +1,6 @@
 ---
 name: Qvisual-qa
-description: Chrome browser-based visual QA. Navigates to URLs, takes screenshots, and compares rendered screens against reference images (Stitch screen.png or prior baseline) to detect layout, color, font, alignment, and spacing regressions. Use for 'visual qa', 'screenshot compare', 'visual test', 'check screen', 'UI compare', 'compare screen', 'visual comparison', 'screenshot comparison'. Distinct from Qweb-design-guidelines (which audits source code) — this skill compares actual rendered screens.
+description: Screenshot-diff engine — navigates a live URL in Chrome, captures a rendered screen, and compares it pixel/region-wise against a reference image (Stitch screen.png or a prior baseline) to detect layout, color, font, alignment, and spacing regressions. READ-ONLY: reports deltas, never edits code. Branch points: use THIS when both sides are IMAGES and you only want a diff report ('screenshot compare', 'visual test', 'UI compare'); use Qvisual-redesign when you want the same diff PLUS automatic code fixes against DESIGN.md; use Qdesign-audit to scan source code statically (no rendering, no reference image); use Qweb-design-guidelines for review against external heuristics.
 metadata: 
 author: anthropic
 version: 1.0.0

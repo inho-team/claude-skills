@@ -1,6 +1,6 @@
 ---
 name: Qdesign-audit
-description: "Audits design consistency across a project by scanning source files for style property outliers. Use for 'design audit', 'style consistency', 'design check', 'font size check', 'design audit', 'style consistency', 'design standardization', and 'UI consistency'. Distinct from Qweb-design-guidelines, which validates against external guidelines; this skill scans the project's own design system for internal inconsistencies."
+description: "Source-code scanner that flags internal design-system outliers — clusters font sizes, spacing, color literals, and component patterns in the project's own files and reports outliers. Branch points: use THIS for static source scans of style drift ('design audit', 'font size outliers', 'consistency check'); use Qvisual-qa when you need to diff rendered screenshots (no code scan); use Qvisual-redesign to both diff AND auto-fix; use Qweb-design-guidelines to review against external heuristics (Vercel WIG); use Qdesign to author the DESIGN.md spec itself."
 metadata: 
 author: anthropic
 version: 1.0.0

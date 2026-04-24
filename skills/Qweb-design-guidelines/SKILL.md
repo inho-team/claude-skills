@@ -1,6 +1,6 @@
 ---
 name: Qweb-design-guidelines
-description: Reviews UI code against Web Interface Guidelines. Use for requests like review my UI, accessibility check, design audit, UX review, or check site best practices. Distinct from Qfrontend-design (which builds new UI from scratch) — this skill reviews and audits existing UI code.
+description: External-heuristics reviewer — audits existing UI code against the Vercel Web Interface Guidelines (accessibility, UX best practices, interaction heuristics) and returns recommendations only; never edits code. Branch points: use THIS for review against an EXTERNAL heuristics document ('accessibility check', 'UX review', 'WIG review', 'best practices audit'); use Qdesign-audit to scan source for INTERNAL DESIGN.md drift instead; use Qfrontend-design to build new UI from scratch; use Qvisual-redesign to auto-fix rendered pages against DESIGN.md; use Qvisual-qa for screenshot-only diffs.
 metadata: 
 author: vercel
 version: 1.0.0

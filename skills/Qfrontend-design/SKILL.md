@@ -1,6 +1,6 @@
 ---
 name: Qfrontend-design
-description: Creates original, production-grade frontend interfaces from scratch. Use when building new web components, pages, dashboards, React components, HTML/CSS layouts, or decorating UI. Distinct from Qweb-design-guidelines which reviews existing UI — this skill creates new UI with high design quality. Supports `--canvas` flag to render generated UI live via browser MCP and return a screenshot. Supports `--prototype` mode for rapid 1-file HTML sketches before production code generation. On re-invocation, automatically picks up inline `<!-- claude: ... -->` directives from existing files and merges them into the brief.
+description: Implements new frontend UI code — React components, pages, dashboards, HTML/CSS layouts — from a brief or DESIGN.md spec. Branch points: use THIS to CREATE new UI code ('build a landing page', 'implement this component'); use Qdesign to author the upstream DESIGN.md spec before coding; use Qweb-design-guidelines to REVIEW existing UI against Vercel heuristics (no code writes); use Qvisual-redesign when the UI already exists and needs auto-fixes to match DESIGN.md; use Qdesign-studio for multi-artifact briefs (UI + deck + PDF). Supports `--canvas` for live browser-MCP preview screenshots, `--prototype` for rapid 1-file HTML sketches, and merges inline `<!-- claude: ... -->` directives from existing files on re-invocation.
 version: "1.3.0"
 invocation_trigger: When framework initialization, maintenance, or audit is required.
 recommendedModel: haiku

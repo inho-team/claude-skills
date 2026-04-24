@@ -45,6 +45,7 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 ### Changed
 - `hooks/scripts/lib/hud-renderer.mjs` is now a compatibility shim that re-exports the old public surface (`safe`, `formatTokens`, `pickContextUsed`, `pickRateLimits`, `pickModelName`, `pickSessionTokens`, `renderSivsLetters`, `renderHud`). New code should import from `hud/renderer.mjs` + individual elements.
 - `formatTokens` now uses capital `M` for millions (`1.5M`) and promotes `999_500+` to `M` to avoid rendering `1000k`.
+- **11 skill descriptions tuned with branch-point clarifications** (Phase 3 audit HIGH items) — design cluster (Qdesign, Qdesign-audit, Qdesign-studio, Qfrontend-design, Qvisual-qa, Qvisual-redesign, Qweb-design-guidelines) and task-exec cluster (Qrun-task, Qcode-run-task, Qatomic-run, Qrt). Each description now names sibling skills and states "use THIS when X / use Y when Z" so LLM-driven routing can disambiguate the overlapping "design" / "task" / "review" keyword clusters. Local replay (`run_mtest_skill.mjs`) score unchanged (it reads `triggers`/`keywords`, not `description`); LLM-driven re-measurement tracked separately. Before/after per-skill detail: `.qe/audit/high-priority-applied.md` (gitignored).
 
 ### Removed
 

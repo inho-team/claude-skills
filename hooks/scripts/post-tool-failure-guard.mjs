@@ -1,6 +1,6 @@
+#!/usr/bin/env node
 // Adapted from oh-my-claudecode (MIT, © 2025 Yeachan Heo).
 // See https://github.com/Yeachan-Heo/oh-my-claudecode for original.
-#!/usr/bin/env node
 'use strict';
 
 import { readFileSync } from 'fs';

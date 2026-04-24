@@ -1,6 +1,6 @@
+#!/usr/bin/env node
 // Adapted from oh-my-claudecode (MIT, © 2025 Yeachan Heo).
 // See https://github.com/Yeachan-Heo/oh-my-claudecode for original.
-#!/usr/bin/env node
 'use strict';
 
 import { readFileSync } from 'fs';
@@ -64,12 +64,11 @@ if (ratio >= CRITICAL_RATIO && currentBlocks < MAX_BLOCKS) {
     reason: `context-guard: critical ${Math.round(ratio * 100)}% — consider /Qcompact then resume`,
   }));
 } else if (ratio >= WARN_RATIO && currentBlocks < MAX_BLOCKS) {
-  // Warn only — do not block
+  // Warn only — do not block. Stop hook schema only allows systemMessage,
+  // not hookSpecificOutput (that field is for PreToolUse/UserPromptSubmit/PostToolUse).
   console.log(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: 'Stop',
-      additionalContext: `⚠️ Context at ${Math.round(ratio * 100)}% — plan for /Qcompact soon`,
-    },
+    continue: true,
+    systemMessage: `⚠️ Context at ${Math.round(ratio * 100)}% — plan for /Qcompact soon`,
   }));
 }
 

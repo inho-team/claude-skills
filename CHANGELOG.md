@@ -22,7 +22,16 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 - `.qe/MISTAKE.md` — seeded empty file with placeholder header so session-start hook no longer reads a zero-content file.
 - `.qe/docs/README.md` — added placeholder so session-start `Check .qe/docs/` hint points at valid content.
 
+### Performance
+- Hook hot-path latency reduction. Measured via `scripts/perf_hooks.mjs` (N=50, p50/p95, Apple M4). Changes:
+  - `prompt-check.mjs` — early-exit for empty prompts before config/state I/O.
+  - `pre-tool-use.mjs` — lazy `await import()` for `context-monitor`, `context-loader`, `delegation-enforcer`, `team-detect`. Read memo fast-path now skips 4 module loads.
+- Representative deltas (p50): prompt-check/empty 0ms, prompt-check/plain +1ms, pre-tool-use/read-cached -1ms, pre-tool-use/bash -1ms. Full report: `.qe/perf/after.md` (gitignored).
+
 ### Added
+- **Named Plan layout** — planning state moves from flat `.qe/planning/{ROADMAP,STATE,REQUIREMENTS}.md` into per-plan directories `.qe/planning/plans/{slug}/`. Multiple terminals can now run `/Qplan` in parallel without clobbering each other's state. Qplan auto-derives the slug from the task prompt (no user prompt); consumer skills resolve the active plan via session binding → `ACTIVE_PLAN` pointer → flat fallback. Legacy flat-file projects keep working unchanged.
+- **Session → Plan bridge** — `hooks/scripts/session-start.mjs` writes `.qe/state/current-session.json` so model-side skills can discover their own `session_id` and bind plans to terminals. HUD `phase` element reads `session_id` from the statusline payload to resolve `{slug} · Phase N`.
+- `hooks/scripts/lib/plan-resolver.mjs` — shared resolver for `resolveActivePlanSlug` / `resolveStatePath` / `resolveRoadmapPath` with strict slug validation against path traversal.
 - Qcritical-review: integrate OMC 9-step protocol (Pre-commitment / Multi-perspective / Pre-Mortem / Ambiguity Scan / Devil's Advocate / Self-audit / Realist / Adversarial / Gap Analysis) — adapted from oh-my-claudecode (MIT)
 - Etracer agent: evidence-based causal trace lane (Observation/Inference separation, 6-tier evidence, ≥2 hypotheses, disconfirmation, next probe) — adapted from oh-my-claudecode (MIT)
 - Safety hooks: post-tool-failure-guard (5-retry alternative-approach prompt), persistence-safety (max iterations + stale guard), context-guard (75/95% threshold + MAX_BLOCKS=2) — adapted from oh-my-claudecode (MIT)
@@ -35,8 +44,6 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 ### Changed
 - `hooks/scripts/lib/hud-renderer.mjs` is now a compatibility shim that re-exports the old public surface (`safe`, `formatTokens`, `pickContextUsed`, `pickRateLimits`, `pickModelName`, `pickSessionTokens`, `renderSivsLetters`, `renderHud`). New code should import from `hud/renderer.mjs` + individual elements.
 - `formatTokens` now uses capital `M` for millions (`1.5M`) and promotes `999_500+` to `M` to avoid rendering `1000k`.
-
-### Fixed
 
 ### Removed
 

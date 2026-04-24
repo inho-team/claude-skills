@@ -459,6 +459,29 @@ export function _privateFunc() {}
 // Test Group 12: Line number accuracy
 // ============================================================================
 
+test('JSDoc with blank continuation line is recognized', () => {
+  // Regression: BLOCK_COMMENT_CONT must treat a lone "*" line as transparent
+  // during the doc-walk. Otherwise multi-paragraph JSDoc is misreported as
+  // undocumented (hook-spam root cause, 2026-04).
+  const code = `
+/**
+ * First paragraph.
+ *
+ * Second paragraph with a blank continuation line above.
+ *
+ * @param {string} x
+ * @returns {string}
+ */
+export function multiParagraph(x) {
+  return x;
+}
+`;
+  const result = checkComments('test.mjs', code);
+  assert.strictEqual(result.total, 1);
+  assert.strictEqual(result.documented, 1);
+  assert.strictEqual(result.missing.length, 0);
+});
+
 test('Line numbers in missing array', () => {
   const code = `
 export function first() {}

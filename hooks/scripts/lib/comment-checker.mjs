@@ -276,8 +276,12 @@ export function isCheckableFile(filePath) {
   return LANG_MAP.hasOwnProperty(ext) && !CONFIG_EXTS.has(ext);
 }
 
-// Matches block-comment continuation/closing lines: " *", " */", "*/"
-const BLOCK_COMMENT_CONT = /^\s*\*[\s/]/;
+// Matches block-comment continuation lines: " * body", " *", " *<EOL>".
+// The `$` alternative is required so blank JSDoc continuation lines (a lone
+// asterisk with no trailing content) are treated as transparent during the
+// doc-walk; otherwise a valid multi-paragraph JSDoc block would break the
+// walk and every function below it gets flagged as undocumented.
+const BLOCK_COMMENT_CONT = /^\s*\*([\s/]|$)/;
 // Matches a pure block-comment close with nothing else on the line
 const BLOCK_COMMENT_CLOSE = /^\s*\*\/\s*$/;
 
@@ -296,8 +300,12 @@ const BLOCK_COMMENT_CLOSE = /^\s*\*\/\s*$/;
  * @returns {boolean}
  */
 function hasCommentAbove(lines, lineIndex, commentPattern) {
-  // Extend look-back slightly to allow for multi-line doc blocks.
-  const start = Math.max(0, lineIndex - 5);
+  // Look-back cap sized for realistic multi-paragraph JSDoc / docstring blocks
+  // (header + description + @param/@returns/@throws/@example). 50 lines covers
+  // everything the project documents today. The walk also breaks early on any
+  // non-comment, non-blank line so the cap rarely matters in practice.
+  const LOOKBACK_MAX = 50;
+  const start = Math.max(0, lineIndex - LOOKBACK_MAX);
   for (let i = lineIndex - 1; i >= start; i--) {
     const trimmed = lines[i].trimEnd();
 

@@ -73,6 +73,23 @@ $ /Qsweep
 Run /Qsweep --apply to execute.
 ```
 
+## Exclusion — `.qesweep-ignore`
+
+Place a `.qesweep-ignore` file at the project root to exempt paths. One pattern per line, `#` for comments. Matching is glob-like against the path relative to project root:
+- `*` matches a single path segment (no `/`)
+- `**` matches any number of segments
+- Other characters are literal
+
+Example:
+```
+# never sweep hand-curated reference tasks
+.qe/tasks/pending/TASK_REQUEST_keep*.md
+# keep this month's failures accessible
+.qe/learning/failures/2026-04/**
+```
+
+Applies uniformly to archive moves, volatile deletions, and stale-report detection.
+
 ## Safety rules
 - Archive moves go to `.qe/.archive/<version>/<category>/` — **recoverable with `mv`**, never deleted
 - Only `agent-results/` is subject to deletion (volatile by design)

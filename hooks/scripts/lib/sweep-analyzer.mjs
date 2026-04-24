@@ -20,8 +20,8 @@
  * @module sweep-analyzer
  */
 
-import { readdirSync, statSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
+import { join, relative } from 'path';
 import { isAllComplete } from './checklist-parser.mjs';
 
 const DEFAULTS = {
@@ -53,8 +53,46 @@ export function analyze(cwd, opts = {}) {
   sweepLearningFailures(qeDir, plan, config);
   sweepVolatile(qeDir, 'agent-results', config.agentResultsDays, plan);
 
+  applyIgnore(cwd, plan);
   plan.stats = computeStats(plan);
   return plan;
+}
+
+function applyIgnore(cwd, plan) {
+  const patterns = loadIgnorePatterns(cwd);
+  if (patterns.length === 0) return;
+  const keep = (item) => !patterns.some((re) => re.test(relative(cwd, item.src)));
+  plan.archive = plan.archive.filter(keep);
+  plan.delete = plan.delete.filter(keep);
+  plan.staleReports = plan.staleReports.filter((item) => !patterns.some((re) => re.test(relative(cwd, item.path))));
+}
+
+function loadIgnorePatterns(cwd) {
+  const file = join(cwd, '.qesweep-ignore');
+  if (!existsSync(file)) return [];
+  try {
+    const lines = readFileSync(file, 'utf8').split('\n');
+    const out = [];
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line || line.startsWith('#')) continue;
+      out.push(globToRegex(line));
+    }
+    return out;
+  } catch { return []; }
+}
+
+function globToRegex(glob) {
+  // Minimal glob: ** = any path, * = any non-slash, others literal (regex-escaped)
+  let re = '';
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === '*' && glob[i + 1] === '*') { re += '.*'; i++; }
+    else if (c === '*') re += '[^/]*';
+    else if (/[.+?^${}()|[\]\\]/.test(c)) re += '\\' + c;
+    else re += c;
+  }
+  return new RegExp('^' + re + '$');
 }
 
 function sweepCompletedFolder(qeDir, category, plan) {

@@ -60,7 +60,7 @@ Extract subcommand (`show` | `on` | `off`) and the `--user` flag. On `--help` or
 4. If absent → report **not installed**.
 5. Regardless, run a preview: pipe a synthetic payload through `SCRIPT_ABS` and print the rendered line. Example payload:
    ```json
-   { "context_window": { "remaining_percentage": 68, "total_input_tokens": 40000, "total_output_tokens": 2300 } }
+   { "context_window": { "used_percentage": 16, "total_input_tokens": 96000, "total_output_tokens": 2000 } }
    ```
    Command: `echo '<payload>' | NO_COLOR=1 node <SCRIPT_ABS>`
 
@@ -98,7 +98,10 @@ Usage:
   /Qhud on --user  Install into ~/.claude/settings.json (user scope)
   /Qhud --help     Show this help
 
-HUD shows:  ctx N%  │  <tokens> tok  │  SIVS <routing>
+HUD shows:  ctx N% (used)  │  <tokens> tok  │  SIVS C/C/C/C
+            green <50 · yellow 50–80 · red ≥80
+            SIVS letters: spec / implement / verify / supervise
+                          C = claude, X = codex
 Script:     hooks/scripts/statusline.mjs
 Phase 2 (not yet in MVP): 5h / 7d rate limit %, model name, session cost.
 ```

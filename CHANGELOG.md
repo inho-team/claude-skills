@@ -20,6 +20,9 @@ All entries should land in `[Unreleased]` until `/Qrelease` cuts a version.
 
 ### Changed
 - Mbump is now a sub-step of `/Qrelease`; direct `/Mbump` invocation still works for explicit overrides but is no longer the recommended release path.
+- **Qhud** — context percentage now displays *used* (e.g. `ctx 16%`) instead of *remaining*. Color thresholds: green `<50`, yellow `50–80`, red `≥80`. Inverse of prior behavior; matches common "capacity used" UX.
+- **Qhud** — SIVS routing always renders as 4-letter `C/C/C/C` (spec/implement/verify/supervise, `C=claude X=codex`). The previous "claude" compact label for all-Claude configs is removed in favor of stable positional display.
+- **Internal API rename** in `hooks/scripts/lib/hud-renderer.mjs`: `pickContextRemaining()` → `pickContextUsed()` (return semantics inverted). Hook-internal lib; no external callers known.
 
 ## [6.6.2] - 2026-04-24
 

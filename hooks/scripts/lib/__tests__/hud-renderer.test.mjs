@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   formatTokens,
-  pickContextRemaining,
+  pickContextUsed,
   pickSessionTokens,
   renderSivsLetters,
   renderHud,
@@ -45,22 +45,22 @@ test('formatTokens: invalid input returns zero', () => {
 });
 
 // ============================================================================
-// pickContextRemaining
+// pickContextUsed
 // ============================================================================
 
-test('pickContextRemaining: prefers remaining_percentage when present', () => {
+test('pickContextUsed: prefers used_percentage when present', () => {
   const data = { context_window: { remaining_percentage: 67.4, used_percentage: 32.6 } };
-  assert.equal(pickContextRemaining(data), 67);
+  assert.equal(pickContextUsed(data), 33);
 });
 
-test('pickContextRemaining: falls back to 100 - used_percentage', () => {
-  const data = { context_window: { used_percentage: 30 } };
-  assert.equal(pickContextRemaining(data), 70);
+test('pickContextUsed: falls back to 100 - remaining_percentage', () => {
+  const data = { context_window: { remaining_percentage: 70 } };
+  assert.equal(pickContextUsed(data), 30);
 });
 
-test('pickContextRemaining: returns null when context_window missing', () => {
-  assert.equal(pickContextRemaining({}), null);
-  assert.equal(pickContextRemaining(null), null);
+test('pickContextUsed: returns null when context_window missing', () => {
+  assert.equal(pickContextUsed({}), null);
+  assert.equal(pickContextUsed(null), null);
 });
 
 // ============================================================================
@@ -88,9 +88,9 @@ test('pickSessionTokens: handles missing fields', () => {
 // renderSivsLetters
 // ============================================================================
 
-test('renderSivsLetters: empty config → all-claude "claude" label', () => {
+test('renderSivsLetters: empty config → all-claude 4-letter slash form', () => {
   const out = renderSivsLetters({});
-  assert.equal(out.letters, 'claude');
+  assert.equal(out.letters, 'C/C/C/C');
   assert.equal(out.mixed, false);
 });
 
@@ -107,46 +107,52 @@ test('renderSivsLetters: mixed engines show slash-separated initials', () => {
 
 test('renderSivsLetters: unknown engine falls back to claude (C)', () => {
   const out = renderSivsLetters({ spec: { engine: 'gemini' } });
-  assert.equal(out.letters, 'claude');
+  assert.equal(out.letters, 'C/C/C/C');
 });
 
 // ============================================================================
 // renderHud
 // ============================================================================
 
-test('renderHud: full payload renders ctx · tokens · SIVS (noColor)', () => {
+test('renderHud: full payload renders ctx (used) · tokens · SIVS 4-letter', () => {
   const data = {
     context_window: {
-      remaining_percentage: 68,
+      used_percentage: 32,
       total_input_tokens: 40_000,
       total_output_tokens: 2_300,
     },
   };
   const line = renderHud(data, {}, { noColor: true });
-  assert.equal(line, 'ctx 68% │ 42k tok │ SIVS claude');
+  assert.equal(line, 'ctx 32% │ 42k tok │ SIVS C/C/C/C');
 });
 
 test('renderHud: missing tokens skips the token segment', () => {
-  const data = { context_window: { remaining_percentage: 42 } };
+  const data = { context_window: { used_percentage: 58 } };
   const line = renderHud(data, {}, { noColor: true });
-  assert.equal(line, 'ctx 42% │ SIVS claude');
+  assert.equal(line, 'ctx 58% │ SIVS C/C/C/C');
 });
 
 test('renderHud: missing context still shows SIVS segment', () => {
   const line = renderHud({}, {}, { noColor: true });
-  assert.equal(line, 'SIVS claude');
+  assert.equal(line, 'SIVS C/C/C/C');
 });
 
 test('renderHud: mixed SIVS keeps "SIVS" prefix with slash letters', () => {
-  const data = { context_window: { remaining_percentage: 80 } };
+  const data = { context_window: { used_percentage: 20 } };
   const sivs = { implement: { engine: 'codex' } };
   const line = renderHud(data, sivs, { noColor: true });
-  assert.equal(line, 'ctx 80% │ SIVS C/X/C/C');
+  assert.equal(line, 'ctx 20% │ SIVS C/X/C/C');
 });
 
-test('renderHud: applies ANSI color by default', () => {
-  const data = { context_window: { remaining_percentage: 68 } };
+test('renderHud: low-usage context paints green', () => {
+  const data = { context_window: { used_percentage: 16 } };
   const line = renderHud(data, {});
   assert.match(line, /\x1b\[32m/);
   assert.match(line, /\x1b\[0m/);
+});
+
+test('renderHud: high-usage context paints red', () => {
+  const data = { context_window: { used_percentage: 92 } };
+  const line = renderHud(data, {});
+  assert.match(line, /\x1b\[31m/);
 });

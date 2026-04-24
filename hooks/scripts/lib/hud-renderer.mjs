@@ -39,30 +39,32 @@ export function formatTokens(n) {
 }
 
 /**
- * Pick a color for a "remaining" percentage (higher = healthier).
- * @param {number} pct 0–100
+ * Pick a color for a context *used* percentage (lower = healthier).
+ * Inverse of the earlier "remaining" mapping so that a low usage number
+ * shows as green and a high one as red.
+ * @param {number} pct 0–100 (used %)
  * @returns {string} ANSI prefix
  */
-function remainingColor(pct) {
-  if (pct > 50) return C.green;
-  if (pct > 20) return C.yellow;
+function usedColor(pct) {
+  if (pct < 50) return C.green;
+  if (pct < 80) return C.yellow;
   return C.red;
 }
 
 /**
- * Extract the context remaining percentage from the statusLine payload.
- * Prefers `remaining_percentage`; falls back to `100 - used_percentage`.
+ * Extract the context *used* percentage from the statusLine payload.
+ * Prefers `used_percentage`; falls back to `100 - remaining_percentage`.
  * @param {object} data
  * @returns {number|null} integer 0–100, or null if unknown
  */
-export function pickContextRemaining(data) {
+export function pickContextUsed(data) {
   const cw = data?.context_window;
   if (!cw) return null;
-  if (typeof cw.remaining_percentage === 'number') {
-    return Math.round(cw.remaining_percentage);
-  }
   if (typeof cw.used_percentage === 'number') {
-    return Math.round(100 - cw.used_percentage);
+    return Math.round(cw.used_percentage);
+  }
+  if (typeof cw.remaining_percentage === 'number') {
+    return Math.round(100 - cw.remaining_percentage);
   }
   return null;
 }
@@ -82,9 +84,10 @@ export function pickSessionTokens(data) {
 }
 
 /**
- * Render the SIVS routing into a compact "CCCC" / "C/X/C/C" string.
- * - All-claude default: "claude"
- * - Mixed: slash-separated initials (C=claude, X=codex)
+ * Render the SIVS routing into a 4-letter slash string: "C/C/C/C", "C/X/C/C", etc.
+ * Always emits all four stages so the position of each letter is stable —
+ * spec / implement / verify / supervise — and an all-claude setup still
+ * shows the structure (`C/C/C/C`) rather than a compact "claude" label.
  *
  * @param {object} sivsConfig parsed .qe/sivs-config.json (or {} when missing)
  * @returns {{ letters: string, mixed: boolean }}
@@ -95,10 +98,9 @@ export function renderSivsLetters(sivsConfig) {
     const eng = cfg?.[s]?.engine ?? 'claude';
     return eng === 'codex' ? 'X' : 'C';
   });
-  const mixed = letters.some((l) => l !== 'C');
   return {
-    letters: mixed ? letters.join('/') : 'claude',
-    mixed,
+    letters: letters.join('/'),
+    mixed: letters.some((l) => l !== 'C'),
   };
 }
 
@@ -118,9 +120,9 @@ export function renderHud(data, sivsConfig, opts = {}) {
   const dim = (text) => paint(C.dim, text);
   const parts = [];
 
-  const ctxRem = pickContextRemaining(data);
-  if (ctxRem !== null) {
-    parts.push(paint(remainingColor(ctxRem), `ctx ${ctxRem}%`));
+  const ctxUsed = pickContextUsed(data);
+  if (ctxUsed !== null) {
+    parts.push(paint(usedColor(ctxUsed), `ctx ${ctxUsed}%`));
   }
 
   const tokens = pickSessionTokens(data);

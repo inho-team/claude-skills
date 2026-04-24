@@ -52,21 +52,48 @@ function writeBlocks(stateDir, blocks) {
 }
 
 /**
+ * Map a Claude model id to its context-window token limit.
+ * Recognizes explicit `[1m]`, `-1m`, or trailing `1m` markers as the 1M variant;
+ * everything else (including unknown ids) falls back to 200k.
+ *
+ * @param {string|undefined|null} modelId
+ * @returns {number} token limit
+ */
+export function modelIdToLimit(modelId) {
+  if (!modelId || typeof modelId !== 'string') return 200000;
+  if (/\[1m\]|-1m\b|1m$/i.test(modelId)) return 1000000;
+  return 200000;
+}
+
+/**
  * Estimate the context usage ratio (0..1) by reading the transcript file.
  *
  * Walks tail JSONL lines in reverse and returns the ratio from the most
- * recent assistant `message.usage` entry. Does NOT fall back to whole-file
- * char counts — the transcript is append-only and grows past the live
- * context window, so summing the entire file over-counts historical turns
- * and pins the reading at 100% for the rest of the session.
+ * recent assistant `message.usage` entry. While walking, also picks up the
+ * `message.model` so the limit can be auto-adjusted for 1M-context models
+ * (e.g. `claude-opus-4-7[1m]`) — otherwise the reading is 5× too high on
+ * 1M models and context-guard blocks early on false "critical" signals.
+ *
+ * Limit precedence:
+ *   1. explicit `modelLimit` argument (number)
+ *   2. explicit `opts.modelId` (string) resolved via modelIdToLimit
+ *   3. QE_CONTEXT_LIMIT environment variable
+ *   4. model id discovered in the transcript
+ *   5. 200000 default
  *
  * @param {string} transcriptPath - Path to the Claude Code transcript file.
- * @param {number} [modelLimit] - Max token limit; defaults to QE_CONTEXT_LIMIT env or 200000.
+ * @param {number|{modelId?: string, modelLimit?: number}} [opts] -
+ *   Back-compat: a bare number is treated as an explicit modelLimit.
  * @returns {number} Ratio between 0 and 1. Returns 0 if no usage entry found.
  */
-export function estimateUsageRatio(transcriptPath, modelLimit) {
+export function estimateUsageRatio(transcriptPath, opts) {
   if (!transcriptPath || !existsSync(transcriptPath)) return 0;
-  const limit = modelLimit ?? parseInt(process.env.QE_CONTEXT_LIMIT || '200000', 10);
+
+  const explicitLimit = typeof opts === 'number'
+    ? opts
+    : (opts && typeof opts === 'object' ? opts.modelLimit : undefined);
+  const hintModelId = (opts && typeof opts === 'object') ? opts.modelId : undefined;
+
   try {
     const stat = statSync(transcriptPath);
     let readLength = Math.min(TAIL_BYTES, stat.size);
@@ -80,8 +107,8 @@ export function estimateUsageRatio(transcriptPath, modelLimit) {
       tail = readTail(transcriptPath, position, readLength);
     }
 
-    // Walk lines end-to-start. The first line of `tail` may be cut mid-line
-    // at the byte-window boundary — malformed entries are simply skipped.
+    // Walk lines end-to-start. The first line may be cut mid-line at the
+    // byte-window boundary — malformed entries are simply skipped.
     const lines = tail.split('\n');
     for (let i = lines.length - 1; i >= 0; i--) {
       const line = lines[i].trim();
@@ -94,12 +121,30 @@ export function estimateUsageRatio(transcriptPath, modelLimit) {
         + (usage.cache_read_input_tokens ?? 0)
         + (usage.cache_creation_input_tokens ?? 0);
       if (tokens <= 0) continue;
+
+      const limit = resolveLimit({
+        explicitLimit,
+        hintModelId,
+        transcriptModelId: entry?.message?.model,
+      });
       return Math.min(tokens / limit, 1);
     }
     return 0;
   } catch {
     return 0;
   }
+}
+
+function resolveLimit({ explicitLimit, hintModelId, transcriptModelId }) {
+  if (typeof explicitLimit === 'number' && explicitLimit > 0) return explicitLimit;
+  if (hintModelId) return modelIdToLimit(hintModelId);
+  const envVal = process.env.QE_CONTEXT_LIMIT;
+  if (envVal) {
+    const parsed = parseInt(envVal, 10);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  if (transcriptModelId) return modelIdToLimit(transcriptModelId);
+  return 200000;
 }
 
 /**

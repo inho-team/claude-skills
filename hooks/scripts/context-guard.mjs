@@ -42,7 +42,9 @@ const transcriptPath = data.transcript_path || '';
 
 let ratio = 0;
 try {
-  ratio = estimateUsageRatio(transcriptPath);
+  // Pass model hint from the Stop payload so 1M-context models
+  // (claude-opus-4-7[1m] etc.) aren't read as 5× their true usage.
+  ratio = estimateUsageRatio(transcriptPath, { modelId: data?.model?.id });
 } catch {
   process.exit(0);
 }

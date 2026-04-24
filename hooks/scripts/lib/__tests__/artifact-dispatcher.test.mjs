@@ -260,3 +260,25 @@ test('Dispatch: Undefined brief → returns default code without throw', () => {
   const result = dispatch(undefined);
   assert.deepStrictEqual(result.artifacts, ['code']);
 });
+
+// ============================================================================
+// REGRESSION — v6.6.1: implicit UI keywords (code trigger)
+// ============================================================================
+
+test('Regression: "Pitch deck and the landing page" → multi-artifact [code, deck]', () => {
+  const r = dispatch('Pitch deck and the landing page for the same launch');
+  assert.ok(r.artifacts.includes('deck'), 'deck matched');
+  assert.ok(r.artifacts.includes('code'), 'code matched via "landing page"');
+});
+
+test('Regression: "Landing page hero" → code with keyword rationale (not fallback)', () => {
+  const r = dispatch('Landing page hero for a SaaS analytics product');
+  assert.deepEqual(r.artifacts, ['code']);
+  assert.ok(!r.rationale.toLowerCase().includes('default fallback'),
+    `rationale should not claim fallback, got: ${r.rationale}`);
+});
+
+test('Regression: Korean UI keyword "페이지" triggers code', () => {
+  const r = dispatch('새 페이지 만들어줘');
+  assert.ok(r.artifacts.includes('code'));
+});

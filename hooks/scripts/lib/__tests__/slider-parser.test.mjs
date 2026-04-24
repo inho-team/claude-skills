@@ -255,3 +255,25 @@ margin-top: 16;
   assert.ok(marginTopFound, 'margin-top should be updated to 20');
   assert.ok(lineHeightPreserved, 'line-height should be preserved (not a slider value)');
 });
+
+// ============================================================================
+// REGRESSION — v6.6.1: unit-suffix-aware value rewrite
+// ============================================================================
+
+test('applyValues: rewrites value inside "Npx" unit suffix (regression)', () => {
+  const md = `<!-- slider name="pad" min=16 max=64 step=4 value=32 unit="px" -->
+padding: 32px;
+<!-- /slider -->`;
+  const result = applyValues(md, { pad: 48 });
+  assert.match(result, /padding:\s*48px/);
+  assert.match(result, /value=48/);
+});
+
+test('applyValues: preserves unrelated digit strings adjacent to number (320 stays)', () => {
+  const md = `<!-- slider name="x" min=10 max=500 step=10 value=32 -->
+.pad-32 { width: 320px; padding: 32px; }
+<!-- /slider -->`;
+  const result = applyValues(md, { x: 48 });
+  assert.match(result, /width:\s*320px/);
+  assert.match(result, /padding:\s*48px/);
+});

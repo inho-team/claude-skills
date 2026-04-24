@@ -300,3 +300,25 @@ test('Scanner: extracts className from Vue/Svelte class= attribute syntax', () =
     fs.rmSync(tmpDir, { recursive: true });
   }
 });
+
+// ============================================================================
+// REGRESSION — v6.6.1: fontFamily array extraction
+// ============================================================================
+
+test('Scanner: extracts fontFamily array value without truncation at comma (regression)', async () => {
+  const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const dir = mkdtempSync(join(tmpdir(), 'ds-regress-'));
+  try {
+    writeFileSync(join(dir, 'tailwind.config.js'),
+      `module.exports = { theme: { extend: { fontFamily: { display: ['Inter', 'sans-serif'], mono: ['Fira Code'] } } } }`);
+    const r = scan(dir);
+    assert.ok(r.tokens.typography.display, 'display key present');
+    assert.ok(r.tokens.typography.display.includes('Inter'), 'Inter preserved');
+    assert.ok(r.tokens.typography.display.includes('sans-serif'),
+      `full array preserved, got: ${r.tokens.typography.display}`);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});

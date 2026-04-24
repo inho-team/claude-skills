@@ -100,7 +100,8 @@ function extractTokenBlock(configContent, blockName) {
   const blockContent = match[1];
 
   // Extract key-value pairs: "key": value or key: value
-  const pairPattern = /['"]?([a-zA-Z0-9_-]+)['"]?\s*:\s*(['"][^'"]*['"]|[^,}]+)/g;
+  // Value matcher priority: array (['a', 'b']) → quoted string → until , or }
+  const pairPattern = /['"]?([a-zA-Z0-9_-]+)['"]?\s*:\s*(\[[^\]]*\]|['"][^'"]*['"]|[^,}]+)/g;
   let pairMatch;
 
   while ((pairMatch = pairPattern.exec(blockContent)) !== null) {

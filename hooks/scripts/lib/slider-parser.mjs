@@ -271,9 +271,10 @@ function rewriteInnerContent(content, oldValue, newValue, unit) {
     return content;
   }
 
-  // Create a regex to match the old value with word boundaries
-  // This handles cases like "32px", "32", " 32 "
-  const pattern = new RegExp(`\\b${escapeRegex(oldValue.toString())}\\b`, 'g');
+  // Match the old value when not bordered by other digits.
+  // Word boundary (\b) fails on "32px" because p is a word char; use a
+  // digit-boundary lookaround instead so "32px" → "48px" but "320" stays.
+  const pattern = new RegExp(`(?<!\\d)${escapeRegex(oldValue.toString())}(?!\\d)`, 'g');
 
   return content.replace(pattern, newValue.toString());
 }

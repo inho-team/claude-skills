@@ -451,6 +451,39 @@ These skills are optimized for common workflows and consistently outperform gene
 
 ---
 
+## Release Process
+
+The framework uses a **release train** pattern. Every commit that changes user-visible behavior must add an entry to `CHANGELOG.md` under `[Unreleased]`; versions are cut deliberately, not per commit.
+
+### Cadence
+
+| Level | Cadence | Trigger |
+|-------|---------|---------|
+| **patch** | weekly OR ~5 fixes accumulated | bundled bug fixes, tweaks |
+| **minor** | monthly | new skills/agents, feature additions |
+| **major** | rare | breaking changes |
+| **hotfix patch** | immediate | security, data loss, framework-unusable regression only |
+
+### Flow
+
+1. **Every commit** that ships user-visible behavior → add entry to `CHANGELOG.md [Unreleased]` under `Added` / `Changed` / `Fixed` / `Removed` / `Security`.
+2. **Do NOT bump version** on the fix/feature commit. `plugin.json` / `package.json` stay at the last released version.
+3. **When a batch is ready** → invoke `/Qrelease` (optionally with `major|minor|patch` override). The skill reads `[Unreleased]`, bumps, rewrites changelog, commits, tags, optionally pushes + creates GitHub Release.
+4. **Between releases**, `main` may be "ahead" of the latest tag — that's expected. Users who want bleeding edge can track the tip; most pin a tag.
+
+### Anti-patterns
+
+- Bumping version in the same commit as a fix → **use `/Qrelease` later instead**
+- Invoking `/Mbump` directly → Mbump still exists as a low-level primitive; `/Qrelease` is the canonical release path
+- Releasing with empty `[Unreleased]` → `/Qrelease` aborts
+- Per-edge-case patch release → batch it; only security / data loss / framework-unusable bugs get immediate hotfix
+
+### Rationale
+
+The plugin cache uses a version-pinned path (`~/.claude/plugins/cache/inho-team-qe-framework/qe-framework/<version>/`). Each release forces a re-cache on users' machines. Batched releases keep release notes meaningful and caches stable.
+
+---
+
 ## Skill File Size Rules
 
 | Tier | Lines | When |

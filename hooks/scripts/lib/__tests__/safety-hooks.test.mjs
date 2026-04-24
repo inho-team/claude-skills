@@ -159,6 +159,61 @@ test('context-meter: estimateUsageRatio with non-existent transcript path → 0'
   assert.strictEqual(ratio, 0);
 });
 
+test('context-meter: picks most recent usage entry from tail, not the first', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qe-test-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  const file = path.join(dir, 'transcript.jsonl');
+  const old = { type: 'assistant', message: { usage: { input_tokens: 10, cache_read_input_tokens: 10000 } } };
+  const mid = { type: 'user' };
+  const recent = { type: 'assistant', message: { usage: { input_tokens: 5, cache_read_input_tokens: 150000, cache_creation_input_tokens: 500 } } };
+  fs.writeFileSync(file, [JSON.stringify(old), JSON.stringify(mid), JSON.stringify(recent)].join('\n') + '\n');
+
+  const ratio = estimateUsageRatio(file, 200000);
+  assert.strictEqual(ratio, (5 + 150000 + 500) / 200000);
+});
+
+test('context-meter: append-only growth past the window does NOT pin ratio at 1.0', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qe-test-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  const file = path.join(dir, 'transcript.jsonl');
+  // Simulate a long session: 50 old turns (no usage) plus a small final usage block.
+  const bigLine = JSON.stringify({ type: 'system', content: 'x'.repeat(20000) });
+  const finalTurn = JSON.stringify({ type: 'assistant', message: { usage: { input_tokens: 100, cache_read_input_tokens: 20000 } } });
+  const payload = Array(50).fill(bigLine).join('\n') + '\n' + finalTurn + '\n';
+  fs.writeFileSync(file, payload);
+
+  const ratio = estimateUsageRatio(file, 200000);
+  assert.ok(ratio < 0.2, `expected ratio from live usage (~0.1), got ${ratio}`);
+});
+
+test('context-meter: skips malformed first line from byte-boundary cut', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qe-test-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  const file = path.join(dir, 'transcript.jsonl');
+  // First entry is syntactically broken JSON (simulates a mid-line cut);
+  // the second is a valid usage block.
+  const broken = '{"type":"assist'; // intentionally truncated
+  const valid = JSON.stringify({ type: 'assistant', message: { usage: { input_tokens: 1000, cache_read_input_tokens: 40000 } } });
+  fs.writeFileSync(file, broken + '\n' + valid + '\n');
+
+  const ratio = estimateUsageRatio(file, 200000);
+  assert.strictEqual(ratio, 41000 / 200000);
+});
+
+test('context-meter: returns 0 when tail contains no usage entries', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qe-test-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  const file = path.join(dir, 'transcript.jsonl');
+  fs.writeFileSync(file, JSON.stringify({ type: 'system' }) + '\n' + JSON.stringify({ type: 'user' }) + '\n');
+
+  const ratio = estimateUsageRatio(file, 200000);
+  assert.strictEqual(ratio, 0);
+});
+
 test('context-meter: recordBlock increments and persists across calls', (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'qe-test-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));

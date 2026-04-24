@@ -53,45 +53,71 @@ function writeBlocks(stateDir, blocks) {
 
 /**
  * Estimate the context usage ratio (0..1) by reading the transcript file.
- * Uses chars/4 heuristic to estimate token count.
  *
- * Falls back to 0 if the file does not exist or cannot be read.
+ * Walks tail JSONL lines in reverse and returns the ratio from the most
+ * recent assistant `message.usage` entry. Does NOT fall back to whole-file
+ * char counts — the transcript is append-only and grows past the live
+ * context window, so summing the entire file over-counts historical turns
+ * and pins the reading at 100% for the rest of the session.
  *
  * @param {string} transcriptPath - Path to the Claude Code transcript file.
- * @param {number} [modelLimit=200000] - Max token limit for the model.
- * @returns {number} Ratio between 0 and 1.
+ * @param {number} [modelLimit] - Max token limit; defaults to QE_CONTEXT_LIMIT env or 200000.
+ * @returns {number} Ratio between 0 and 1. Returns 0 if no usage entry found.
  */
-export function estimateUsageRatio(transcriptPath, modelLimit = 200000) {
+export function estimateUsageRatio(transcriptPath, modelLimit) {
   if (!transcriptPath || !existsSync(transcriptPath)) return 0;
+  const limit = modelLimit ?? parseInt(process.env.QE_CONTEXT_LIMIT || '200000', 10);
   try {
     const stat = statSync(transcriptPath);
-    const readLength = Math.min(TAIL_BYTES, stat.size);
-    const position = stat.size - readLength;
-    const buf = Buffer.alloc(readLength);
-    const fd = openSync(transcriptPath, 'r');
-    try {
-      readSync(fd, buf, 0, readLength, position);
-    } finally {
-      closeSync(fd);
-    }
-    const tail = buf.toString('utf8');
+    let readLength = Math.min(TAIL_BYTES, stat.size);
+    let position = stat.size - readLength;
+    let tail = readTail(transcriptPath, position, readLength);
 
-    // Prefer explicit context_window/input_tokens fields if present in tail
-    const cwMatch = tail.match(/"context_window"\s*:\s*(\d+)/);
-    const itMatch = tail.match(/"input_tokens"\s*:\s*(\d+)/);
-    if (cwMatch && itMatch) {
-      const contextWindow = parseInt(cwMatch[1], 10);
-      const inputTokens = parseInt(itMatch[1], 10);
-      if (contextWindow > 0) return Math.min(inputTokens / contextWindow, 1);
+    // Expand window once if the tail doesn't contain any usage block.
+    if (!/"usage"\s*:/.test(tail) && stat.size > TAIL_BYTES) {
+      readLength = Math.min(TAIL_BYTES * 8, stat.size);
+      position = stat.size - readLength;
+      tail = readTail(transcriptPath, position, readLength);
     }
 
-    // Fallback: estimate via full file char count / 4
-    const fullContent = readFileSync(transcriptPath, 'utf8');
-    const estimatedTokens = Math.ceil(fullContent.length / 4);
-    return Math.min(estimatedTokens / modelLimit, 1);
+    // Walk lines end-to-start. The first line of `tail` may be cut mid-line
+    // at the byte-window boundary — malformed entries are simply skipped.
+    const lines = tail.split('\n');
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i].trim();
+      if (!line || line[0] !== '{') continue;
+      let entry;
+      try { entry = JSON.parse(line); } catch { continue; }
+      const usage = entry?.message?.usage;
+      if (!usage) continue;
+      const tokens = (usage.input_tokens ?? 0)
+        + (usage.cache_read_input_tokens ?? 0)
+        + (usage.cache_creation_input_tokens ?? 0);
+      if (tokens <= 0) continue;
+      return Math.min(tokens / limit, 1);
+    }
+    return 0;
   } catch {
     return 0;
   }
+}
+
+/**
+ * Read `length` bytes from `filePath` starting at byte `position`.
+ * @param {string} filePath
+ * @param {number} position
+ * @param {number} length
+ * @returns {string} UTF-8 decoded slice.
+ */
+function readTail(filePath, position, length) {
+  const buf = Buffer.alloc(length);
+  const fd = openSync(filePath, 'r');
+  try {
+    readSync(fd, buf, 0, length, position);
+  } finally {
+    closeSync(fd);
+  }
+  return buf.toString('utf8');
 }
 
 /**

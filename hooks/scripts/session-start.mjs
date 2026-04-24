@@ -7,6 +7,7 @@ import { execSync } from 'child_process';
 import { loadConfig } from './lib/config.mjs';
 import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { pruneExpired, formatMemoryContext } from './lib/project-memory.mjs';
+import { analyze as sweepAnalyze, formatSummary as sweepFormatSummary } from './lib/sweep-analyzer.mjs';
 
 // Read stdin (Claude Code provides JSON with cwd, session_id, etc.)
 let input = '';
@@ -147,6 +148,15 @@ try {
   }
 } catch {
   // Fault tolerance — ignore project memory errors
+}
+
+// --- .qe Sweep dry-run summary ---
+try {
+  const plan = sweepAnalyze(cwd);
+  const line = sweepFormatSummary(plan);
+  if (line) messages.push(line);
+} catch {
+  // Fault tolerance — sweep is advisory, never block session start
 }
 
 // --- GC (Garbage Collection) Freshness Check ---

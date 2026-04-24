@@ -18,6 +18,8 @@ import {
   generateReport,
 } from './lib/ralph-state.mjs';
 import { isAllComplete, parseChecklist } from './lib/checklist-parser.mjs';
+import { analyze as sweepAnalyze } from './lib/sweep-analyzer.mjs';
+import { executeVolatileOnly as sweepVolatileOnly } from './lib/sweep-executor.mjs';
 
 const data = readStdinJson();
 if (!data) {
@@ -28,6 +30,16 @@ if (!data) {
 const cwd = getCwd(data);
 const cfg = loadConfig(cwd);
 const sessionId = data.session_id || null;
+
+// --- .qe volatile cleanup (quiet) ---
+// Only purges files older than agentResultsDays threshold in volatile folders.
+// Archive moves are opt-in via /Qsweep --apply, not auto.
+try {
+  const plan = sweepAnalyze(cwd);
+  if (plan.delete.length > 0) sweepVolatileOnly(cwd, plan);
+} catch {
+  // Fault tolerance — never let sweep crash stop handler
+}
 
 // --- Ralph Mode Check (highest priority) ---
 // Ralph mode: auto-loops PSE Chain until VERIFY_CHECKLIST is fully complete.

@@ -9,6 +9,9 @@ CLAUDE.md
 AGENTS.md
 .qe/*
 !.qe/contracts/
+!.qe/docs/
+!.qe/MISTAKE.md
+!.qe/planning/ROADMAP.md
 .qe/contracts/.verdicts/
 test-routing.js
 test-translate.js

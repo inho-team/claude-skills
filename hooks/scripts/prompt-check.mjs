@@ -26,14 +26,15 @@ try {
   process.exit(0);
 }
 
-const cwd = data.cwd || data.directory || process.cwd();
-const cfg = loadConfig(cwd);
+// --- Fast-path: empty message early-exit (before config/state I/O) ---
 const userMessage = data.user_message || data.message || '';
-
-if (!userMessage) {
+if (!userMessage || !userMessage.trim()) {
   console.log(JSON.stringify({ continue: true }));
   process.exit(0);
 }
+
+const cwd = data.cwd || data.directory || process.cwd();
+const cfg = loadConfig(cwd);
 
 const cachePath = join(cwd, '.qe', 'planning', 'cache', 'cjk-translations.json');
 

@@ -1,9 +1,9 @@
 ---
 name: Qdesign
-description: "Creates a DESIGN.md specification that defines the visual identity, design system, and component guidelines for a project. All frontend skills (Qfrontend-design, Qstitch-apply, coding-experts) reference this file as the single source of truth. Distinct from Qfrontend-design which implements UI code — this skill defines the design spec before any code is written. Supports live extraction from reference URLs via Chrome MCP for automated token generation."
+description: "Creates a DESIGN.md specification that defines the visual identity, design system, and component guidelines for a project. All frontend skills (Qfrontend-design, Qstitch-apply, coding-experts) reference this file as the single source of truth. Distinct from Qfrontend-design which implements UI code — this skill defines the design spec before any code is written. Supports live extraction from reference URLs via Chrome MCP for automated token generation. Supports `--scan` to auto-bootstrap DESIGN.md from codebase (tailwind config, theme, components)."
 metadata:
   author: qe-framework
-  version: "1.0.0"
+  version: "1.1.0"
 invocation_trigger: "When a project needs a design system defined before frontend work begins. Trigger phrases: 'create design system', 'define design spec', 'set up DESIGN.md', 'design foundation', 'visual identity'."
 recommendedModel: sonnet
 ---
@@ -25,6 +25,20 @@ Creates `DESIGN.md` — the single source of truth for all frontend implementati
 - Reviewing existing UI (use `/Qdesign-audit`)
 - Extracting design from Stitch mockups only (use `/Qfrontend-design` Step 0-S)
 
+## Usage Examples
+
+**Example 1: New project without existing codebase**
+```
+/Qdesign
+```
+Starts from scratch with Step 0-2 (Ask the User) and Step 0-3 (Browse designmd.ai).
+
+**Example 2: Existing codebase with tailwind config**
+```
+/Qdesign --scan
+```
+Auto-detects colors, spacing, and typography from tailwind.config.js, then uses as pre-filled defaults for Step 1.
+
 ---
 
 ## Step 0: Gather Context
@@ -45,6 +59,24 @@ Before defining any design decisions, understand the project.
 - Skip Step 0-2 and 0-3 entirely
 
 **If `.impeccable.md` exists but no `DESIGN.md`**: Suggest migrating to DESIGN.md format — `.impeccable.md` contains useful tokens but DESIGN.md is the canonical format used by all QE frontend skills.
+
+### 0-S. Codebase Auto-Scan (--scan flag)
+
+Triggered when user invokes `/Qdesign --scan` (or argument `--scan` is present).
+
+**Behavior:**
+- Call `scan(projectRoot)` from `hooks/scripts/lib/design-scanner.mjs`
+- Use the returned `tokens.colors`, `tokens.spacing`, `tokens.typography` as **pre-filled answers** for Step 1 (Primary Colors, Spacing Scale, Typography)
+- Use `implicit` array as hints for common utility classes already established
+- Still run Step 0-2 (Ask the User) but **skip** questions already answered by scan output
+
+**When scan returns empty tokens** (no tailwind, no theme):
+- Proceed with Step 0-2 normally, no auto-fill
+
+**Printed summary** before asking:
+```
+Detected N color tokens, M spacing tokens, K font families, I implicit classes. Using as defaults — modify below.
+```
 
 ### 0-2. Ask the User (if no existing DESIGN.md found)
 

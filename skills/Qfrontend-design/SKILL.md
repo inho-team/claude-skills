@@ -1,6 +1,7 @@
 ---
 name: Qfrontend-design
-description: Creates original, production-grade frontend interfaces from scratch. Use when building new web components, pages, dashboards, React components, HTML/CSS layouts, or decorating UI. Distinct from Qweb-design-guidelines which reviews existing UI — this skill creates new UI with high design quality.
+description: Creates original, production-grade frontend interfaces from scratch. Use when building new web components, pages, dashboards, React components, HTML/CSS layouts, or decorating UI. Distinct from Qweb-design-guidelines which reviews existing UI — this skill creates new UI with high design quality. Supports `--canvas` flag to render generated UI live via browser MCP and return a screenshot.
+version: "1.1.0"
 invocation_trigger: When framework initialization, maintenance, or audit is required.
 recommendedModel: haiku
 ---
@@ -157,6 +158,37 @@ If Agentation is not set up, guide the user through `/Qagentation` before procee
 | `reference/interaction-design.md` | States, focus management, forms, modals |
 | `reference/responsive-design.md` | Mobile-first, container queries, input detection |
 | `reference/ux-writing.md` | Button labels, error messages, tone, i18n |
+
+## Canvas Preview (--canvas flag)
+
+When the `--canvas` flag is present in the invocation (e.g., `/Qfrontend-design --canvas "pricing page hero section"`), the skill automatically renders the generated UI live and captures a screenshot.
+
+### Sequence
+
+1. **File Generation**: Complete the UI file generation (HTML, TSX, JSX, etc.) normally.
+2. **Plan Building**: Import and invoke `buildPlan(generatedFilePath, projectRoot)` from `hooks/scripts/lib/canvas-preview.mjs`.
+3. **Framework Check**: 
+   - **If `plan.framework !== 'static'` AND `plan.framework !== 'none'`**: Inform the user that the dev server at `plan.port` must be running. Document the expected command (e.g., `npm run dev`) but do NOT auto-start it.
+   - **If `plan.framework === 'static'` OR `plan.framework === 'none'`**: Proceed directly to MCP invocation.
+4. **MCP Invocation** (first available wins):
+   - **Primary**: `mcp__playwright__browser_navigate(plan.url)` → `mcp__playwright__browser_wait_for(plan.waitFor)` → `mcp__playwright__browser_take_screenshot()` → return screenshot path
+   - **Fallback 1**: `mcp__claude-in-chrome__navigate()` → `mcp__claude-in-chrome__computer(screenshot)` (adapt waitFor semantics to visible indicators)
+   - **Fallback 2**: Neither available — output file path + plan object as metadata (graceful fallback per `plan.fallback === 'file-path-only'`)
+5. **Return to User**: Screenshot path (if captured) or file path (if fallback), plus the `plan` object as metadata.
+
+### Usage Examples
+
+**Example 1 — Basic Canvas**
+```
+/Qfrontend-design --canvas "pricing page hero section"
+```
+Generates a pricing hero component and automatically captures a live screenshot from the browser.
+
+**Example 2 — Explicit File Target**
+```
+/Qfrontend-design --canvas src/pages/about.tsx
+```
+Previews the generated or existing file at `src/pages/about.tsx`, requiring the dev server to be running for framework-based files.
 
 ## Diagrams: Mermaid → Image Pipeline
 

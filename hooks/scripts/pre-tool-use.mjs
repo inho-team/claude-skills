@@ -5,11 +5,7 @@ import { readFileSync, existsSync, readdirSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { loadConfig } from './lib/config.mjs';
-import { checkContextPressure } from './context-monitor.mjs';
-import { loadPendingContext } from './lib/context-loader.mjs';
 import { atomicWriteJson, readUnifiedState, writeUnifiedState, getContextMemo, isMemoValid, incrementBlockedReads, getBlockedReads } from './lib/state.mjs';
-import { getTeamContext } from './lib/team-detect.mjs';
-import { checkDelegation, updateDelegationStats } from './lib/delegation-enforcer.mjs';
 import { emitBlock } from './lib/block-emitter.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -162,6 +158,7 @@ if (isFirstCall) {
     const isLegacyStats = !Array.isArray(stats.context_loaded);
 
     if (isLegacyStats || alreadyLoaded.length === 0) {
+      const { loadPendingContext } = await import('./lib/context-loader.mjs');
       const pending = loadPendingContext(cwd, alreadyLoaded);
       if (pending.length > 0) {
         for (const { message } of pending) {
@@ -346,14 +343,19 @@ if (['Write', 'Edit'].includes(toolName)) {
 }
 
 // --- Agent Teams: file ownership warning (Write/Edit in team context) ---
-{
-  const teamCtx = getTeamContext(data);
-  if (teamCtx.isTeam && ['Write', 'Edit'].includes(toolName)) {
-    const toolInput = data.tool_input || data.toolInput || {};
-    const filePath = toolInput.file_path || toolInput.filePath || '';
-    if (filePath) {
-      hints.push(`[AGENT TEAMS] You are teammate "${teamCtx.teammateName}" in team "${teamCtx.teamName}". Verify you own this file before editing: ${filePath}`);
+if (['Write', 'Edit'].includes(toolName)) {
+  try {
+    const { getTeamContext } = await import('./lib/team-detect.mjs');
+    const teamCtx = getTeamContext(data);
+    if (teamCtx.isTeam) {
+      const toolInput = data.tool_input || data.toolInput || {};
+      const filePath = toolInput.file_path || toolInput.filePath || '';
+      if (filePath) {
+        hints.push(`[AGENT TEAMS] You are teammate "${teamCtx.teammateName}" in team "${teamCtx.teamName}". Verify you own this file before editing: ${filePath}`);
+      }
     }
+  } catch {
+    // Fault-tolerant: ignore team detection errors
   }
 }
 
@@ -361,6 +363,7 @@ if (['Write', 'Edit'].includes(toolName)) {
 if (toolName === 'Agent') {
   const toolInput = data.tool_input || data.toolInput || {};
   try {
+    const { checkDelegation, updateDelegationStats } = await import('./lib/delegation-enforcer.mjs');
     const result = checkDelegation(cwd, toolInput);
     if (result.action === 'inject' || result.action === 'warn') {
       hints.push(result.message);
@@ -423,6 +426,7 @@ if (utopia && utopia.enabled && utopia.mode === 'qa') {
 
 // --- Context pressure check ---
 try {
+  const { checkContextPressure } = await import('./context-monitor.mjs');
   const { message: ctxMessage } = checkContextPressure(cwd, stats, cfg);
   if (ctxMessage) hints.push(ctxMessage);
 } catch {}

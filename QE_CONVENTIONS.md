@@ -468,14 +468,14 @@ The framework uses a **release train** pattern. Every commit that changes user-v
 
 1. **Every commit** that ships user-visible behavior → add entry to `CHANGELOG.md [Unreleased]` under `Added` / `Changed` / `Fixed` / `Removed` / `Security`.
 2. **Do NOT bump version** on the fix/feature commit. `plugin.json` / `package.json` stay at the last released version.
-3. **When a batch is ready** → invoke `/Qrelease` (optionally with `major|minor|patch` override). The skill reads `[Unreleased]`, bumps, rewrites changelog, commits, tags, optionally pushes + creates GitHub Release.
+3. **When a batch is ready** → invoke `/Mrelease` (optionally with `major|minor|patch` override). The skill reads `[Unreleased]`, bumps, rewrites changelog, commits, tags, optionally pushes + creates GitHub Release.
 4. **Between releases**, `main` may be "ahead" of the latest tag — that's expected. Users who want bleeding edge can track the tip; most pin a tag.
 
 ### Anti-patterns
 
-- Bumping version in the same commit as a fix → **use `/Qrelease` later instead**
-- Invoking `/Mbump` directly → Mbump still exists as a low-level primitive; `/Qrelease` is the canonical release path
-- Releasing with empty `[Unreleased]` → `/Qrelease` aborts
+- Bumping version in the same commit as a fix → **use `/Mrelease` later instead**
+- Invoking `/Mbump` directly → Mbump still exists as a low-level primitive; `/Mrelease` is the canonical release path
+- Releasing with empty `[Unreleased]` → `/Mrelease` aborts
 - Per-edge-case patch release → batch it; only security / data loss / framework-unusable bugs get immediate hotfix
 
 ### Rationale

@@ -11,15 +11,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/). Versioning: [SemVer](ht
 - **MAJOR** — breaking changes. Rare.
 - **Hotfix patch release** (between batches) — only for security / data loss / framework-unusable regressions.
 
-All entries should land in `[Unreleased]` until `/Qrelease` cuts a version.
+All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 
 ## [Unreleased]
 
 ### Added
-- `CHANGELOG.md` + `/Qrelease` skill establishing batched release workflow (dogfood: this entry itself will ship in the next release).
+- `CHANGELOG.md` + `/Mrelease` skill establishing batched release workflow (dogfood: this entry itself will ship in the next release).
 
 ### Changed
-- Mbump is now a sub-step of `/Qrelease`; direct `/Mbump` invocation still works for explicit overrides but is no longer the recommended release path.
+- Mbump is now a sub-step of `/Mrelease`; direct `/Mbump` invocation still works for explicit overrides but is no longer the recommended release path.
 - **Qhud** — context percentage now displays *used* (e.g. `ctx 16%`) instead of *remaining*. Color thresholds: green `<50`, yellow `50–80`, red `≥80`. Inverse of prior behavior; matches common "capacity used" UX.
 - **Qhud** — SIVS routing always renders as 4-letter `C/C/C/C` (spec/implement/verify/supervise, `C=claude X=codex`). The previous "claude" compact label for all-Claude configs is removed in favor of stable positional display.
 - **Internal API rename** in `hooks/scripts/lib/hud-renderer.mjs`: `pickContextRemaining()` → `pickContextUsed()` (return semantics inverted). Hook-internal lib; no external callers known.

@@ -1,6 +1,6 @@
 ---
-name: Qrelease
-description: "Cuts a batched release from accumulated [Unreleased] CHANGELOG entries. Determines bump level, updates plugin.json/package.json via Mbump, commits the version bump with the changelog section, creates an annotated tag, and optionally pushes + creates a GitHub Release. Replaces the old pattern of bumping on every fix — use /Qrelease when a batch is ready, not per commit."
+name: Mrelease
+description: "Cuts a batched release from accumulated [Unreleased] CHANGELOG entries. Determines bump level, updates plugin.json/package.json via Mbump, commits the version bump with the changelog section, creates an annotated tag, and optionally pushes + creates a GitHub Release. Replaces the old pattern of bumping on every fix — use /Mrelease when a batch is ready, not per commit."
 metadata:
   author: qe-framework
   version: "1.0.0"
@@ -9,12 +9,12 @@ invocation_trigger: "When the framework is ready to cut a batched release. Trigg
 recommendedModel: sonnet
 ---
 
-# Qrelease — Batched Version Release
+# Mrelease — Batched Version Release
 
 ## Role
 You coordinate a formal release from `CHANGELOG.md` → version files → git tag → GitHub Release.
 
-This skill exists because per-commit version bumps cause user-facing churn (plugin cache invalidation, noisy release notifications). Qrelease enforces a **release train** — accumulate changes in `CHANGELOG.md [Unreleased]`, then cut a deliberate release when the batch is meaningful.
+This skill exists because per-commit version bumps cause user-facing churn (plugin cache invalidation, noisy release notifications). Mrelease enforces a **release train** — accumulate changes in `CHANGELOG.md [Unreleased]`, then cut a deliberate release when the batch is meaningful.
 
 ## When to Use
 
@@ -25,7 +25,7 @@ This skill exists because per-commit version bumps cause user-facing churn (plug
 ## When NOT to Use
 
 - **Between commits** — commits should update `[Unreleased]`, not release
-- **For hotfixes** — use `/Qrelease patch` only if the bug is security/data-loss/framework-unusable. Normal edge-case fixes wait for the next scheduled batch.
+- **For hotfixes** — use `/Mrelease patch` only if the bug is security/data-loss/framework-unusable. Normal edge-case fixes wait for the next scheduled batch.
 - **Without CHANGELOG entries** — if `[Unreleased]` is empty, abort; there's nothing to release
 
 ## Pre-flight Checks (all MUST pass)
@@ -50,7 +50,7 @@ Collect subsections:
 - `### Removed`
 - `### Security`
 
-Count entries in each. Empty `[Unreleased]` → **abort** with message: "No unreleased changes. Commits should add entries to CHANGELOG.md [Unreleased] before invoking /Qrelease."
+Count entries in each. Empty `[Unreleased]` → **abort** with message: "No unreleased changes. Commits should add entries to CHANGELOG.md [Unreleased] before invoking /Mrelease."
 
 ### Step 2 — Determine bump level
 

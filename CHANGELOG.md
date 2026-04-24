@@ -20,6 +20,7 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 ### Changed
 
 ### Fixed
+- task-completed hook now auto-appends TASK_LOG, moves pending→completed, and signals archive at ≥10 completed — closes the stale-pending drift gap.
 
 ### Removed
 

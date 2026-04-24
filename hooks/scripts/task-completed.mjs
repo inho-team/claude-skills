@@ -4,7 +4,8 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
-import { readStdinJson, getCwd } from './lib/state.mjs';
+import { readStdinJson } from './lib/state.mjs';
+import { runTaskCompletedActions } from './lib/task-completed-actions.mjs';
 
 const data = readStdinJson();
 if (!data) {
@@ -12,11 +13,15 @@ if (!data) {
   process.exit(0);
 }
 
-const cwd = getCwd(data);
-const taskId = data.task_id || '';
+// Prefer the event payload's cwd so bookkeeping lands in the invoking
+// project, not wherever the hook happens to be spawned from.
+const cwd = data.cwd || data.directory || process.cwd();
+const taskId = data.task_id || data.uuid || '';
 const hints = [];
 
-// Check if verify checklist exists for this task
+// Gate: if the paired VERIFY_CHECKLIST still has unchecked items the task is
+// NOT actually complete. Block completion and do not fire side effects — we
+// do not want to log/move/archive a half-finished task.
 if (taskId) {
   const checklistPath = join(cwd, '.qe', 'checklists', 'pending', `VERIFY_CHECKLIST_${taskId}.md`);
   if (existsSync(checklistPath)) {
@@ -34,6 +39,28 @@ if (taskId) {
       process.exit(2);
     }
   }
+}
+
+// Auto-archive gap fix: append TASK_LOG row, move pending→completed, and
+// flag /Qarchive when the completed backlog crosses ARCHIVE_THRESHOLD.
+// Idempotent — safe to retry on duplicate TaskCompleted events.
+let actionSummary = null;
+try {
+  actionSummary = runTaskCompletedActions(cwd, {
+    uuid: taskId,
+    taskName: data.task_name || data.taskName,
+    phase: data.phase,
+    status: data.status || 'complete',
+  });
+  if (actionSummary?.logAppended) {
+    hints.push(`Logged task ${taskId} to .qe/TASK_LOG.md.`);
+  }
+  if (actionSummary?.archiveFlagged) {
+    hints.push(`Completed backlog has ${actionSummary.completedCount} tasks — archive flag written (.qe/state/archive-needed.flag). Next session will dispatch Earchive-executor.`);
+  }
+} catch (err) {
+  // Never let bookkeeping bugs block the hook's primary purpose.
+  hints.push(`task-completed bookkeeping skipped: ${err?.message || err}`);
 }
 
 // Trigger domain knowledge collection on task completion

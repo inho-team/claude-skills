@@ -1,7 +1,7 @@
 ---
 name: Qfrontend-design
-description: Creates original, production-grade frontend interfaces from scratch. Use when building new web components, pages, dashboards, React components, HTML/CSS layouts, or decorating UI. Distinct from Qweb-design-guidelines which reviews existing UI — this skill creates new UI with high design quality. Supports `--canvas` flag to render generated UI live via browser MCP and return a screenshot. On re-invocation, automatically picks up inline `<!-- claude: ... -->` directives from existing files and merges them into the brief.
-version: "1.2.0"
+description: Creates original, production-grade frontend interfaces from scratch. Use when building new web components, pages, dashboards, React components, HTML/CSS layouts, or decorating UI. Distinct from Qweb-design-guidelines which reviews existing UI — this skill creates new UI with high design quality. Supports `--canvas` flag to render generated UI live via browser MCP and return a screenshot. Supports `--prototype` mode for rapid 1-file HTML sketches before production code generation. On re-invocation, automatically picks up inline `<!-- claude: ... -->` directives from existing files and merges them into the brief.
+version: "1.3.0"
 invocation_trigger: When framework initialization, maintenance, or audit is required.
 recommendedModel: haiku
 ---
@@ -189,6 +189,59 @@ Generates a pricing hero component and automatically captures a live screenshot 
 /Qfrontend-design --canvas src/pages/about.tsx
 ```
 Previews the generated or existing file at `src/pages/about.tsx`, requiring the dev server to be running for framework-based files.
+
+## Rapid Prototype Mode (--prototype flag)
+
+When the `--prototype` flag is present in the invocation (e.g., `/Qfrontend-design --prototype "Hero section with CTA for landing page"`), the skill generates a quick, stakeholder-shareable HTML sketch before committing to production framework code.
+
+### Purpose
+
+Produce a single self-contained `.html` file with inline `<style>` and vanilla DOM, skipping framework setup, component decomposition, and styling system integration. Enables rapid design validation with non-engineers and quick feasibility checks.
+
+### When to use
+
+- **Early product exploration** — validate layout/flow with stakeholders before engineering commitment
+- **Pitch demos** — "real code" is overkill; just show the visual direction
+- **Feasibility check** — before `/Qfrontend-design` fans out to deck/code/doc
+- **"Just show me" moments** — user wants a preview in under 60 seconds
+
+### Flow
+
+1. **Generate a single `.html` file** at `prototype/<slug>.html` (or user-specified path)
+2. **Inline `<style>` tag** with all CSS (Tailwind CDN allowed for speed; no framework)
+3. **Vanilla JS for interactivity** — minimal, prefer declarative HTML
+4. **Auto-pair with `--canvas`** — if both flags present, open prototype in browser immediately after generation
+5. **Auto-pair with DESIGN.md** — if `DESIGN.md` exists, apply its color/typography tokens even in prototype mode (consistency)
+
+### Post-prototype workflow
+
+After generation, prompt the user:
+```
+Prototype generated at prototype/hero.html
+Upgrade to production code? Y/N
+```
+
+- **On Y**: Re-invoke `/Qfrontend-design <same brief>` (without `--prototype`) to generate framework code, using the prototype HTML as a structural reference
+- **On N**: Keep the prototype only; user can iterate with `<!-- claude: ... -->` comments if needed
+
+### Example
+
+```
+/Qfrontend-design --prototype --canvas "Hero section with CTA for landing page"
+```
+
+→ Generates `prototype/hero.html` with inline CSS and vanilla JS, opens in browser for live review.
+
+User approves, skill asks: "Upgrade to production code? Y/N"
+
+If Y: `/Qfrontend-design --canvas "Hero section with CTA for landing page"` (without `--prototype`) generates framework code.
+
+### Edge cases
+
+- **No DESIGN.md** → generic Tailwind defaults (colors, type scale)
+- **Complex brief (dashboard, multi-page)** → emit single HTML with sections, not multiple files
+- **`--canvas` flag absent** → just output file path and confirm generation; user opens manually
+- **User selects N (keep prototype)** → prototype persists; user can add `<!-- claude: ... -->` comments for future iterations
 
 ## Inline Claude Comment Pickup
 

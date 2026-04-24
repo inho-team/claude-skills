@@ -1,10 +1,10 @@
 ---
 name: Qvisual-redesign
-description: "Visually audits rendered pages against DESIGN.md and auto-fixes discrepancies. Navigates live URLs, captures screenshots, diagnoses design-system violations (spacing, color, typography, layout), then generates specs and executes code fixes. Playwright MCP preferred; falls back to claude-in-chrome. Distinct from Qvisual-qa (screenshot comparison only, no fixes) and Qdesign-audit (source code scan only, no rendering)."
+description: "Visually audits rendered pages against DESIGN.md and auto-fixes discrepancies. Navigates live URLs, captures screenshots, diagnoses design-system violations (spacing, color, typography, layout), then generates specs and executes code fixes. Playwright MCP preferred; falls back to claude-in-chrome. Distinct from Qvisual-qa (screenshot comparison only, no fixes) and Qdesign-audit (source code scan only, no rendering). Also supports `--tune` mode to expose tunable tokens as markdown sliders for interactive value editing."
 metadata:
   author: qe-framework
-  version: "1.0.0"
-argument-hint: "<URL or localhost:port> [--pages /path1,/path2] [--report-only]"
+  version: "1.1.0"
+argument-hint: "<URL or localhost:port> [--pages /path1,/path2] [--report-only] [--tune <file>]"
 invocation_trigger: "When user wants to visually improve UI against the design system. Trigger: 'visual redesign', 'fix UI to match design', 'screen looks off', 'redesign pages', 'visual audit and fix', 'UI doesn't match design'."
 recommendedModel: sonnet
 ---
@@ -22,6 +22,73 @@ Captures live rendered pages, diagnoses DESIGN.md violations, and auto-fixes the
 | "Audit source code styles" (no rendering) | **NOT this** — use `Qdesign-audit` |
 | "Create design system" | **NOT this** — use `Qdesign` |
 | "Build new UI from scratch" | **NOT this** — use `Qfrontend-design` |
+| "Tune UI tokens interactively" | **This skill** (use --tune flag) |
+
+---
+
+## Tune Mode (--tune flag)
+
+Expose numeric tokens (spacing, font-size, colors, etc.) of a target file as markdown sliders so the user can edit values in their editor, then re-invoke the skill to apply the changes.
+
+### Purpose
+
+Interactive token adjustment without direct code editing. Scan a file for tunable numeric values, render them as sliders in markdown, allow user to adjust, then apply changes back to the source.
+
+### Trigger
+
+```
+/Qvisual-redesign --tune <file>
+```
+
+Where `<file>` is a CSS, JSX, or TSX file whose numeric tokens should be exposed (e.g., `src/pages/Hero.tsx`, `src/styles/button.css`).
+
+### Flow
+
+#### Invocation 1: Generate Sliders
+
+1. **Scan** the target file for tunable numeric tokens: `Npx`, `Nrem`, `N%`, hex colors (future), font-size values
+2. **Collect** each unique token and its context (e.g., `padding: 24px` → token `24`, unit `px`)
+3. **For each unique token**, generate a `<!-- slider ... -->` block using `serializeSlider` from `hooks/scripts/lib/slider-parser.mjs`
+4. **Write output** to `.qe/tune/<basename>.tune.md` (e.g., `Hero.tsx` → `.qe/tune/Hero.tune.md`)
+5. **Output message** to user:
+   ```
+   Edit `.qe/tune/<basename>.tune.md` and re-run `/Qvisual-redesign --tune <file>` to apply
+   ```
+
+#### Invocation 2: Apply Changes
+
+1. **Read** `.qe/tune/<basename>.tune.md` with `parseSliders`
+2. **Collect** `{ name: newValue }` map of changed values (by comparing current slider value to original baseline)
+3. **Call** `applyValues` to update the original target file in place
+4. **After applying**, re-render via canvas-preview (Phase 1 lib) → capture and show before/after screenshot
+5. **Confirm** to user that changes were applied and re-rendered
+
+### Edge Cases
+
+- **Target file missing** → error out cleanly: "File not found: `<file>`. Please verify the path."
+- **`.tune.md` missing** → treat as first-time invocation, generate sliders
+- **No sliders in `.tune.md`** → no changes to apply, just re-render and report "No changes detected"
+- **Invalid slider syntax** → skip silently (slider-parser logs warnings), process remaining sliders
+
+### Example
+
+```
+/Qvisual-redesign --tune src/pages/Hero.tsx
+```
+
+Output:
+```
+Generated 5 tunable tokens in .qe/tune/Hero.tune.md:
+  - hero-padding: 32px
+  - hero-gap: 16px
+  - font-size-title: 48px
+  - accent-color: #ff6b35
+  - opacity-overlay: 0.8
+
+Edit the file and re-run: /Qvisual-redesign --tune src/pages/Hero.tsx
+```
+
+User edits `.qe/tune/Hero.tune.md`, changes sliders, and re-runs the command. Changes apply to `src/pages/Hero.tsx`, and the updated page is re-rendered for visual verification.
 
 ---
 

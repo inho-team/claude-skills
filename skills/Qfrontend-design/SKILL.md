@@ -1,7 +1,7 @@
 ---
 name: Qfrontend-design
-description: Creates original, production-grade frontend interfaces from scratch. Use when building new web components, pages, dashboards, React components, HTML/CSS layouts, or decorating UI. Distinct from Qweb-design-guidelines which reviews existing UI — this skill creates new UI with high design quality. Supports `--canvas` flag to render generated UI live via browser MCP and return a screenshot.
-version: "1.1.0"
+description: Creates original, production-grade frontend interfaces from scratch. Use when building new web components, pages, dashboards, React components, HTML/CSS layouts, or decorating UI. Distinct from Qweb-design-guidelines which reviews existing UI — this skill creates new UI with high design quality. Supports `--canvas` flag to render generated UI live via browser MCP and return a screenshot. On re-invocation, automatically picks up inline `<!-- claude: ... -->` directives from existing files and merges them into the brief.
+version: "1.2.0"
 invocation_trigger: When framework initialization, maintenance, or audit is required.
 recommendedModel: haiku
 ---
@@ -189,6 +189,68 @@ Generates a pricing hero component and automatically captures a live screenshot 
 /Qfrontend-design --canvas src/pages/about.tsx
 ```
 Previews the generated or existing file at `src/pages/about.tsx`, requiring the dev server to be running for framework-based files.
+
+## Inline Claude Comment Pickup
+
+Allow users to annotate source code with `<!-- claude: <instruction> -->` comments that persist in the file. On the next `/Qfrontend-design` invocation targeting the same file, the skill automatically extracts these directives and merges them into the design brief, enabling iterative refinements without re-stating previous requests.
+
+### Purpose
+
+Users can embed refinement instructions directly in the code as HTML comments (e.g., `<!-- claude: make CTA button larger and more prominent -->`). These directives survive code generation because the parser identifies and extracts them before reading, and they are marked for removal after being applied. This creates a conversation history within the file itself, reducing context loss across skill invocations.
+
+### Detection & Parsing
+
+Uses `extractDirectives(filePath)` from `hooks/scripts/lib/inline-comment-parser.mjs`. The parser:
+- Identifies all `<!-- claude: <text> -->` comments in the file
+- Returns an array of objects: `{ directive, targetLine, file }`
+- Each object contains the instruction text, the 1-indexed line number of the code it annotates, and the file path
+- Returns an empty array if the file does not exist or if no directives are found
+- Never throws — errors are handled gracefully
+
+### Integration Flow
+
+1. **Before generation**, if the target file exists and is being re-processed, call `extractDirectives(targetFilePath)`
+2. **Collect directives** into a list with their line numbers
+3. **Prepend to system brief**: Add a section like:
+   ```
+   Apply these inline edits from the file:
+   - Line 12: make CTA button larger and more prominent
+   - Line 45: use primary color instead of secondary
+   ```
+   The user's original request takes precedence; directives provide additional context.
+4. **Proceed with generation** — Claude now sees both the user request and the inline constraints
+5. **Remove directives from output** — After generation, strip all `<!-- claude: ... -->` comments from the updated file. These comments have been consumed and should not accumulate.
+
+### Edge Cases & Behavior
+
+- **File does not exist** (new file) → `extractDirectives` returns empty array; proceed with normal generation
+- **No directives found** → empty array; normal flow unchanged
+- **Directives conflict with user prompt** → AI reconciles, prioritizing the explicit user request in this invocation
+- **Multiple directives on same line** → All are collected and listed in the brief
+- **Directive targets no code** → Parser defaults to the comment line itself as the target
+- **File is not HTML/TSX/etc.** → Parser still works if file is text-readable (can apply to Markdown, CSS files, etc.)
+
+### Example Scenario
+
+**Source file `src/Hero.tsx` (existing from previous iteration):**
+```tsx
+<!-- claude: make CTA button larger and more prominent -->
+<button className="px-4 py-2">Sign up</button>
+
+<h1 className="text-2xl">Welcome</h1>
+<!-- claude: add subtle gradient background -->
+```
+
+**User invokes:** `/Qfrontend-design src/Hero.tsx "minor polish"`
+
+**Skill execution:**
+1. Calls `extractDirectives("src/Hero.tsx")`
+2. Returns: `[{directive: "make CTA button larger and more prominent", targetLine: 2, file: "src/Hero.tsx"}, {directive: "add subtle gradient background", targetLine: 5, file: "src/Hero.tsx"}]`
+3. Prepends to brief: "Apply these inline edits from the file:\n- Line 2: make CTA button larger and more prominent\n- Line 5: add subtle gradient background"
+4. Generates updated component with larger button and gradient background
+5. Removes both `<!-- claude: ... -->` comments from the output file
+
+**Result**: Claude applies both "minor polish" and the two inline directives in a single pass. The file is cleaner for the next iteration (no stale comments).
 
 ## Diagrams: Mermaid → Image Pipeline
 

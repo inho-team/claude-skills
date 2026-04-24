@@ -15,6 +15,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { renderHud } from './lib/hud-renderer.mjs';
+import { writeCachedRatio } from './lib/context-meter.mjs';
 
 const SIVS_PATHS = ['.qe/sivs-config.json', '.qe/svs-config.json'];
 const STDIN_TIMEOUT_MS = 500;
@@ -98,6 +99,11 @@ async function main() {
   const sivs = readSivsConfig(projectDir);
   const noColor = process.env.NO_COLOR === '1' || process.env.NO_COLOR === 'true';
   const preset = parsePresetArg(process.argv);
+
+  // Bridge Claude Code's authoritative context reading to the Stop hook —
+  // context-guard prefers this over transcript-based estimation.
+  const pct = data?.context_window?.used_percentage;
+  if (typeof pct === 'number') writeCachedRatio(projectDir, pct);
 
   const line = renderHud(data, sivs, { noColor, preset, projectRoot: projectDir });
   if (line) process.stdout.write(line);

@@ -3,9 +3,9 @@
 // See https://github.com/Yeachan-Heo/oh-my-claudecode for original.
 'use strict';
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { estimateUsageRatio, recordBlock, resetBlocks, getBlockCount } from './lib/context-meter.mjs';
+import { estimateUsageRatio, readCachedRatio, recordBlock, resetBlocks, getBlockCount } from './lib/context-meter.mjs';
 
 const MAX_BLOCKS = 2;
 const WARN_RATIO = 0.75;
@@ -42,9 +42,16 @@ const transcriptPath = data.transcript_path || '';
 
 let ratio = 0;
 try {
-  // Pass model hint from the Stop payload so 1M-context models
-  // (claude-opus-4-7[1m] etc.) aren't read as 5× their true usage.
-  ratio = estimateUsageRatio(transcriptPath, { modelId: data?.model?.id });
+  // Prefer the authoritative reading Claude Code passes to the statusline
+  // (HUD caches it under .qe/state/context-cache.json). The Stop hook payload
+  // doesn't include context_window, and transcript-based estimation can't
+  // distinguish a 200k run from a 1M run when token count is below 200k.
+  const cached = readCachedRatio(cwd);
+  if (cached !== null) {
+    ratio = cached;
+  } else {
+    ratio = estimateUsageRatio(transcriptPath, { modelId: data?.model?.id });
+  }
 } catch {
   process.exit(0);
 }

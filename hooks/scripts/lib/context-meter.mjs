@@ -7,7 +7,45 @@ import { join, dirname } from 'path';
 import { randomBytes } from 'crypto';
 
 const BLOCKS_FILE = 'context-blocks.json';
+const CACHE_FILE = 'context-cache.json';
+const CACHE_TTL_MS = 60 * 1000; // statusline fires frequently; 60s is safe staleness
 const TAIL_BYTES = 8192; // read last 8 KB of transcript for efficiency
+
+/**
+ * Write the authoritative ratio reported by Claude Code (statusline payload's
+ * `context_window.used_percentage`) to disk so the Stop hook can consume it.
+ * Best-effort — silently skips on any error.
+ *
+ * @param {string} projectDir project root
+ * @param {number} usedPercentage 0..100 from statusline payload
+ */
+export function writeCachedRatio(projectDir, usedPercentage) {
+  if (!projectDir || typeof usedPercentage !== 'number') return;
+  try {
+    const dir = join(projectDir, '.qe', 'state');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    const tmp = join(dir, `.tmp-ctx-${randomBytes(6).toString('hex')}.json`);
+    writeFileSync(tmp, JSON.stringify({ ratio: usedPercentage / 100, ts: Date.now() }), 'utf8');
+    renameSync(tmp, join(dir, CACHE_FILE));
+  } catch { /* best-effort */ }
+}
+
+/**
+ * Read the cached ratio if present and fresh. Returns null when absent/stale/invalid.
+ * @param {string} projectDir
+ * @returns {number|null} ratio in [0, 1]
+ */
+export function readCachedRatio(projectDir) {
+  if (!projectDir) return null;
+  try {
+    const p = join(projectDir, '.qe', 'state', CACHE_FILE);
+    if (!existsSync(p)) return null;
+    const obj = JSON.parse(readFileSync(p, 'utf8'));
+    if (typeof obj?.ratio !== 'number' || typeof obj?.ts !== 'number') return null;
+    if (Date.now() - obj.ts > CACHE_TTL_MS) return null;
+    return Math.max(0, Math.min(1, obj.ratio));
+  } catch { return null; }
+}
 
 /**
  * Atomic JSON write.
@@ -126,6 +164,7 @@ export function estimateUsageRatio(transcriptPath, opts) {
         explicitLimit,
         hintModelId,
         transcriptModelId: entry?.message?.model,
+        observedTokens: tokens,
       });
       return Math.min(tokens / limit, 1);
     }
@@ -135,7 +174,7 @@ export function estimateUsageRatio(transcriptPath, opts) {
   }
 }
 
-function resolveLimit({ explicitLimit, hintModelId, transcriptModelId }) {
+function resolveLimit({ explicitLimit, hintModelId, transcriptModelId, observedTokens }) {
   if (typeof explicitLimit === 'number' && explicitLimit > 0) return explicitLimit;
   if (hintModelId) return modelIdToLimit(hintModelId);
   const envVal = process.env.QE_CONTEXT_LIMIT;
@@ -143,8 +182,15 @@ function resolveLimit({ explicitLimit, hintModelId, transcriptModelId }) {
     const parsed = parseInt(envVal, 10);
     if (Number.isFinite(parsed) && parsed > 0) return parsed;
   }
-  if (transcriptModelId) return modelIdToLimit(transcriptModelId);
-  return 200000;
+  let limit = transcriptModelId ? modelIdToLimit(transcriptModelId) : 200000;
+  // Claude Code strips the `[1m]` marker from the transcript's model field,
+  // so the base id alone can't distinguish a 200k run from a 1M run.
+  // If observed tokens already exceed the base limit, we must be on the larger
+  // variant — upgrade deterministically. Current Claude lineup has no middle tier.
+  if (typeof observedTokens === 'number' && observedTokens > limit) {
+    limit = 1000000;
+  }
+  return limit;
 }
 
 /**

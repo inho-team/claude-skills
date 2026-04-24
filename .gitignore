@@ -12,6 +12,7 @@ AGENTS.md
 !.qe/docs/
 !.qe/MISTAKE.md
 !.qe/planning/ROADMAP.md
+!.qe/planning/PROJECT.md
 .qe/contracts/.verdicts/
 test-routing.js
 test-translate.js

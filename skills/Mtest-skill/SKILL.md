@@ -123,7 +123,45 @@ Criteria: `score >= threshold*2` = PASS (strong); `score >= threshold` = PASS + 
 |------|---------|-------|
 | Quick (default) | `/Mtest-skill` | Registered skills only, 2 prompts each |
 | Full | `/Mtest-skill --full` | All skills/agents, 5 prompts each, full report + fixes |
-| Specific | `/Mtest-skill Qfact-checker Qsource-verifier` | Named skills only |
+| Specific | `/Mtest-skill Qfoo` | Single skill by name |
+| Batch | `/Mtest-skill --batch 'skills/Q*'` | All SKILL.md files matching a glob, cache-aware |
+
+### Batch mode — `--batch <glob>`
+
+`--batch` feeds a filesystem glob (relative to repo root) into `scripts/run_mtest_skill.mjs`.
+The runner collects every `SKILL.md` below each matched directory, replays the
+workflow above (virtual prompts → routing sim → verdict), and prints a markdown
+results table to stdout. Optional `--out <file>` mirrors the table to disk.
+
+```bash
+# test every Q-prefixed skill
+/Mtest-skill --batch 'skills/Q*'
+
+# test M-prefixed skills and save to report.md
+/Mtest-skill --batch 'skills/M*' --out .qe/mtest-cache/last-batch.md
+```
+
+Output columns: `Skill | Hash | Verdict | Accuracy | Cache | Timestamp`.
+One row per SKILL.md, sorted alphabetically.
+
+### Cache policy
+
+Batch runs are memoised through `hooks/scripts/lib/mtest-cache.mjs`:
+
+- **Key**: sha256 of canonicalised SKILL.md content (CRLF→LF, trim trailing
+  whitespace, single trailing newline). Identical content ⇒ identical key.
+- **Store**: `.qe/mtest-cache/{hash}.json` (gitignored). One file per distinct
+  SKILL.md revision ever tested.
+- **Hit** (unchanged SKILL.md): runner reuses `{verdict, accuracy, timestamp}`
+  and logs `Cache: HIT` — no virtual-prompt regeneration, no routing sim.
+- **Miss** (new content or first run): runner re-executes the workflow, writes
+  a fresh entry, and logs `Cache: MISS`.
+- **Invalidation**: purely content-driven. Edit the SKILL.md and the previous
+  entry is orphaned (the new hash creates a new file). To force a rerun
+  without edits, delete the relevant file under `.qe/mtest-cache/`.
+
+The single-skill mode (`/Mtest-skill Qfoo`) bypasses the cache so interactive
+audits always re-evaluate. Only `--batch` consults the cache.
 
 ## Constraints
 

@@ -15,6 +15,13 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 
 ## [Unreleased]
 
+### Fixed
+- `package.json` description — corrected skill/agent counts from `167 skills and 21 agents` to actual `107 skills and 23 agents`.
+- `.qe/planning/PROJECT.md` — updated from stale v4.0 SVS language to v6.6 SIVS 4-stage per D005. Added v5.x/v6.5/v6.6 milestone rows.
+- `.qe/planning/ROADMAP.md` — replaced completed Qgc Phase 1 content with a thin index stub pointing to `features/<name>/ROADMAP.md`. Establishes convention that new phase work lives in feature subdirectories, not the root.
+- `.qe/MISTAKE.md` — seeded empty file with placeholder header so session-start hook no longer reads a zero-content file.
+- `.qe/docs/README.md` — added placeholder so session-start `Check .qe/docs/` hint points at valid content.
+
 ### Added
 - Qcritical-review: integrate OMC 9-step protocol (Pre-commitment / Multi-perspective / Pre-Mortem / Ambiguity Scan / Devil's Advocate / Self-audit / Realist / Adversarial / Gap Analysis) — adapted from oh-my-claudecode (MIT)
 - Etracer agent: evidence-based causal trace lane (Observation/Inference separation, 6-tier evidence, ≥2 hypotheses, disconfirmation, next probe) — adapted from oh-my-claudecode (MIT)

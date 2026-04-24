@@ -41,11 +41,12 @@ This prevents `.claude/settings.json` from being written to a subdirectory where
 | Flag | Description |
 |------|-------------|
 | `--user` | Operate on `~/.claude/settings.json` instead of project scope |
+| `--preset <name>` | Pick an element preset: `session` (default), `focused`, `qe`, `mix`, `full` |
 
 ## Execution Procedure
 
 ### Step 0: Parse
-Extract subcommand (`show` | `on` | `off`) and the `--user` flag. On `--help` or invalid input, jump to **Step HELP**.
+Extract subcommand (`show` | `on` | `off`), the `--user` flag, and an optional `--preset <name>` value. Valid preset names: `session`, `focused`, `qe`, `mix`, `full`. Anything else → fall back to `session`. On `--help` or invalid input, jump to **Step HELP**.
 
 ### Step 1: Resolve paths
 1. **Script path** — Resolve the absolute path of `hooks/scripts/statusline.mjs` relative to this plugin (walk up from the skill directory until `hooks/scripts/statusline.mjs` exists). Store as `SCRIPT_ABS`.
@@ -77,7 +78,7 @@ Extract subcommand (`show` | `on` | `off`) and the `--user` flag. On `--help` or
      }
    }
    ```
-   Merge into existing settings (preserve all other keys). Pretty-print with 2-space indent and a trailing newline.
+   If `--preset <name>` is present, append ` --preset <name>` to the command string. Merge into existing settings (preserve all other keys). Pretty-print with 2-space indent and a trailing newline.
 5. Print the resulting `statusLine` block and remind: "Restart the Claude Code session or reload the window for it to appear."
 
 #### `off`
@@ -92,11 +93,19 @@ Print:
 Qhud — QE HUD statusline toggle
 
 Usage:
-  /Qhud            Show current state and preview
-  /Qhud on         Install into .claude/settings.json (project scope)
-  /Qhud off        Remove from .claude/settings.json
-  /Qhud on --user  Install into ~/.claude/settings.json (user scope)
-  /Qhud --help     Show this help
+  /Qhud                     Show current state and preview
+  /Qhud on                  Install into .claude/settings.json (project scope)
+  /Qhud off                 Remove from .claude/settings.json
+  /Qhud on --user           Install into ~/.claude/settings.json (user scope)
+  /Qhud on --preset focused Install with the "focused" element preset
+  /Qhud --help              Show this help
+
+Presets:
+  session  ctx · 5h/7d · model · tokens · SIVS   (default, v6.6.3 shape)
+  focused  ctx · phase · task · SIVS             (current PSE state)
+  qe       SIVS · phase · task                   (planning layer only)
+  mix      ctx · O:S:H:X token distribution · SIVS
+  full     every element (widest terminal)
 
 HUD shows:  ctx N% (used)  │  <tokens> tok  │  SIVS C/C/C/C
             green <50 · yellow 50–80 · red ≥80

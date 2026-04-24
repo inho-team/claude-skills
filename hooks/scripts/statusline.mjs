@@ -97,9 +97,26 @@ async function main() {
 
   const sivs = readSivsConfig(projectDir);
   const noColor = process.env.NO_COLOR === '1' || process.env.NO_COLOR === 'true';
+  const preset = parsePresetArg(process.argv);
 
-  const line = renderHud(data, sivs, { noColor });
+  const line = renderHud(data, sivs, { noColor, preset, projectRoot: projectDir });
   if (line) process.stdout.write(line);
+}
+
+/**
+ * Parse `--preset <name>` from argv. Returns undefined if absent so the
+ * renderer falls back to its default preset.
+ *
+ * @param {string[]} argv
+ * @returns {string|undefined}
+ */
+function parsePresetArg(argv) {
+  for (let i = 2; i < argv.length; i++) {
+    if (argv[i] === '--preset' && i + 1 < argv.length) return argv[i + 1];
+    const eq = /^--preset=(.+)$/.exec(argv[i]);
+    if (eq) return eq[1];
+  }
+  return undefined;
 }
 
 main().catch(() => {

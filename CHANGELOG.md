@@ -16,8 +16,15 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 ## [Unreleased]
 
 ### Added
+- **HUD element architecture** — `hud-renderer.mjs` split into `hud/elements/*.mjs` (context, rate-limits, model, tokens, sivs, phase, task, model-ratio) + a preset-driven composer. Adding a new HUD element is now a single file + one preset edit.
+- **Qhud `--preset <name>` flag** — pick element ordering at install time. Presets: `session` (default, v6.6.3 shape), `focused` (ctx/phase/task/sivs), `qe` (planning-layer only), `mix` (includes model-ratio), `full` (everything).
+- **New HUD element: `phase`** — reads `.qe/planning/STATE.md` and surfaces the current Active Phase (e.g., `P: Phase 1`). Renders nothing when idle.
+- **New HUD element: `task`** — reads the most-recent pending `TASK_REQUEST_*.md` and surfaces its UUID + title (e.g., `T: abc12345 Build landing page`). Renders nothing when no pending tasks.
+- **New HUD element: `model-ratio`** — session-wide token distribution across Opus / Sonnet / Haiku / Codex that sums to exactly 100 (e.g., `O:42·S:31·H:12·X:15`). Reads the JSONL transcript at `data.transcript_path`, buckets by `message.model`; Claude turns invoking codex tool_use (`mcp__codex*` / `codex:rescue`) go into the `X` bucket as a delegation-cost proxy.
 
 ### Changed
+- `hooks/scripts/lib/hud-renderer.mjs` is now a compatibility shim that re-exports the old public surface (`safe`, `formatTokens`, `pickContextUsed`, `pickRateLimits`, `pickModelName`, `pickSessionTokens`, `renderSivsLetters`, `renderHud`). New code should import from `hud/renderer.mjs` + individual elements.
+- `formatTokens` now uses capital `M` for millions (`1.5M`) and promotes `999_500+` to `M` to avoid rendering `1000k`.
 
 ### Fixed
 

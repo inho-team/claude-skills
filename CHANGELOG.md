@@ -15,6 +15,18 @@ All entries should land in `[Unreleased]` until `/Mrelease` cuts a version.
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Removed
+
+### Security
+
+## [6.6.4] - 2026-04-24
+
 ### Fixed
 - `package.json` description — corrected skill/agent counts from `167 skills and 21 agents` to actual `107 skills and 23 agents`.
 - `.qe/planning/PROJECT.md` — updated from stale v4.0 SVS language to v6.6 SIVS 4-stage per D005. Added v5.x/v6.5/v6.6 milestone rows.

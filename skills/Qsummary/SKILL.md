@@ -16,7 +16,7 @@ Generates a high-density summary of the current session to ensure the user and f
 Gather the following high-signal data:
 1. **State Stats**: Read `.qe/state/unified-state.json` for token usage and tool call counts.
 2. **Completed Tasks**: Scan `.qe/tasks/completed/` for recently finished `TASK_REQUEST` titles.
-3. **Semantic Context**: Read `.qe/context/SNAPSHOT_SUMMARY.md` (if available) for the current "vibe" and technical state.
+3. **Semantic Context**: Read `.qe/context/sessions/{sid}/SNAPSHOT_SUMMARY.md` for the active sid (if available) for the current "vibe" and technical state. The 8-char sid comes from the `[Session] sid:XXXXXXXX` marker in SessionStart additionalContext.
 
 ### Step 2: High-Density Summary Generation
 Use the **Haiku model** to synthesize the data into a maximum of 5-7 lines. 

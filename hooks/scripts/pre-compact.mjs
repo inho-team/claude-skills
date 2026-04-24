@@ -5,6 +5,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync, readdirSync } from 
 import { join } from 'path';
 import { execSync } from 'child_process';
 import { readStdinJson, getCwd } from './lib/state.mjs';
+import { ensureSessionDirs, shortenSid } from './lib/session-resolver.mjs';
 
 const data = readStdinJson();
 if (!data) {
@@ -14,20 +15,19 @@ if (!data) {
 
 const cwd = getCwd(data);
 
-// Ensure .qe/context/ directory exists
-const contextDir = join(cwd, '.qe', 'context');
-if (!existsSync(contextDir)) {
-  try {
-    mkdirSync(contextDir, { recursive: true });
-  } catch {
-    // If we can't create the directory, just pass through
-    console.log(JSON.stringify({ continue: true }));
-    process.exit(0);
-  }
+// Resolve the per-session context directory so the trigger file lands next
+// to this terminal's snapshot/decisions, not in a shared flat path the next
+// session-start would migrate away.
+const sid = shortenSid(data.session_id || data.sessionId);
+let contextDir;
+try {
+  contextDir = ensureSessionDirs(cwd, sid).contextDir;
+} catch {
+  console.log(JSON.stringify({ continue: true }));
+  process.exit(0);
 }
 
-// Write a compact-trigger file so Ecompact-executor knows to save
-const triggerPath = join(cwd, '.qe', 'context', 'compact-trigger.json');
+const triggerPath = join(contextDir, 'compact-trigger.json');
 try {
   writeFileSync(triggerPath, JSON.stringify({
     triggered_at: new Date().toISOString(),
@@ -102,6 +102,6 @@ console.log(JSON.stringify({
   continue: true,
   hookSpecificOutput: {
     hookEventName: "PreCompact",
-    additionalContext: `[QE] Compaction detected. Call Ecompact-executor to save current context to .qe/context/. ${stateSummary} | ${postCompactRules}`
+    additionalContext: `[QE] Compaction detected. Call Ecompact-executor to save current context under .qe/context/sessions/{sid}/. ${stateSummary} | ${postCompactRules}`
   }
 }));

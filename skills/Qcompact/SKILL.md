@@ -11,19 +11,22 @@ recommendedModel: haiku
 ## Role
 A skill that automatically preserves context under context window pressure, and generates detailed handoff documents on user request.
 
+## Per-Session Layout (Auto-Named)
+Multiple terminals on the same project save into separate `sessions/{sid}/` directories so they never clobber each other. The 8-char `sid` is auto-derived from the Claude session id by the SessionStart hook and surfaced as `[Session] sid:XXXXXXXX` in additionalContext — there is no manual `--name` flag. When no sid is available the `_unknown` bucket is used; pre-partition flat files were one-shot migrated into `_legacy`.
+
 ## Operating Modes
 
 ### Automatic Mode (Background Call)
 Ecompact-executor detects context pressure and runs automatically in the background.
 - Saves quietly without notifying the user
 - Triggered when entering MODE_TokenEfficiency Yellow zone (75%+)
-- Saves current state to `.qe/context/snapshot.md`
-- Accumulates decisions in `.qe/context/decisions.md`
+- Saves current state to `.qe/context/sessions/{sid}/snapshot.md`
+- Accumulates decisions in `.qe/context/sessions/{sid}/decisions.md`
 
 ### Manual Mode (User Invocation)
 Calling `/Qcompact` directly generates a detailed handoff document.
 - Delegates to Ehandoff-executor sub-agent
-- Creates `.qe/handoffs/HANDOFF_{date}_{time}.md`
+- Creates `.qe/handoffs/sessions/{sid}/HANDOFF_{date}_{time}.md`
 - Displays saved context + handoff summary to the user
 
 ---
@@ -31,7 +34,7 @@ Calling `/Qcompact` directly generates a detailed handoff document.
 ## Automatic Mode Details
 
 ### Save Location
-`.qe/context/`
+`.qe/context/sessions/{sid}/` (auto-named per Claude session)
 
 ### Saved Content
 
@@ -104,7 +107,7 @@ Call the Ehandoff-executor sub-agent to generate the handoff document.
 ### RESUME Workflow
 
 #### Step 1: Look Up Handoff
-Scan the `.qe/handoffs/` directory and display the list of handoffs.
+Scan `.qe/handoffs/sessions/{sid}/` for the active sid first. If empty, fall back to `_legacy/` and other sessions (oldest sessions are stalest).
 
 #### Step 2: Check Freshness
 | Level | Meaning |
@@ -130,9 +133,9 @@ HANDOFF_1.md → HANDOFF_2.md → HANDOFF_3.md
 
 | Mode | Location | Purpose |
 |------|----------|---------|
-| Automatic | `.qe/context/snapshot.md` | Latest context (overwrite) |
-| Automatic | `.qe/context/decisions.md` | Accumulated decisions |
-| Manual | `.qe/handoffs/HANDOFF_*.md` | Detailed handoff document |
+| Automatic | `.qe/context/sessions/{sid}/snapshot.md` | Latest context for this terminal (overwrite) |
+| Automatic | `.qe/context/sessions/{sid}/decisions.md` | Accumulated decisions for this terminal |
+| Manual | `.qe/handoffs/sessions/{sid}/HANDOFF_*.md` | Detailed handoff document for this terminal |
 
 ## Will
 - Automatic: save context snapshot, accumulate decisions

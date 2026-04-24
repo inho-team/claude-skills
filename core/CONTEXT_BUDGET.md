@@ -126,5 +126,5 @@ This budget is separate from `.qe/analysis/` summaries. Both fall under the 20% 
 - Loading entire files when only a function signature is needed
 - Reading all analysis files at session start (read on demand)
 - Keeping historical context that is no longer relevant to the active task
-- Duplicating information already in `.qe/context/snapshot.md`
+- Duplicating information already in `.qe/context/sessions/{sid}/snapshot.md`
 - Reading the same file twice in one session without modifying it (now enforced by hook)

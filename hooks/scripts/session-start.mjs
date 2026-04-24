@@ -8,6 +8,8 @@ import { loadConfig } from './lib/config.mjs';
 import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { pruneExpired, formatMemoryContext } from './lib/project-memory.mjs';
 import { analyze as sweepAnalyze, formatSummary as sweepFormatSummary } from './lib/sweep-analyzer.mjs';
+import { shortenSid, getSessionContextDir } from './lib/session-resolver.mjs';
+import { runAutoMigrations, summarizeReport } from './lib/legacy-migrator.mjs';
 
 // Read stdin (Claude Code provides JSON with cwd, session_id, etc.)
 let input = '';
@@ -30,8 +32,37 @@ const cwd = data.cwd || data.directory || process.cwd();
 const cfg = loadConfig(cwd);
 const messages = [];
 
+// Compute this Claude session's short sid up front so per-session paths
+// (snapshot, handoff, decisions) and the additionalContext announcement all
+// agree. Falls back to '_unknown' bucket downstream if sid is missing.
+const currentSid = shortenSid(data.session_id || data.sessionId);
+
+// Run every auto-eligible legacy migration (context flat, handoffs flat,
+// future entries from lib/legacy-migrator.mjs) before any downstream reader
+// touches the new layout. Idempotent — re-running on a clean tree is a no-op.
+let migrationSummary = null;
+try {
+  const report = runAutoMigrations(cwd);
+  migrationSummary = summarizeReport(report);
+} catch {
+  // Fault tolerance — migration is one-shot housekeeping, never block start.
+}
+
 // --- ALWAYS TIER ---
 // These items are injected every session start regardless of context_loaded state.
+
+// Announce this session's short sid so skills (Qcompact / Qresume) can
+// address per-session paths without re-reading state files. Skills look for
+// the `[Session] sid:XXXXXXXX` marker in additionalContext.
+if (currentSid) {
+  messages.push(`[Session] sid:${currentSid}`);
+}
+
+// Surface a one-line summary when auto-migration moved anything, so the
+// user sees what changed and can run /Qmigrate-legacy for the full report.
+if (migrationSummary) {
+  messages.push(migrationSummary + ' Run /Qmigrate-legacy for details.');
+}
 
 // Check 1: project instruction artifact existence (Qinit check)
 const instructionCandidates = [
@@ -71,13 +102,17 @@ if (existsSync(analysisDir)) {
   }
 }
 
-// Check 3: .qe/context/snapshot.md existence (resume hint)
-const snapshotPath = join(cwd, '.qe', 'context', 'snapshot.md');
-if (existsSync(snapshotPath)) {
-  const stat = statSync(snapshotPath);
-  const ageHours = (Date.now() - stat.mtimeMs) / (1000 * 60 * 60);
-  if (ageHours < 24) {
-    messages.push('Previous session context saved. Restore with `/Qresume`.');
+// Check 3: per-session snapshot.md existence (resume hint).
+// Each terminal has its own .qe/context/sessions/{sid}/snapshot.md, so we
+// only surface a "restore" hint when *this* session's snapshot exists.
+if (currentSid) {
+  const snapshotPath = join(getSessionContextDir(cwd, currentSid), 'snapshot.md');
+  if (existsSync(snapshotPath)) {
+    const stat = statSync(snapshotPath);
+    const ageHours = (Date.now() - stat.mtimeMs) / (1000 * 60 * 60);
+    if (ageHours < 24) {
+      messages.push('Previous session context saved. Restore with `/Qresume`.');
+    }
   }
 }
 
@@ -233,8 +268,20 @@ try {
 // have no direct access to session_id; reading this file is the bridge.
 // Last-write-wins per project — parallel Claude sessions overwrite each
 // other's pointer, but each plan's own data lives under its slug dir.
+//
+// Claude Code's SessionStart payload does not always surface session_id
+// directly; when missing we derive it from transcript_path, whose basename
+// is always `{session_id}.jsonl`. Accept the value only when it parses as
+// a UUID so a malformed path can't poison the pointer.
 try {
-  const sessionId = data.session_id || data.sessionId;
+  let sessionId = data.session_id || data.sessionId || null;
+  if (!sessionId && typeof data.transcript_path === 'string') {
+    const base = data.transcript_path.split('/').pop() || '';
+    const candidate = base.replace(/\.jsonl$/, '');
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidate)) {
+      sessionId = candidate;
+    }
+  }
   if (sessionId) {
     const stateDir = join(cwd, '.qe', 'state');
     mkdirSync(stateDir, { recursive: true });

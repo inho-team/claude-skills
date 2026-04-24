@@ -14,6 +14,14 @@ Operates using only Claude's built-in tools (Read/Write/Glob/Bash), with no exte
 ## Invocation Conditions
 - **Manual**: When delegated by the Qcompact skill
 
+## Per-Session Layout (Auto-Named)
+Handoffs are partitioned by Claude session id so parallel terminals never overwrite each other's documents. The SessionStart hook injects `[Session] sid:XXXXXXXX` into additionalContext — use that 8-char sid as the directory name. If the marker is missing, write into the `_unknown` bucket.
+
+Resolve directories through `hooks/scripts/lib/session-resolver.mjs` (`getSessionHandoffDir`, `ensureSessionDirs`):
+```bash
+node -e "import('./hooks/scripts/lib/session-resolver.mjs').then(m => { const r = m.ensureSessionDirs(process.cwd(), '{sid}'); console.log(r.handoffDir); })"
+```
+
 ## Handoff Document Generation
 
 ### Information Collected
@@ -21,10 +29,10 @@ Operates using only Claude's built-in tools (Read/Write/Glob/Bash), with no exte
 - Checklist progress: scan `.qe/checklists/pending/`
 - Recent git changes: `git log --oneline -10`, `git diff --stat`
 - Project analysis: reference `.qe/analysis/`
-- Decisions: reference `.qe/context/decisions.md`
+- Decisions: reference `.qe/context/sessions/{sid}/decisions.md`
 
 ### Output File
-`.qe/handoffs/HANDOFF_{date}_{time}.md`:
+`.qe/handoffs/sessions/{sid}/HANDOFF_{date}_{time}.md`:
 ```markdown
 # Session Handoff
 > Generated: 2026-03-14 10:30

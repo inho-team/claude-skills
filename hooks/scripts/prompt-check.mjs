@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import { atomicWriteJson, readUnifiedState, writeUnifiedState } from './lib/state.mjs';
 import { loadConfig } from './lib/config.mjs';
+import { parseHelpFlag } from './lib/help-flag-parser.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -41,6 +42,12 @@ const state = readUnifiedState(cwd);
 
 const hints = [];
 const msgLower = userMessage.toLowerCase();
+
+// --- Help Flag Detection (early, before other classifications) ---
+const helpFlag = parseHelpFlag(userMessage);
+if (helpFlag.matched) {
+  hints.push(`[HELP] SKILL REQUIRED: Invoke /Qhelp with argument '${helpFlag.skillName}' BEFORE generating any response. Do NOT answer without the skill.`);
+}
 
 // --- QE Conventions Memory Check ---
 // ... (omitted for brevity, assume unchanged until negative feedback) ...
@@ -148,8 +155,8 @@ if (!isAmbiguous) {
   }
 }
 
-// --- Intent Auto-Classification (skip if ambiguous) ---
-if (!isAmbiguous) try {
+// --- Intent Auto-Classification (skip if ambiguous or help-flag matched) ---
+if (!isAmbiguous && !helpFlag.matched) try {
   const routesConfig = JSON.parse(readFileSync(join(__dirname, 'lib', 'intent-routes.json'), 'utf8'));
   let bestMatch = null;
   let bestScore = 0;

@@ -5,9 +5,8 @@
  * turns that payload (plus the parsed SIVS config) into a single-line HUD string
  * with ANSI color codes. Separated from the stdin wrapper so it can be unit-tested.
  *
- * MVP scope: context %, session tokens, SIVS stage routing.
- * Phase 2 (easy additions): rate_limits.five_hour / rate_limits.seven_day,
- * model.display_name, cost.total_cost_usd.
+ * Scope: context % used, 5h / 7d rate limits, model, session tokens, SIVS routing.
+ * Phase 3 candidates: session cost ($), active SIVS stage highlight, exceeds_200k flag.
  *
  * @module hooks/scripts/lib/hud-renderer
  */
@@ -23,6 +22,30 @@ const C = {
 };
 
 const SIVS_STAGES = ['spec', 'implement', 'verify', 'supervise'];
+
+// Claude display-name heuristic for fallback when model.display_name is absent.
+const MODEL_ID_SHORT = [
+  { re: /opus/i, label: 'Opus' },
+  { re: /sonnet/i, label: 'Sonnet' },
+  { re: /haiku/i, label: 'Haiku' },
+];
+
+/**
+ * Strip ANSI escape sequences and control characters from a string so that
+ * untrusted payload fields (model names, future labels) cannot smuggle color
+ * codes or cursor-moves into the user's terminal. Preventative hardening for
+ * the security review WARN on `model.display_name` reaching stdout.
+ *
+ * @param {unknown} s
+ * @returns {string} sanitized string, or '' if input is not a string
+ */
+export function safe(s) {
+  if (typeof s !== 'string') return '';
+  // Drop CSI sequences (ESC [ ... letter) and other common escape prefixes.
+  const noEsc = s.replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, '').replace(/\x1b[@-Z\\-_]/g, '');
+  // Drop remaining C0 controls except TAB; drop DEL.
+  return noEsc.replace(/[\x00-\x08\x0b-\x1f\x7f]/g, '');
+}
 
 /**
  * Format a token count as a compact string (42300 → "42.3k").
@@ -67,6 +90,47 @@ export function pickContextUsed(data) {
     return Math.round(100 - cw.remaining_percentage);
   }
   return null;
+}
+
+/**
+ * Extract the Anthropic rate-limit usage percentages from the payload.
+ * Returns integer 0–100 or null per window.
+ *
+ * @param {object} data
+ * @returns {{ fiveHour: number|null, sevenDay: number|null }}
+ */
+export function pickRateLimits(data) {
+  const rl = data?.rate_limits;
+  const read = (bucket) => {
+    const raw = bucket?.used_percentage;
+    return typeof raw === 'number' ? Math.round(raw) : null;
+  };
+  return {
+    fiveHour: read(rl?.five_hour),
+    sevenDay: read(rl?.seven_day),
+  };
+}
+
+/**
+ * Pick a human-readable model label.
+ *
+ * Prefers `model.display_name` (sanitized). If absent, falls back to matching
+ * `model.id` against Opus/Sonnet/Haiku; otherwise returns the raw id.
+ *
+ * @param {object} data
+ * @returns {string|null} short label (e.g., "Opus") or null
+ */
+export function pickModelName(data) {
+  const m = data?.model;
+  if (!m) return null;
+  const display = safe(m.display_name).trim();
+  if (display) return display;
+  const id = safe(m.id).trim();
+  if (!id) return null;
+  for (const { re, label } of MODEL_ID_SHORT) {
+    if (re.test(id)) return label;
+  }
+  return id;
 }
 
 /**
@@ -124,6 +188,17 @@ export function renderHud(data, sivsConfig, opts = {}) {
   if (ctxUsed !== null) {
     parts.push(paint(usedColor(ctxUsed), `ctx ${ctxUsed}%`));
   }
+
+  const { fiveHour, sevenDay } = pickRateLimits(data);
+  if (fiveHour !== null || sevenDay !== null) {
+    const chunks = [];
+    if (fiveHour !== null) chunks.push(paint(usedColor(fiveHour), `5h ${fiveHour}%`));
+    if (sevenDay !== null) chunks.push(paint(usedColor(sevenDay), `7d ${sevenDay}%`));
+    parts.push(chunks.join(dim('·')));
+  }
+
+  const model = pickModelName(data);
+  if (model) parts.push(paint(C.cyan, model));
 
   const tokens = pickSessionTokens(data);
   if (tokens !== null) {

@@ -1,18 +1,39 @@
 ---
 name: Qhelp
-description: Shows QE Framework usage overview in terminal. Use when the user asks for help, how to use the framework, or available commands.
-invocation_trigger: When framework initialization, maintenance, or audit is required.
+description: Shows QE Framework usage overview. With no arg, prints the full catalog. With a skill name arg (e.g., /Qhelp Qcommit), reads that skill's SKILL.md and summarizes it in the user's language.
+invocation_trigger: User asks for help, uses /Qhelp, or invokes any QE skill with --help / -h flag.
 recommendedModel: haiku
 ---
 
-# Qhelp — QE Framework Quick Reference
+# Qhelp — QE Framework Reference & Per-Skill Help
 
 ## Role
-Displays a concise overview of all available skills and agents in the terminal.
+Two modes:
+1. **No argument**: print the full QE Framework reference card (all skills).
+2. **With skill argument**: read that skill's SKILL.md and generate a per-skill usage summary in the user's language.
 
-## Execution Procedure
+## Workflow
 
-Print the following reference card directly to the user (do not use any tools):
+### Mode A: No argument
+Print the full reference card below directly to the user.
+
+### Mode B: Skill argument (`/Qhelp {skillName}`)
+1. Read `.qe/profile/language.md` to detect user language. Parse `Primary language: <code>`. Default to `en`.
+2. Resolve target: `skills/{skillName}/SKILL.md`.
+3. If not found: glob `skills/*/SKILL.md`, compute 3 closest matches by name similarity, output not-found message + suggestions in user's language. Stop.
+4. Read the target SKILL.md. Extract:
+   - frontmatter `description` → Section 1
+   - frontmatter `invocation_trigger` (or fall back to description) → Section 2
+   - `## Role` section + first workflow/behavior block → Section 3 (3–5 bullets)
+   - code blocks containing `/{skillName}` → Section 4 (or default `/{skillName}` if none)
+5. Output 4 sections with headings in the user's language:
+   - ko: "한 줄 요약" / "언제 쓰나" / "주요 동작" / "사용 예시"
+   - en: "Summary" / "When to use" / "What it does" / "Usage"
+   - ja: "概要" / "使用タイミング" / "主な動作" / "使用例"
+   - other: English
+6. Keep total output ≤400 words.
+
+## Reference Card (Mode A output)
 
 ```
 QE Framework (Query Executor) — Quick Reference
@@ -94,8 +115,11 @@ AGENTS (auto-selected by complexity)
 ```
 
 ## Will
-- Display the quick reference card
+- Display the quick reference card (Mode A)
+- Read a specific skill's SKILL.md and generate a 4-section summary in the user's language (Mode B)
+- Provide skill-name suggestions when a requested skill is not found
 
 ## Will Not
-- Execute any commands
+- Execute any commands from the target skill
 - Modify any files
+- Translate the reference card itself (Mode A stays in its native mixed form)

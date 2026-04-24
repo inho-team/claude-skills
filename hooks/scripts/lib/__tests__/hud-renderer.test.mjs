@@ -4,8 +4,11 @@ import {
   formatTokens,
   pickContextUsed,
   pickSessionTokens,
+  pickRateLimits,
+  pickModelName,
   renderSivsLetters,
   renderHud,
+  safe,
 } from '../hud-renderer.mjs';
 
 // ============================================================================
@@ -85,6 +88,75 @@ test('pickSessionTokens: handles missing fields', () => {
 });
 
 // ============================================================================
+// safe (ANSI / control sanitizer)
+// ============================================================================
+
+test('safe: strips ANSI CSI escapes', () => {
+  assert.equal(safe('\x1b[31mred\x1b[0m'), 'red');
+  assert.equal(safe('plain'), 'plain');
+});
+
+test('safe: strips raw ESC and control chars but keeps tab', () => {
+  assert.equal(safe('a\x00b\x07c'), 'abc');
+  assert.equal(safe('a\tb'), 'a\tb');
+});
+
+test('safe: returns empty string for non-string input', () => {
+  assert.equal(safe(null), '');
+  assert.equal(safe(undefined), '');
+  assert.equal(safe(42), '');
+});
+
+// ============================================================================
+// pickRateLimits
+// ============================================================================
+
+test('pickRateLimits: reads both windows and rounds to int', () => {
+  const data = {
+    rate_limits: {
+      five_hour: { used_percentage: 23.6 },
+      seven_day: { used_percentage: 12.1 },
+    },
+  };
+  assert.deepEqual(pickRateLimits(data), { fiveHour: 24, sevenDay: 12 });
+});
+
+test('pickRateLimits: handles partial windows and missing payload', () => {
+  assert.deepEqual(
+    pickRateLimits({ rate_limits: { five_hour: { used_percentage: 80 } } }),
+    { fiveHour: 80, sevenDay: null },
+  );
+  assert.deepEqual(pickRateLimits({}), { fiveHour: null, sevenDay: null });
+  assert.deepEqual(pickRateLimits(null), { fiveHour: null, sevenDay: null });
+});
+
+// ============================================================================
+// pickModelName
+// ============================================================================
+
+test('pickModelName: prefers display_name', () => {
+  assert.equal(pickModelName({ model: { display_name: 'Opus', id: 'claude-opus-4-7' } }), 'Opus');
+});
+
+test('pickModelName: falls back to id heuristic when display_name missing', () => {
+  assert.equal(pickModelName({ model: { id: 'claude-sonnet-4-6' } }), 'Sonnet');
+  assert.equal(pickModelName({ model: { id: 'claude-haiku-4-5' } }), 'Haiku');
+});
+
+test('pickModelName: returns raw id when no heuristic matches', () => {
+  assert.equal(pickModelName({ model: { id: 'mystery-model-1' } }), 'mystery-model-1');
+});
+
+test('pickModelName: sanitizes ANSI injection in display_name', () => {
+  assert.equal(pickModelName({ model: { display_name: '\x1b[31mEvil\x1b[0m' } }), 'Evil');
+});
+
+test('pickModelName: returns null when model absent', () => {
+  assert.equal(pickModelName({}), null);
+  assert.equal(pickModelName({ model: {} }), null);
+});
+
+// ============================================================================
 // renderSivsLetters
 // ============================================================================
 
@@ -114,22 +186,45 @@ test('renderSivsLetters: unknown engine falls back to claude (C)', () => {
 // renderHud
 // ============================================================================
 
-test('renderHud: full payload renders ctx (used) · tokens · SIVS 4-letter', () => {
+test('renderHud: full payload renders ctx · quotas · model · tokens · SIVS', () => {
   const data = {
     context_window: {
       used_percentage: 32,
       total_input_tokens: 40_000,
       total_output_tokens: 2_300,
     },
+    rate_limits: {
+      five_hour: { used_percentage: 23 },
+      seven_day: { used_percentage: 12 },
+    },
+    model: { display_name: 'Opus' },
   };
   const line = renderHud(data, {}, { noColor: true });
-  assert.equal(line, 'ctx 32% │ 42k tok │ SIVS C/C/C/C');
+  assert.equal(line, 'ctx 32% │ 5h 23%·7d 12% │ Opus │ 42k tok │ SIVS C/C/C/C');
+});
+
+test('renderHud: single rate limit renders without separator', () => {
+  const data = {
+    context_window: { used_percentage: 30 },
+    rate_limits: { five_hour: { used_percentage: 45 } },
+  };
+  const line = renderHud(data, {}, { noColor: true });
+  assert.equal(line, 'ctx 30% │ 5h 45% │ SIVS C/C/C/C');
+});
+
+test('renderHud: missing model and quotas skips those segments', () => {
+  const data = { context_window: { used_percentage: 40 } };
+  const line = renderHud(data, {}, { noColor: true });
+  assert.equal(line, 'ctx 40% │ SIVS C/C/C/C');
 });
 
 test('renderHud: missing tokens skips the token segment', () => {
-  const data = { context_window: { used_percentage: 58 } };
+  const data = {
+    context_window: { used_percentage: 58 },
+    model: { display_name: 'Sonnet' },
+  };
   const line = renderHud(data, {}, { noColor: true });
-  assert.equal(line, 'ctx 58% │ SIVS C/C/C/C');
+  assert.equal(line, 'ctx 58% │ Sonnet │ SIVS C/C/C/C');
 });
 
 test('renderHud: missing context still shows SIVS segment', () => {
